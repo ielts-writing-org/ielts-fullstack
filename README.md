@@ -39,6 +39,7 @@ In conclusion, the platform aims to make writing practice more interactive, resp
 | BETTER_AUTH_API_KEY  |                         |
 | GITHUB_CLIENT_ID     |                         |
 | GITHUB_CLIENT_SECRET |                         |
+| CORS_ORIGINS         | <http://localhost:5173> |
 
 ## Client environment variables
 

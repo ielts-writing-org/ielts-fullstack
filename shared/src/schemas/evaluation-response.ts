@@ -13,7 +13,7 @@ const CheckEvaluationResponseSchema = z.object({
 });
 
 const ProblemEvaluationResponseSchema = z.object({
-	what: z.string().min(1).meta(),
+	what: z.string().min(1),
 	evidence: z.string().min(1).meta({
 		description: "What causes the problem?"
 	}),
