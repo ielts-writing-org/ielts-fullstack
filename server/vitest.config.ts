@@ -6,7 +6,6 @@ export default defineConfig({
 	test: {
 		expect: { requireAssertions: true },
 		alias: {
-			// Aliases must appear as they are in tsconfig.json
 			"@": path.resolve(import.meta.dirname, "./src")
 		}
 	},

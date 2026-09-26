@@ -18,7 +18,7 @@
 			<span class="hidden md:inline">Dashboard</span>
 		</a>
 		<div>
-			<h2 class="font-bold">{page.data.pageTitle}</h2>
+			<h2 class="font-semibold">{page.data.pageTitle}</h2>
 			<h3 class="hidden text-xs md:block">{page.data.pageSubtitle}</h3>
 		</div>
 	</div>
