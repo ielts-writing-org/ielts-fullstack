@@ -17,7 +17,10 @@ export default defineConfig(
 				tsconfigRootDir: path.resolve(import.meta.dirname)
 			}
 		},
-		extends: [honoConfig]
+		extends: [honoConfig],
+		rules: {
+			"@typescript-eslint/consistent-type-definitions": "off"
+		}
 	},
 	{
 		files: ["**/*.js"],
