@@ -56,3 +56,6 @@ coverage/
 worker-configuration.d.ts
 
 .kilo/
+
+# Localflare generated files
+.localflare/

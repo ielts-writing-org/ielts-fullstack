@@ -13,23 +13,6 @@ In conclusion, the platform aims to make writing practice more interactive, resp
 1. NodeJS Runtime >=18.0.0.
 2. A Cloudflare account.
 
-## Server environment variables
-
-| Variable             | Value                   |
-| -------------------- | ----------------------- |
-| CORS_ORIGINS         | <http://localhost:5173> |
-| BETTER_AUTH_URL      | <http://localhost:8787> |
-| BETTER_AUTH_SECRET   |                         |
-| BETTER_AUTH_API_KEY  |                         |
-| GITHUB_CLIENT_ID     |                         |
-| GITHUB_CLIENT_SECRET |                         |
-
-## Client environment variables
-
-| Variable          | Value                   |
-| ----------------- | ----------------------- |
-| PUBLIC_SERVER_URL | <http://localhost:8787> |
-
 ## Server KV entries
 
 | Namespace | Key               | Description                                        |
@@ -42,13 +25,13 @@ In conclusion, the platform aims to make writing practice more interactive, resp
 ## How to run the local development server
 
 1. Clone this repo.
-2. Run the following command at the root to install required libraries for all packages:
+2. Run the following command to install required libraries:
 
    ```bash
-   npm install
+   npm install --legacy-peer-deps
    ```
 
-3. Open each package and run the following command to start the development server:
+3. Run the following command to start the development server:
 
    ```bash
    npm run dev
@@ -56,19 +39,14 @@ In conclusion, the platform aims to make writing practice more interactive, resp
 
 4. Follow each terminal's returns to continue.
 
-## Root Endpoints
+## How to open Cloudflare Explorer
 
-Base:
+Currently, there is no way to open Cloudflare Explorer in SvelteKit project without building and previewing the app. You will have to run the following command to start it as a standalone server:
 
-- <http://localhost:8787>
-- <http://127.0.0.1:8787>
+```bash
+npx localflare attach
+```
 
-| No  | Endpoint          | Method | Description          |
-| --- | ----------------- | ------ | -------------------- |
-| 1   | /                 | GET    | Application's health |
-| 2   | /api/*            | Any    | API Routes           |
-| 2   | /api/health       | GET    | Application's health |
-| 4   | /api/auth         | ANY    | BetterAuth handled   |
-| 4   | /api/auth/migrate | POST   | Migrate database     |
-| 3   | /api/openapi      | GET    | OpenAPI docs         |
-| 4   | /scalar           | GET    | ScalarUI             |
+This will then open a webpage at: <https://studio.localflare.dev?port=8788> and require an allowance to access local api service at <http://localhost:8788/__localflare/>
+
+Read more: <https://localflare.dev/docs/cli-attach-mode>
