@@ -3,9 +3,9 @@ import { createAuth } from "#lib/server/auth.ts";
 import { sequence, type Handle } from "@sveltejs/kit/hooks";
 import { svelteKitHandler } from "better-auth/svelte-kit";
 import { env } from "cloudflare:workers";
-import { CloudflareAiClient } from "#lib/infra/external/ai-client/ai-client.cloudflare.ts";
-import { CloudflareConfigProvider } from "#lib/infra/external/config-provider/config-provider.cloudflare.ts";
-import { CloudflareImagesClient } from "#lib/infra/external/image-client/images-client.cloudflare.ts";
+import { CloudflareAiClient } from "#lib/server/infra/external/ai-client/ai-client.cloudflare.ts";
+import { CloudflareConfigProvider } from "#lib/server/infra/external/config-provider/config-provider.cloudflare.ts";
+import { CloudflareImagesClient } from "#lib/server/infra/external/image-client/images-client.cloudflare.ts";
 
 const handleBetterAuth: Handle = async ({ event, resolve }) => {
 	// TODO: Cache/Singleton

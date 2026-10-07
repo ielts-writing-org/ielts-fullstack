@@ -1,14 +1,12 @@
-import type { AiClientMessages } from "#lib/infra/external/ai-client/ai-client.port.ts";
 import { computeDeterministicStats } from "#lib/utils/stats.ts";
-import { isValidTaskId } from "#lib/utils/task-id.ts";
 import { error } from "@sveltejs/kit";
 import type { RequestHandler } from "./$types";
 import { parseEvaluateRequestForm } from "./utils";
+import type { AiClientMessages } from "#lib/server/infra/external/ai-client/ai-client.port.ts";
 
 // TODO: Rate limit
 export const POST: RequestHandler = async ({ request, locals, params }) => {
 	if (!locals.session) error(401, "Unauthorized");
-	if (!isValidTaskId(params.taskId)) error(400, "Bad Request");
 
 	const form = await request.formData();
 	const pForm = parseEvaluateRequestForm(form);

@@ -1,6 +1,4 @@
-import { error } from "@sveltejs/kit";
 import type { PageServerLoad } from "./$types";
-import { isValidTaskId } from "#lib/utils/task-id.ts";
 import type { TaskContext } from "#lib/schemas/task-context.ts";
 
 const PAGE_TITLE = ["TASK 1", "TASK 2"] as const;
@@ -25,10 +23,6 @@ const INITIAL_TASKS = [
 
 export const load = (async ({ params }) => {
 	const { taskId } = params;
-
-	if (!isValidTaskId(taskId)) {
-		error(404, { message: "Not found" });
-	}
 
 	const taskIdNumber = Number.parseInt(taskId);
 

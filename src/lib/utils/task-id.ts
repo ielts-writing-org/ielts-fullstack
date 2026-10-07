@@ -1,5 +1,6 @@
 import { z } from "zod";
 
+// TODO: Separate
 export const taskIdSchema = z.enum(["1", "2"]);
 
 export type TaskId = z.infer<typeof taskIdSchema>;
