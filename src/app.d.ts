@@ -1,6 +1,6 @@
-import type { AiClient } from "#lib/server/infra/external/ai-client/ai-client.port.ts";
-import type { ConfigProvider } from "#lib/server/infra/external/config-provider/config-provider.port.ts";
-import type { ImagesClient } from "#lib/server/infra/external/image-client/images-client.port.ts";
+import type { AiClient } from "#lib/server/ai-client/ai-client.port.ts";
+import type { ConfigProvider } from "#lib/server/config-provider/config-provider.port.ts";
+import type { ImagesClient } from "#lib/server/image-client/images-client.port.ts";
 import { auth, createAuth } from "#lib/server/auth.ts";
 
 // See https://svelte.dev/docs/kit/types#app.d.ts
