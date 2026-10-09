@@ -1,11 +1,9 @@
 <script lang="ts">
-	import { page } from "$app/state";
 	import GitHub from "#lib/components/icons/GitHub.svelte";
-	import Facebook from "#lib/components/icons/Facebook.svelte";
-	import Google from "#lib/components/icons/Google.svelte";
-	import { CircleX } from "@lucide/svelte";
-	import { signInSocial } from "./_signIn/signIn.remote";
 	import { resolve } from "$app/paths";
+	import { page } from "$app/state";
+	import { CircleX } from "@lucide/svelte";
+	import { signInSocial } from "./signIn.remote";
 </script>
 
 <svelte:head>
@@ -13,12 +11,13 @@
 	<meta name="description" content="IELTS Writing Practice Platform Sign In" />
 </svelte:head>
 
-<div class="relative flex h-screen w-full items-center justify-center bg-base-300">
+<div class="relative flex h-screen w-full items-center justify-center bg-base-200">
 	<!-- Watermark -->
-	<div class="absolute inset-0 bg-base-content/20 mask-[url('/watermark.svg')]"></div>
+	<div class="absolute inset-0 animate-watermark bg-base-content/20 mask-[url('/watermark.svg')]">
+	</div>
 	<!-- Toast -->
 	{#if signInSocial.result && !signInSocial.result.success}
-		<div class="toast toast-end toast-top">
+		<div class="toast toast-end toast-top mt-15">
 			<div class="alert alert-error text-white">
 				<CircleX class="h-5 w-5" />
 				<span>{signInSocial.result?.message}</span>
@@ -52,30 +51,14 @@
 				<GitHub class="h-[1.25em] w-[1.25em]" />
 				Continue with GitHub
 			</button>
-
-			<button
-				class="btn btn-wide btn-outline btn-primary"
-				disabled={signInSocial.submitted}
-				{...signInSocial.fields.provider.as("submit", "facebook")}>
-				<Facebook class="h-[1.35em] w-[1.35em]" />
-				Continue with Facebook
-			</button>
-
-			<button
-				class="btn btn-active btn-wide btn-outline"
-				disabled={signInSocial.submitted}
-				{...signInSocial.fields.provider.as("submit", "google")}>
-				<Google class="h-[1.25em] w-[1.25em]" />
-				Continue with Google
-			</button>
 		</form>
 
 		<p class="text-center text-xs text-neutral/75">
 			By signing in, you agree to our
 			<span class="block">
-				<a class="link" href={resolve("/(public)/(dashboard)")}>Terms of Service</a>
+				<a class="link" href={resolve("/(public)")}>Terms of Service</a>
 				and
-				<a class="link" href={resolve("/(public)/(dashboard)")}>Privacy Policy</a>
+				<a class="link" href={resolve("/(public)")}>Privacy Policy</a>
 				.
 			</span>
 		</p>

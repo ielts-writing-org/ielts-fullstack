@@ -1,7 +1,6 @@
 <script lang="ts">
-	import { resolve } from "$app/paths";
 	import { page } from "$app/state";
-	import { BookOpen, House, MessageCircle, RotateCcw } from "@lucide/svelte";
+	import { Undo2 } from "@lucide/svelte";
 </script>
 
 <svelte:head>
@@ -10,7 +9,7 @@
 </svelte:head>
 
 <main
-	class="flex h-full w-full max-w-xl flex-col items-center justify-center gap-6 self-center bg-base-100 px-4 py-12 text-center">
+	class="flex w-full max-w-xl flex-1 flex-col items-center justify-center gap-6 self-center bg-base-100 px-4 py-12 text-center">
 	<!-- Error code with subtle animation -->
 	<div class="flex flex-col items-center gap-2" aria-hidden="true">
 		<span class="text-7xl font-extrabold text-primary">{page.status}</span>
@@ -28,35 +27,8 @@
 	<!-- Action buttons -->
 	<div class="flex w-full flex-col items-center gap-3 sm:flex-row sm:justify-center">
 		<button class="btn btn-wide gap-2 btn-primary md:order-2" onclick={() => history.back()}>
-			<RotateCcw size="1.125em" aria-hidden="true" />
+			<Undo2 size="1.125em" aria-hidden="true" />
 			Go Back
 		</button>
-		<a class="btn btn-wide gap-2 btn-outline" href={resolve("/(public)/(dashboard)")}>
-			<House size="1.125em" aria-hidden="true" />
-			Go to Dashboard
-		</a>
 	</div>
-
-	<!-- Helpful shortcuts -->
-	<nav class="w-full max-w-xs" aria-label="Quick shortcuts">
-		<p class="mb-2 text-xs font-medium tracking-wider text-base-content/50 uppercase">
-			Quick shortcuts
-		</p>
-		<div class="grid grid-cols-2 gap-2">
-			<a
-				class="btn justify-center gap-1.5 btn-ghost btn-sm"
-				href={resolve("/(protected)/practice/task/[taskId=taskId]", { taskId: "1" })}>
-				<BookOpen size="1em" aria-hidden="true" />
-				<span>Task 1</span>
-			</a>
-			<a
-				class="btn justify-center gap-1.5 btn-ghost btn-sm"
-				href={resolve("/(protected)/practice/task/[taskId=taskId]", {
-					taskId: "2"
-				})}>
-				<MessageCircle size="1em" aria-hidden="true" />
-				<span>Task 2</span>
-			</a>
-		</div>
-	</nav>
 </main>

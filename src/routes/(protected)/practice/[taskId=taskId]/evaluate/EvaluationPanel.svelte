@@ -1,5 +1,4 @@
 <script lang="ts">
-	import { showError } from "#lib/components/error/ErrorModal.svelte";
 	import { evaluateRequestSchema, type EvaluateRequest } from "#lib/schemas/evaluate-request.ts";
 	import type { Evaluation, EvaluationCriterion } from "#lib/schemas/evaluation.ts";
 	import type { TaskContext } from "#lib/schemas/task-context.ts";
@@ -10,6 +9,7 @@
 	import { buildEvaluateRequestFormData, isCriteriaKey } from "./utils";
 	import { EventSourceParserStream, type EventSourceMessage } from "eventsource-parser/stream";
 	import { page } from "$app/state";
+	import { openModal } from "#lib/components/modal/Modal.svelte";
 
 	type Props = {
 		taskContext: TaskContext;
@@ -119,9 +119,14 @@
 			}
 		} catch (e) {
 			if (e instanceof ZodError) {
-				showError(getFirstZodError(e));
+				const error = getFirstZodError(e);
+				openModal({ title: error.title, content: error.message, primaryButton: { text: "Close" } });
 			} else {
-				showError({ title: "Unable to evaluate", message: String(e) });
+				openModal({
+					title: "Unable to evaluate",
+					content: String(e),
+					primaryButton: { text: "Close" }
+				});
 			}
 
 			evaluation = undefined;

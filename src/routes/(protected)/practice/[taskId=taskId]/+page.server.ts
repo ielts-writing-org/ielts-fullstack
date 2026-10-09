@@ -1,25 +1,24 @@
 import type { PageServerLoad } from "./$types";
 import type { TaskContext } from "#lib/schemas/task-context.ts";
 
-const PAGE_TITLE = ["TASK 1", "TASK 2"] as const;
-const PAGE_SUBTITLE = [
-	"Write an essay on the given diagram",
-	"Write an essay on the given topic"
-] as const;
+const PAGE_TITLE = ["Draft #001", "Draft #001"] as const;
+const PAGE_SUBTITLE = ["IELTS Writing task 1", "IELTS Writing task 2"] as const;
 
 // TODO: Load task saved
 const INITIAL_TASKS = [
 	{
 		id: "1",
 		prompt: "",
-		response: ""
+		response: "",
+		startAt: Date.now()
 	},
 	{
 		id: "2",
 		prompt: "",
-		response: ""
+		response: "",
+		startAt: Date.now()
 	}
-] as const satisfies TaskContext[];
+] as const satisfies (TaskContext & { startAt: number })[];
 
 export const load = (async ({ params }) => {
 	const { taskId } = params;

@@ -1,6 +1,5 @@
-import Color from "colorjs.io";
 import { describe, expect, test } from "vitest";
-import { getContrastingTextColor } from "./utils.js";
+import { getContrastingTextColor, getRelativeLuminance } from "./utils.js";
 
 const getContrastingTextColorTCs: [string, string, "black" | "white"][] = [
 	// Named colors
@@ -113,8 +112,8 @@ describe("getContrastingTextColor()", () => {
 	test.each(luminanceChecksgetRelativeLuminanceTCs)(
 		'luminance of %s: "%s" = %s',
 		(_, color, expected) => {
-			const c = new Color(color);
-			expect(c.luminance).toBeCloseTo(expected, 3);
+			const c = getRelativeLuminance(color);
+			expect(c).toBeCloseTo(expected, 3);
 		}
 	);
 });

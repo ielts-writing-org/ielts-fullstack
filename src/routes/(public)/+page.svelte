@@ -10,7 +10,7 @@
 	<meta name="description" content="IELTS Writing Practice Platform Dashboard" />
 </svelte:head>
 
-<main class="w-full px-3 py-3 sm:px-4 sm:py-4 lg:px-9">
+<main class="w-full flex-1 px-3 py-3 sm:px-4 sm:py-4 lg:px-9">
 	<section
 		class="flex min-h-24.5 w-full flex-col items-start justify-between gap-4 rounded-box border border-base-content/20 bg-base-100 px-4 py-3 hover:border-primary sm:flex-row sm:items-center sm:px-5"
 		aria-label="Recommended practice">
@@ -66,7 +66,11 @@
 					<div class="badge badge-soft badge-xs">Map Comparison</div>
 					<div class="badge badge-soft badge-xs">Multiple Visuals</div>
 				</div>
-				<a class="btn mt-auto btn-outline btn-primary" href={resolve("practice/task/1")}>
+				<a
+					class="btn mt-auto btn-outline btn-primary"
+					href={resolve("/(protected)/practice/[taskId=taskId]", {
+						taskId: "1"
+					})}>
 					Start Task 1 Practice <ArrowRight size="1em" />
 				</a>
 			</article>
@@ -96,7 +100,11 @@
 					<div class="badge badge-soft badge-xs">Problems & Solutions</div>
 					<div class="badge badge-soft badge-xs">Two-Part Direct Questions</div>
 				</div>
-				<a class="btn mt-auto btn-outline btn-primary" href={resolve("practice/task/2")}>
+				<a
+					class="btn mt-auto btn-outline btn-primary"
+					href={resolve("/(protected)/practice/[taskId=taskId]", {
+						taskId: "2"
+					})}>
 					Start Task 2 Practice <ArrowRight size="1em" />
 				</a>
 			</article>
@@ -118,7 +126,7 @@
 			{#each data.criteria as criterion (criterion.name)}
 				<div class="flex flex-col gap-1">
 					<div class="flex justify-between text-sm">
-						<a class="font-semibold" href={resolve("/(public)/(dashboard)")}>
+						<a class="font-semibold" href={resolve("/(public)")}>
 							{criterion.name}
 						</a>
 						<b class={criterion.scoreColor}>{criterion.score}</b>
@@ -139,9 +147,7 @@
 		<div class="rounded-box border border-base-content/20 bg-base-100 p-3.5 hover:border-primary">
 			<div class="mb-2.5 flex items-center justify-between">
 				<h2 class="text-sm font-semibold">Recent Practice Sessions</h2>
-				<a
-					class="flex items-center text-xs font-semibold text-primary"
-					href={resolve("/(public)/(dashboard)")}>
+				<a class="flex items-center text-xs font-semibold text-primary" href={resolve("/(public)")}>
 					View complete history <ChevronRight size={14} />
 				</a>
 			</div>

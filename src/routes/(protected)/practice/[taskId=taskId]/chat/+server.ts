@@ -2,7 +2,7 @@ import { computeDeterministicStats } from "#lib/utils/stats.ts";
 import { error } from "@sveltejs/kit";
 import type { RequestHandler } from "./$types";
 import { parseChatRequestForm } from "./utils";
-import type { AiClientMessages } from "#lib/server/infra/external/ai-client/ai-client.port.ts";
+import type { AiClientMessages } from "#lib/server/ai-client/ai-client.port.ts";
 
 // TODO: Rate limit
 export const POST: RequestHandler = async ({ request, locals, params }) => {

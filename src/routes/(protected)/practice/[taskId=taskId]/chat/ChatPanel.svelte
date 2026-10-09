@@ -1,16 +1,16 @@
 <script lang="ts">
-	import { showError } from "#lib/components/error/ErrorModal.svelte";
-	import { getFirstZodError, getGenericError } from "#lib/utils/error.ts";
+	import { openModal } from "#lib/components/modal/Modal.svelte";
+	import type { ChatMessage } from "#lib/schemas/chat-message.ts";
+	import { chatRequestSchema } from "#lib/schemas/chat-request.ts";
+	import type { Evaluation } from "#lib/schemas/evaluation.ts";
+	import type { TaskContext } from "#lib/schemas/task-context.ts";
+	import { getFirstZodError } from "#lib/utils/error.ts";
 	import { page } from "$app/state";
 	import { MessagesSquare, Send } from "@lucide/svelte";
 	import { EventSourceParserStream, type EventSourceMessage } from "eventsource-parser/stream";
 	import { marked } from "marked";
 	import { ZodError } from "zod";
 	import { buildChatRequestFormData } from "./utils";
-	import type { TaskContext } from "#lib/schemas/task-context.ts";
-	import type { Evaluation } from "#lib/schemas/evaluation.ts";
-	import type { ChatMessage } from "#lib/schemas/chat-message.ts";
-	import { chatRequestSchema } from "#lib/schemas/chat-request.ts";
 
 	type Props = {
 		taskContext: TaskContext;
@@ -103,9 +103,14 @@
 			}
 		} catch (e) {
 			if (e instanceof ZodError) {
-				showError(getFirstZodError(e));
+				const error = getFirstZodError(e);
+				openModal({ title: error.title, content: error.message, primaryButton: { text: "Close" } });
 			} else {
-				showError(getGenericError(e, "Unable to chat"));
+				openModal({
+					title: "Unable to chat",
+					content: String(e),
+					primaryButton: { text: "Close" }
+				});
 			}
 		} finally {
 			isExecuting = false;

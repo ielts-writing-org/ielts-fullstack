@@ -13,16 +13,21 @@
 	logs: false;
 }
 
+@theme {
+	--animate-watermark: watermark 30s linear infinite;
+
+	@keyframes watermark {
+		from {
+			mask-position: 0 0;
+		}
+		to {
+			mask-position: -500px 300px;
+		}
+	}
+}
+
 * {
 	@apply scrollbar-thin;
-}
-
-.harper-editor button:not(:disabled) {
-	cursor: pointer;
-}
-
-.harper-editor button:disabled {
-	cursor: default;
 }
 
 .harper-editor button:focus-visible,
@@ -33,7 +38,6 @@
 .harper-editor-quill-container {
 	display: flex;
 	flex: 1;
-	width: 100%;
 	min-height: 100%;
 }
 
@@ -45,16 +49,10 @@
 .harper-editor-surface,
 .harper-editor-surface.ql-editor {
 	position: relative;
-	padding: 0;
-	border: 0;
-	outline: 0;
-	background: transparent;
-	color: inherit;
 	font-family: var(--harper-editor-font-family);
 	font-size: var(--harper-editor-font-size);
-	line-height: 1.5;
-	letter-spacing: 0;
 	white-space: pre-wrap;
+	overflow-wrap: anywhere;
 }
 
 .harper-editor-surface:focus,
@@ -67,18 +65,7 @@
 	top: 0;
 	right: 0;
 	left: 0;
-	color: var(--color-stone-500);
+	color: color-mix(in srgb, var(--color-base-content) 50%, transparent);
 	content: attr(data-placeholder);
 	pointer-events: none;
-}
-
-.harper-editor-surface p,
-.harper-editor-surface.ql-editor p {
-	margin: 0;
-	line-height: inherit;
-}
-
-.harper-editor-surface p:last-child,
-.harper-editor-surface.ql-editor p:last-child {
-	margin-bottom: 0;
 }
