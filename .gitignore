@@ -59,3 +59,5 @@ worker-configuration.d.ts
 
 # Localflare generated files
 .localflare/
+
+out/
