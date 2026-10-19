@@ -6,41 +6,66 @@
 	import AppLogo from "#lib/components/AppLogo.svelte";
 	import GitHub from "#lib/components/icons/GitHub.svelte";
 	import { openModal } from "#lib/components/Modal.svelte";
-	import { signInSocial } from "./sign-in.remote.js";
+	import { authClient } from "#lib/auth/auth-client.js";
 
 	const { data } = $props();
 
-	$effect(() => {
-		(async () => {
-			const result = signInSocial.result;
-			if (result && !result.success) {
-				untrack(() => {
-					openModal({
-						content: result.message,
-						primaryButton: "Close",
-						title: "Unable to Sign in"
-					});
-				});
-			}
+	let signingIn = $state<boolean>(false);
 
-			const allIssues = signInSocial.fields.allIssues();
-			if (allIssues && allIssues.length) {
-				untrack(() => {
-					openModal({
-						content: `Failed to validate field "${allIssues[0].path}": ${allIssues[0].message}`,
-						primaryButton: "Close",
-						title: "Data validation failed"
-					});
+	async function handleSignInSocial(provider: "github") {
+		const result = await authClient.signIn.social({
+			provider: provider,
+			callbackURL: page.url.origin
+		});
+
+		if (result.error) {
+			untrack(() => {
+				openModal({
+					title: {
+						text: `Unable to Sign in`,
+						color: "error"
+					},
+					content: {
+						snippet: signInErrorSnippet,
+						args: {
+							errorMessage: result.error.message ?? "Unknown Error",
+							errorCode: result.error.code ?? "UNKNOWN_CODE",
+							statusCode: result.error.status,
+							status: result.error.statusText
+						}
+					},
+					primaryButton: "Close"
 				});
-			}
-		})();
-	});
+			});
+		}
+	}
 </script>
 
 <svelte:head>
 	<title>Sign in | IELTS Writing Practice Platform</title>
 	<meta name="description" content="IELTS Writing Practice Platform Sign In" />
 </svelte:head>
+
+{#snippet signInErrorSnippet(props: {
+	errorMessage: string;
+	errorCode: string;
+	status: string;
+	statusCode: number;
+})}
+	<div>
+		<p>
+			There was an error while signing you in:
+			<span class="font-semibold text-error">{props.errorMessage}</span>
+		</p>
+		<p class="mt-4">
+			<span class="font-semibold">Error Code:</span>
+			{props.errorCode}
+			<br />
+			<span class="font-semibold">Status:</span>
+			{props.statusCode} - {props.status}
+		</p>
+	</div>
+{/snippet}
 
 <main
 	class="relative flex w-full items-center justify-center p-6 [--glass-blur:4px] lg:h-full lg:p-16"
@@ -109,16 +134,15 @@
 				</div>
 			</div>
 
-			<form class="flex w-full flex-col items-center gap-4" {...signInSocial}>
-				<input {...signInSocial.fields.callbackURL.as("hidden", page.url.origin)} />
+			<div class="flex w-full flex-col items-center gap-4">
 				<button
 					class="btn btn-wide btn-outline btn-neutral hover:shadow-md"
-					disabled={signInSocial.pending > 0}
-					{...signInSocial.fields.provider.as("submit", "github")}>
+					disabled={signingIn}
+					onclick={() => handleSignInSocial("github")}>
 					<GitHub class="h-5 w-5" />
 					Continue with GitHub
 				</button>
-			</form>
+			</div>
 
 			<p class="text-center text-xs text-neutral/60">
 				By signing in, you agree to our
