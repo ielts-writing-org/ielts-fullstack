@@ -64,7 +64,7 @@
 	function handleChangerTarget() {
 		openModal({
 			title: "Change target band",
-			content: "Set your target band:",
+			content: { snippet: targetInputSnippet },
 			primaryButton: {
 				color: "primary",
 				text: "Save",
@@ -78,8 +78,7 @@
 				style: "ghost",
 				text: "Cancel",
 				action: () => (target = profile.target)
-			},
-			children: targetInputSnippet
+			}
 		});
 	}
 
@@ -106,9 +105,8 @@
 	function handleChangeTheme() {
 		openModal({
 			title: "Change theme",
-			content: "Select an available theme below:",
-			primaryButton: { text: "Close" },
-			children: themeSnippet
+			content: { snippet: themeSnippet },
+			primaryButton: "Close"
 		});
 	}
 </script>
@@ -194,6 +192,7 @@
 </div>
 
 {#snippet targetInputSnippet()}
+	<p class="mb-4">Set your target band:</p>
 	<div class="w-full">
 		<input
 			class="range w-full range-primary range-sm"
@@ -217,5 +216,6 @@
 {/snippet}
 
 {#snippet themeSnippet()}
+	<p class="mb-4">Select an available theme below:</p>
 	<ThemeController />
 {/snippet}

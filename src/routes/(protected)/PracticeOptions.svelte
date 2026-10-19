@@ -21,21 +21,23 @@
 
 	const handleCreateCustomTaskPractice = (taskType: TaskCategory) => {
 		openModal({
-			children: practiceOptionsSnippet,
-			childrenProps: {
-				options: [
-					{
-						icon: AlarmClock,
-						time: taskType === "1" ? 20 : 40,
-						value: "timed"
-					},
-					{
-						icon: AlarmClockOff,
-						value: "free"
-					}
-				]
+			title: "Start a custom task practice",
+			content: {
+				snippet: practiceOptionsSnippet,
+				args: {
+					options: [
+						{
+							icon: AlarmClock,
+							time: taskType === "1" ? 20 : 40,
+							value: "timed"
+						},
+						{
+							icon: AlarmClockOff,
+							value: "free"
+						}
+					]
+				}
 			},
-			content: "Choose your preferred practice style:",
 			primaryButton: {
 				action: async () => {
 					const result = await createPractice({ taskCategory: taskType });
@@ -50,8 +52,7 @@
 				color: "error",
 				style: "ghost",
 				text: "Cancel"
-			},
-			title: "Start a custom task practice"
+			}
 		});
 	};
 </script>
@@ -94,6 +95,7 @@
 		icon: Component;
 	} & ({ time: number; value: "timed" } | { value: "free" }))[];
 })}
+	<p class="mb-4">Choose your preferred practice style:</p>
 	<div class="flex max-h-48 justify-center gap-4">
 		{#each props.options as option, i (option.value)}
 			<label

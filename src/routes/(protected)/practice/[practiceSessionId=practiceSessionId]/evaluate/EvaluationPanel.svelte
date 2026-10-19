@@ -120,11 +120,11 @@
 		} catch (e) {
 			if (e instanceof ZodError) {
 				const error = getFirstZodError(e);
-				openModal({ content: error.message, primaryButton: { text: "Close" }, title: error.title });
+				openModal({ content: error.message, primaryButton: "Close", title: error.title });
 			} else {
 				openModal({
 					content: String(e),
-					primaryButton: { text: "Close" },
+					primaryButton: "Close",
 					title: "Unable to evaluate"
 				});
 			}
