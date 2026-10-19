@@ -7,8 +7,8 @@ if (!process.env.CLOUDFLARE_D1_URL) {
 }
 
 export default defineConfig({
-	schema: "./src/lib/server/db/schema/index.ts",
 	dialect: "sqlite",
+	schema: "./src/lib/server/db/*.schema.ts",
 	strict: true,
 	...(process.env.CLOUDFLARE_D1_URL
 		? {

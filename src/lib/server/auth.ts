@@ -12,6 +12,10 @@ import { betterAuth } from "better-auth/minimal";
 import { admin } from "better-auth/plugins";
 import { sveltekitCookies } from "better-auth/svelte-kit";
 import { getDb } from "./db";
+import { error, redirect } from "@sveltejs/kit";
+import { resolve } from "$app/paths";
+import { env } from "cloudflare:workers";
+import { profile } from "./db/app.schema";
 
 export const createAuth = (d1: D1Database) => {
 	return betterAuth({
@@ -36,6 +40,16 @@ export const createAuth = (d1: D1Database) => {
 				}
 			}
 		},
+		databaseHooks: {
+			user: {
+				create: {
+					after: async (user) => {
+						const db = getDb(env.IELTS_WRITING_DB);
+						await db.insert(profile).values({ userId: user.id });
+					}
+				}
+			}
+		},
 		database: drizzleAdapter(getDb(d1), { provider: "sqlite" })
 	});
 };
@@ -47,3 +61,23 @@ export const createAuth = (d1: D1Database) => {
  * To access `auth` at runtime, use `event.locals.auth`.
  */
 export const auth = createAuth(null!);
+
+export function requireSession(locals: App.Locals) {
+	const { session, user } = locals;
+
+	if (!session || !user || !profile) {
+		redirect(307, resolve("/(public)/sign-in"));
+	}
+
+	return { session, user };
+}
+
+export function requireSessionApi(locals: App.Locals) {
+	const { session, user, profile } = locals;
+
+	if (!session || !user || !profile) {
+		error(401, "Unauthorized");
+	}
+
+	return { session, user, profile };
+}

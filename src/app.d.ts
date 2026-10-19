@@ -1,29 +1,19 @@
-import type { AiClient } from "#lib/server/ai-client/ai-client.port.ts";
-import type { ConfigProvider } from "#lib/server/config-provider/config-provider.port.ts";
-import type { ImagesClient } from "#lib/server/image-client/images-client.port.ts";
 import { auth, createAuth } from "#lib/server/auth.ts";
+import type { Profile } from "#lib/server/db/app.schema.ts";
 
 // See https://svelte.dev/docs/kit/types#app.d.ts
 // for information about these interfaces
 declare global {
 	namespace App {
-		// TODO: This does not work in SvelteKit 3
-		// interface Platform {
-		// 	env: Env;
-		// 	ctx: ExecutionContext;
-		// 	caches: CacheStorage;
-		// 	cf?: IncomingRequestCfProperties;
-		// }
-
 		interface Locals {
-			theme?: string;
-			session?: typeof auth.$Infer.Session;
 			auth: ReturnType<typeof createAuth>;
-			configProvider: ConfigProvider;
-			aiClient: AiClient;
-			imagesClient: ImagesClient;
+			session?: typeof auth.$Infer.Session.session;
+			user?: typeof auth.$Infer.Session.user;
+			profile?: Profile;
+			theme?: string;
 		}
 
+		// interface Platform {}
 		// interface Error {}
 		// interface PageData {}
 		// interface PageState {}

@@ -4,7 +4,7 @@ import { resolve } from "$app/paths";
 
 export const load = (async (event) => {
 	if (!event.locals.session) {
-		redirect(307, resolve("/(public)/signIn"));
+		redirect(307, resolve("/(public)/sign-in"));
 	}
 	return {};
 }) satisfies LayoutServerLoad;

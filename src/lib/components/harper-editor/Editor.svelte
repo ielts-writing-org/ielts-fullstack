@@ -22,15 +22,17 @@
 		defaultFontFamily?: EditorFontFamily;
 		defaultFontSize?: EditorFontSize;
 		onChange?: (text: string) => void;
+		isEditable?: boolean;
 	}
 
 	let {
 		content = "",
 		linters,
 		onReady = () => null,
-		defaultFontFamily = "sans",
+		defaultFontFamily = "serif",
 		defaultFontSize = "default",
-		onChange = () => {}
+		onChange = () => {},
+		isEditable = true
 	}: Props = $props();
 
 	let editor = $state<HTMLDivElement>();
@@ -85,9 +87,6 @@
 						return Object.fromEntries(entries);
 					})
 				);
-
-				// TODO: Confirm if remove this work
-				// scheduleLintBoxSync();
 
 				// TODO: Support more linters
 				return merge(groupedByLinters[0], groupedByLinters[1]);
@@ -240,6 +239,14 @@
 		lfw.update();
 		scheduleLintBoxSync();
 	}
+
+	$effect(() => {
+		if (isEditable) {
+			quill?.enable();
+		} else {
+			quill?.disable();
+		}
+	});
 
 	let fontStack = $derived(fontStackFor(fontFamily));
 	let editorStyle = $derived(

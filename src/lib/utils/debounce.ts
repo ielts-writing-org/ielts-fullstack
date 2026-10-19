@@ -1,4 +1,4 @@
-export function debounce<T extends (...args: Parameters<T>[]) => ReturnType<T>>(
+export function debounce<T extends (...args: Parameters<T>) => ReturnType<T>>(
 	fn: T,
 	delay: number
 ): T & { cancel: () => void } {

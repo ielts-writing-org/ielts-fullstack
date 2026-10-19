@@ -20,7 +20,7 @@
 </script>
 
 <svelte:head>
-	<title>Page Not Found | IELTS Writing Practice Platform</title>
+	<title>{getErrorDetail(page.status).message} | IELTS Writing Practice Platform</title>
 	<meta name="robots" content="noindex" />
 </svelte:head>
 

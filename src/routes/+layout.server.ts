@@ -1,8 +1,11 @@
 import type { LayoutServerLoad } from "./$types";
 
 export const load = (async (event) => {
+	event.depends("data:profile");
+
 	return {
-		theme: event.locals.theme,
-		session: event.locals.session
+		session: event.locals.session,
+		user: event.locals.user,
+		profile: event.locals.profile
 	};
 }) satisfies LayoutServerLoad;

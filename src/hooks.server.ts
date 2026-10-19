@@ -1,29 +1,42 @@
 import { building } from "$app/env";
-import { createAuth } from "#lib/server/auth.ts";
-import { sequence, type Handle } from "@sveltejs/kit/hooks";
+import { type Handle, sequence } from "@sveltejs/kit/hooks";
 import { svelteKitHandler } from "better-auth/svelte-kit";
 import { env } from "cloudflare:workers";
-import { CloudflareAiClient } from "#lib/server/ai-client/ai-client.cloudflare.ts";
-import { CloudflareConfigProvider } from "#lib/server/config-provider/config-provider.cloudflare.ts";
-import { CloudflareImagesClient } from "#lib/server/image-client/images-client.cloudflare.ts";
+import { createAuth } from "#lib/server/auth.ts";
+import { getDb } from "./lib/server/db";
 
 const handleBetterAuth: Handle = async ({ event, resolve }) => {
-	// TODO: Cache/Singleton
-	event.locals.auth = createAuth(env.IELTS_WRITING_DB);
-
-	const { auth } = event.locals;
+	const auth = createAuth(env.IELTS_WRITING_DB);
 	const session = await auth.api.getSession({ headers: event.request.headers });
-
 	if (session) {
-		event.locals.session = session;
+		event.locals.session = session.session;
+		event.locals.user = session.user;
 	}
 
-	return svelteKitHandler({ event, resolve, auth, building });
+	event.locals.auth = auth;
+
+	return svelteKitHandler({ auth, building, event, resolve });
 };
 
-const themeHandle: Handle = async ({ event, resolve }) => {
-	const theme = event.cookies.get("theme") ?? "light";
+const handleProfile: Handle = async ({ event, resolve }) => {
+	const user = event.locals.user;
+	if (user) {
+		const db = getDb(env.IELTS_WRITING_DB);
+		const userProfile = await db.query.profile.findFirst({
+			where: (profiles, { eq }) => eq(profiles.userId, user.id)
+		});
 
+		if (userProfile) {
+			event.locals.profile = userProfile;
+		}
+	}
+
+	return resolve(event);
+};
+
+// TODO: The current implementation doesn't work with refreshAll()
+const handleTheme: Handle = async ({ event, resolve }) => {
+	const theme = event.cookies.get("theme") ?? "light";
 	event.locals.theme = theme;
 
 	return await resolve(event, {
@@ -31,12 +44,4 @@ const themeHandle: Handle = async ({ event, resolve }) => {
 	});
 };
 
-const dependencyInjection: Handle = async ({ event, resolve }) => {
-	// TODO: Cache/Singleton
-	event.locals.configProvider = new CloudflareConfigProvider(env.IELTS_WRITING_KV);
-	event.locals.aiClient = new CloudflareAiClient(env.IELTS_WRITING_AI, event.locals.configProvider);
-	event.locals.imagesClient = new CloudflareImagesClient(env.IELTS_WRITING_IMAGES);
-	return await resolve(event);
-};
-
-export const handle = sequence(handleBetterAuth, themeHandle, dependencyInjection);
+export const handle = sequence(handleBetterAuth, handleProfile, handleTheme);
