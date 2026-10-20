@@ -63,9 +63,9 @@ export const createAuth = (d1: D1Database) => {
 export const auth = createAuth(null!);
 
 export function requireSession(locals: App.Locals) {
-	const { session, user } = locals;
+	const { session, user, profile } = locals;
 
-	if (!session || !user || !profiles) {
+	if (!session || !user || !profile) {
 		redirect(307, resolve("/(public)/sign-in"));
 	}
 
