@@ -1,12 +1,12 @@
 import { sql } from "drizzle-orm";
 import { integer, text, type SQLiteTableFn } from "drizzle-orm/sqlite-core";
-import { randomUUIDv7 } from "node:crypto";
+import { uuidv7 } from "uuidv7";
 
 export const now = sql`(cast(unixepoch('subsecond') * 1000 as integer))`;
 
 export function withBaseColumns<T extends ReturnType<Parameters<SQLiteTableFn>[1]>>(columns: T) {
 	return {
-		id: text("id").primaryKey().$defaultFn(randomUUIDv7),
+		id: text("id").primaryKey().$defaultFn(uuidv7),
 		...columns,
 		createdAt: integer("created_at", { mode: "timestamp_ms" }).notNull().default(now),
 		updatedAt: integer("updated_at", { mode: "timestamp_ms" })

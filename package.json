@@ -6,7 +6,7 @@
 	"scripts": {
 		"dev": "vite dev",
 		"build": "wrangler types --check && vite build",
-		"preview": "wrangler dev .svelte-kit/cloudflare/_worker.js --port 4173",
+		"preview": "wrangler dev .svelte-kit/cloudflare/_worker.js --port 5173",
 		"prepare": "svelte-kit sync || echo ''",
 		"check": "wrangler types --check && svelte-kit sync && svelte-check --tsconfig ./tsconfig.json",
 		"check:watch": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json --watch",
@@ -34,6 +34,7 @@
 		"marked": "^18.1.1",
 		"quill": "^2.0.3",
 		"sanitize-html": "^2.18.1",
+		"uuidv7": "^1.2.1",
 		"virtual-dom": "^2.1.1",
 		"zod": "^4.6.7"
 	},
