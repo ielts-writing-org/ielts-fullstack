@@ -22,7 +22,7 @@ const handleProfile: Handle = async ({ event, resolve }) => {
 	const user = event.locals.user;
 	if (user) {
 		const db = getDb(env.IELTS_WRITING_DB);
-		const userProfile = await db.query.profile.findFirst({
+		const userProfile = await db.query.profiles.findFirst({
 			where: (profiles, { eq }) => eq(profiles.userId, user.id)
 		});
 

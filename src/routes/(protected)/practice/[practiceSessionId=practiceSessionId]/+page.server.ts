@@ -15,7 +15,7 @@ export const load = (async ({ locals, params }) => {
 	const { user } = requireSession(locals);
 
 	const db = getDb(env.IELTS_WRITING_DB);
-	const practiceSession = await db.query.practiceSession.findFirst({
+	const practiceSession = await db.query.practiceSessions.findFirst({
 		where: (practices, { eq }) => eq(practices.id, practiceSessionId),
 		with: { task: true }
 	});

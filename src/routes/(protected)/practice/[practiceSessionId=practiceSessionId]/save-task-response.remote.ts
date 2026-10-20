@@ -5,7 +5,7 @@ import { and, eq } from "drizzle-orm";
 import { z } from "zod";
 
 import { requireSessionApi } from "#lib/server/auth.ts";
-import { practiceSession } from "#lib/server/db/app.schema.ts";
+import { practiceSessions } from "#lib/server/db/app.schema.ts";
 import { getDb } from "#lib/server/db/index.ts";
 
 export const saveTaskResponse = command(
@@ -19,9 +19,9 @@ export const saveTaskResponse = command(
 
 		const db = getDb(env.IELTS_WRITING_DB);
 		const result = await db
-			.update(practiceSession)
+			.update(practiceSessions)
 			.set({ response })
-			.where(and(eq(practiceSession.id, practiceSessionId), eq(practiceSession.userId, user.id)));
+			.where(and(eq(practiceSessions.id, practiceSessionId), eq(practiceSessions.userId, user.id)));
 
 		if (!result.meta.changes) {
 			error(404, "Practice Session does not exist");

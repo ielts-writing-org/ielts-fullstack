@@ -4,7 +4,7 @@ import { env } from "cloudflare:workers";
 import { z } from "zod";
 import { taskCategorySchema } from "#lib/schemas/task-category.ts";
 import { requireSessionApi } from "#lib/server/auth.ts";
-import { practiceSession, task } from "#lib/server/db/app.schema.ts";
+import { practiceSessions, tasks } from "#lib/server/db/app.schema.ts";
 import { getDb } from "#lib/server/db/index.ts";
 
 export const createPractice = command(
@@ -15,25 +15,24 @@ export const createPractice = command(
 	}),
 	async ({ taskCategory, taskId, practiceSessionType: practiceType }) => {
 		const { locals } = getRequestEvent();
-
 		const { user } = requireSessionApi(locals);
 
 		const db = getDb(env.IELTS_WRITING_DB);
 		if (!taskId) {
 			const [createdTask] = await db
-				.insert(task)
+				.insert(tasks)
 				.values({
 					category: taskCategory,
 					prompt: "",
 					userId: user.id
 				})
-				.returning({ id: task.id });
+				.returning({ id: tasks.id });
 
 			taskId = createdTask.id;
 		}
 
 		const [createdPracticeSession] = await db
-			.insert(practiceSession)
+			.insert(practiceSessions)
 			.values({
 				name: "Draft",
 				response: "",
@@ -41,7 +40,7 @@ export const createPractice = command(
 				type: practiceType,
 				userId: user.id
 			})
-			.returning({ id: practiceSession.id });
+			.returning({ id: practiceSessions.id });
 
 		return {
 			location: resolve("/(protected)/practice/[practiceSessionId=practiceSessionId]", {

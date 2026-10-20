@@ -1,110 +1,110 @@
 import { relations, sql } from "drizzle-orm";
-import { index, integer, sqliteTable, text } from "drizzle-orm/sqlite-core";
+import { sqliteTable, text, integer, index } from "drizzle-orm/sqlite-core";
 
-export const user = sqliteTable("user", {
-	banExpires: integer("ban_expires", { mode: "timestamp_ms" }),
-	banned: integer("banned", { mode: "boolean" }).default(false),
-	banReason: text("ban_reason"),
+export const users = sqliteTable("users", {
+	id: text("id").primaryKey(),
+	name: text("name").notNull(),
+	email: text("email").notNull().unique(),
+	emailVerified: integer("email_verified", { mode: "boolean" }).default(false).notNull(),
+	image: text("image"),
 	createdAt: integer("created_at", { mode: "timestamp_ms" })
 		.default(sql`(cast(unixepoch('subsecond') * 1000 as integer))`)
 		.notNull(),
-	email: text("email").notNull().unique(),
-	emailVerified: integer("email_verified", { mode: "boolean" }).default(false).notNull(),
-	id: text("id").primaryKey(),
-	image: text("image"),
-	name: text("name").notNull(),
-	role: text("role"),
 	updatedAt: integer("updated_at", { mode: "timestamp_ms" })
 		.default(sql`(cast(unixepoch('subsecond') * 1000 as integer))`)
 		.$onUpdate(() => /* @__PURE__ */ new Date())
-		.notNull()
+		.notNull(),
+	role: text("role"),
+	banned: integer("banned", { mode: "boolean" }).default(false),
+	banReason: text("ban_reason"),
+	banExpires: integer("ban_expires", { mode: "timestamp_ms" })
 });
 
-export const session = sqliteTable(
-	"session",
+export const sessions = sqliteTable(
+	"sessions",
 	{
+		id: text("id").primaryKey(),
+		expiresAt: integer("expires_at", { mode: "timestamp_ms" }).notNull(),
+		token: text("token").notNull().unique(),
 		createdAt: integer("created_at", { mode: "timestamp_ms" })
 			.default(sql`(cast(unixepoch('subsecond') * 1000 as integer))`)
 			.notNull(),
-		expiresAt: integer("expires_at", { mode: "timestamp_ms" }).notNull(),
-		id: text("id").primaryKey(),
-		impersonatedBy: text("impersonated_by"),
-		ipAddress: text("ip_address"),
-		token: text("token").notNull().unique(),
 		updatedAt: integer("updated_at", { mode: "timestamp_ms" })
 			.$onUpdate(() => /* @__PURE__ */ new Date())
 			.notNull(),
+		ipAddress: text("ip_address"),
 		userAgent: text("user_agent"),
 		userId: text("user_id")
 			.notNull()
-			.references(() => user.id, { onDelete: "cascade" })
+			.references(() => users.id, { onDelete: "cascade" }),
+		impersonatedBy: text("impersonated_by")
 	},
-	(table) => [index("session_userId_idx").on(table.userId)]
+	(table) => [index("sessions_userId_idx").on(table.userId)]
 );
 
-export const account = sqliteTable(
-	"account",
+export const accounts = sqliteTable(
+	"accounts",
 	{
+		id: text("id").primaryKey(),
+		accountId: text("account_id").notNull(),
+		providerId: text("provider_id").notNull(),
+		userId: text("user_id")
+			.notNull()
+			.references(() => users.id, { onDelete: "cascade" }),
 		accessToken: text("access_token"),
+		refreshToken: text("refresh_token"),
+		idToken: text("id_token"),
 		accessTokenExpiresAt: integer("access_token_expires_at", {
 			mode: "timestamp_ms"
 		}),
-		accountId: text("account_id").notNull(),
-		createdAt: integer("created_at", { mode: "timestamp_ms" })
-			.default(sql`(cast(unixepoch('subsecond') * 1000 as integer))`)
-			.notNull(),
-		id: text("id").primaryKey(),
-		idToken: text("id_token"),
-		password: text("password"),
-		providerId: text("provider_id").notNull(),
-		refreshToken: text("refresh_token"),
 		refreshTokenExpiresAt: integer("refresh_token_expires_at", {
 			mode: "timestamp_ms"
 		}),
 		scope: text("scope"),
-		updatedAt: integer("updated_at", { mode: "timestamp_ms" })
-			.$onUpdate(() => /* @__PURE__ */ new Date())
-			.notNull(),
-		userId: text("user_id")
-			.notNull()
-			.references(() => user.id, { onDelete: "cascade" })
-	},
-	(table) => [index("account_userId_idx").on(table.userId)]
-);
-
-export const verification = sqliteTable(
-	"verification",
-	{
+		password: text("password"),
 		createdAt: integer("created_at", { mode: "timestamp_ms" })
 			.default(sql`(cast(unixepoch('subsecond') * 1000 as integer))`)
 			.notNull(),
-		expiresAt: integer("expires_at", { mode: "timestamp_ms" }).notNull(),
+		updatedAt: integer("updated_at", { mode: "timestamp_ms" })
+			.$onUpdate(() => /* @__PURE__ */ new Date())
+			.notNull()
+	},
+	(table) => [index("accounts_userId_idx").on(table.userId)]
+);
+
+export const verifications = sqliteTable(
+	"verifications",
+	{
 		id: text("id").primaryKey(),
 		identifier: text("identifier").notNull(),
+		value: text("value").notNull(),
+		expiresAt: integer("expires_at", { mode: "timestamp_ms" }).notNull(),
+		createdAt: integer("created_at", { mode: "timestamp_ms" })
+			.default(sql`(cast(unixepoch('subsecond') * 1000 as integer))`)
+			.notNull(),
 		updatedAt: integer("updated_at", { mode: "timestamp_ms" })
 			.default(sql`(cast(unixepoch('subsecond') * 1000 as integer))`)
 			.$onUpdate(() => /* @__PURE__ */ new Date())
-			.notNull(),
-		value: text("value").notNull()
+			.notNull()
 	},
-	(table) => [index("verification_identifier_idx").on(table.identifier)]
+	(table) => [index("verifications_identifier_idx").on(table.identifier)]
 );
 
-export const userRelations = relations(user, ({ many }) => ({
-	accounts: many(account),
-	sessions: many(session)
+export const usersRelations = relations(users, ({ many }) => ({
+	sessions: many(sessions),
+	accounts: many(accounts)
 }));
 
-export const sessionRelations = relations(session, ({ one }) => ({
-	user: one(user, {
-		fields: [session.userId],
-		references: [user.id]
+export const sessionsRelations = relations(sessions, ({ one }) => ({
+	user: one(users, {
+		fields: [sessions.userId],
+		references: [users.id]
 	})
 }));
 
-export const accountRelations = relations(account, ({ one }) => ({
-	user: one(user, {
-		fields: [account.userId],
-		references: [user.id]
+export const accountsRelations = relations(accounts, ({ one }) => ({
+	user: one(users, {
+		fields: [accounts.userId],
+		references: [users.id]
 	})
 }));

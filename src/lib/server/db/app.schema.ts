@@ -1,6 +1,6 @@
 import { relations, sql } from "drizzle-orm";
 import { check, integer, real, sqliteTable, text } from "drizzle-orm/sqlite-core";
-import { user } from "./auth.schema";
+import { users } from "./auth.schema";
 import { now, withBaseColumns } from "./common";
 
 /******************************************************************************
@@ -8,19 +8,19 @@ import { now, withBaseColumns } from "./common";
  *                                  TABLES                                    *
  *                                                                            *
  *****************************************************************************/
-export const profile = sqliteTable("profile", {
+export const profiles = sqliteTable("profiles", {
 	...withBaseColumns(),
 
-	userId: text("user_id").references(() => user.id, { onDelete: "cascade" }),
+	userId: text("user_id").references(() => users.id, { onDelete: "cascade" }),
 
 	target: real("target").notNull().default(0),
 	theme: text("theme").notNull().default("light")
 });
 
-export const task = sqliteTable("task", {
+export const tasks = sqliteTable("tasks", {
 	...withBaseColumns(),
 
-	userId: text("user_id").references(() => user.id, { onDelete: "set null" }),
+	userId: text("user_id").references(() => users.id, { onDelete: "set null" }),
 
 	category: text("category", { enum: ["1", "2"] }).notNull(), // task 1, task 2
 	subcategory: text("subcategory").notNull().default("uncategorized"), // uncategorized, bar chart, pie chart, map, ...
@@ -28,14 +28,14 @@ export const task = sqliteTable("task", {
 	image: text("image")
 });
 
-export const practiceSession = sqliteTable("practice_session", {
+export const practiceSessions = sqliteTable("practice_sessions", {
 	...withBaseColumns(),
 	userId: text("user_id")
 		.notNull()
-		.references(() => user.id, { onDelete: "cascade" }),
+		.references(() => users.id, { onDelete: "cascade" }),
 	taskId: text("task_id")
 		.notNull()
-		.references(() => task.id, { onDelete: "restrict" }),
+		.references(() => tasks.id, { onDelete: "restrict" }),
 
 	name: text("name").notNull(),
 	type: text("type", { enum: ["free", "timed"] }).notNull(),
@@ -44,32 +44,32 @@ export const practiceSession = sqliteTable("practice_session", {
 	startedAt: integer("started_at", { mode: "timestamp_ms" }).notNull().default(now)
 });
 
-export const chatSession = sqliteTable("chat_session", {
+export const chatSessions = sqliteTable("chat_sessions", {
 	...withBaseColumns(),
 
 	practiceId: text("id")
 		.notNull()
-		.references(() => practiceSession.id, { onDelete: "cascade" })
+		.references(() => practiceSessions.id, { onDelete: "cascade" })
 });
 
-export const chatMessage = sqliteTable("chat_message", {
+export const chatMessages = sqliteTable("chat_messages", {
 	...withBaseColumns(),
 	chatSessionId: text("chat_session_id")
 		.notNull()
-		.references(() => chatSession.id, { onDelete: "cascade" }),
+		.references(() => chatSessions.id, { onDelete: "cascade" }),
 
 	from: text("from").notNull(),
 	message: text("message").notNull()
 });
 
-export const evaluation = sqliteTable(
-	"evaluation",
+export const evaluations = sqliteTable(
+	"evaluations",
 	{
 		...withBaseColumns(),
 
 		practiceId: text("id")
 			.notNull()
-			.references(() => practiceSession.id, { onDelete: "cascade" }),
+			.references(() => practiceSessions.id, { onDelete: "cascade" }),
 
 		overallBand: real("overall_band").notNull()
 	},
@@ -81,14 +81,14 @@ export const evaluation = sqliteTable(
 	]
 );
 
-export const criterion = sqliteTable(
-	"criterion",
+export const criteria = sqliteTable(
+	"criteria",
 	{
 		...withBaseColumns(),
 
 		evaluationId: text("evaluation_id")
 			.notNull()
-			.references(() => evaluation.id, { onDelete: "cascade" }),
+			.references(() => evaluations.id, { onDelete: "cascade" }),
 
 		name: text("name", {
 			enum: [
@@ -109,61 +109,61 @@ export const criterion = sqliteTable(
 	]
 );
 
-export type Profile = typeof profile.$inferSelect;
-export type Task = typeof task.$inferSelect;
-export type PracticeSession = typeof practiceSession.$inferSelect;
-export type ChatSession = typeof chatSession.$inferSelect;
-export type ChatMessage = typeof chatMessage.$inferSelect;
-export type Evaluation = typeof evaluation.$inferSelect;
-export type Criterion = typeof criterion.$inferSelect;
+export type ProfileEntity = typeof profiles.$inferSelect;
+export type TaskEntity = typeof tasks.$inferSelect;
+export type PracticeSessionEntity = typeof practiceSessions.$inferSelect;
+export type ChatSessionEntity = typeof chatSessions.$inferSelect;
+export type ChatMessageEntity = typeof chatMessages.$inferSelect;
+export type EvaluationEntity = typeof evaluations.$inferSelect;
+export type CriterionEntity = typeof criteria.$inferSelect;
 
 /******************************************************************************
  *                                                                            *
  *                                RELATIONS                                   *
  *                                                                            *
  *****************************************************************************/
-export const taskRelations = relations(task, ({ many, one }) => ({
-	practiceSessions: many(practiceSession),
-	user: one(user, {
-		fields: [task.userId],
-		references: [user.id]
+export const tasksRelations = relations(tasks, ({ many, one }) => ({
+	practiceSessions: many(practiceSessions),
+	user: one(users, {
+		fields: [tasks.userId],
+		references: [users.id]
 	})
 }));
 
-export const practiceSessionRelations = relations(practiceSession, ({ one, many }) => ({
-	task: one(task, {
-		fields: [practiceSession.taskId],
-		references: [task.id]
+export const practiceSessionsRelations = relations(practiceSessions, ({ one, many }) => ({
+	task: one(tasks, {
+		fields: [practiceSessions.taskId],
+		references: [tasks.id]
 	}),
-	chatSessions: many(chatSession),
-	evaluation: one(evaluation)
+	chatSessions: many(chatSessions),
+	evaluation: one(evaluations)
 }));
 
-export const chatSessionRelations = relations(chatSession, ({ one }) => ({
-	practiceSession: one(practiceSession, {
-		fields: [chatSession.practiceId],
-		references: [practiceSession.id]
+export const chatSessionsRelations = relations(chatSessions, ({ one }) => ({
+	practiceSession: one(practiceSessions, {
+		fields: [chatSessions.practiceId],
+		references: [practiceSessions.id]
 	})
 }));
 
-export const chatMessageRelations = relations(chatMessage, ({ one }) => ({
-	chatSession: one(chatSession, {
-		fields: [chatMessage.chatSessionId],
-		references: [chatSession.id]
+export const chatMessagesRelations = relations(chatMessages, ({ one }) => ({
+	chatSession: one(chatSessions, {
+		fields: [chatMessages.chatSessionId],
+		references: [chatSessions.id]
 	})
 }));
 
-export const evaluationRelations = relations(evaluation, ({ many, one }) => ({
-	practiceSession: one(practiceSession, {
-		fields: [evaluation.practiceId],
-		references: [practiceSession.id]
+export const evaluationsRelations = relations(evaluations, ({ many, one }) => ({
+	practiceSession: one(practiceSessions, {
+		fields: [evaluations.practiceId],
+		references: [practiceSessions.id]
 	}),
-	criteria: many(criterion)
+	criteria: many(criteria)
 }));
 
-export const criterionRelations = relations(criterion, ({ one }) => ({
-	evaluation: one(evaluation, {
-		fields: [criterion.evaluationId],
-		references: [evaluation.id]
+export const criterionsRelations = relations(criteria, ({ one }) => ({
+	evaluation: one(evaluations, {
+		fields: [criteria.evaluationId],
+		references: [evaluations.id]
 	})
 }));

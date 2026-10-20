@@ -1,5 +1,5 @@
 import { requireSessionApi } from "#lib/server/auth.ts";
-import { practiceSession } from "#lib/server/db/app.schema.ts";
+import { practiceSessions } from "#lib/server/db/app.schema.ts";
 import { getDb } from "#lib/server/db/index.ts";
 import { command, getRequestEvent } from "$app/server";
 import { error } from "@sveltejs/kit";
@@ -18,9 +18,9 @@ export const setTimedUpAction = command(
 
 		const db = getDb(env.IELTS_WRITING_DB);
 		const result = await db
-			.update(practiceSession)
+			.update(practiceSessions)
 			.set({ timeUpAction: timedUpAction })
-			.where(and(eq(practiceSession.userId, user.id), eq(practiceSession.id, practiceSessionId)));
+			.where(and(eq(practiceSessions.userId, user.id), eq(practiceSessions.id, practiceSessionId)));
 
 		if (result.meta.changes === 0) {
 			error(404, "Practice does not exist");

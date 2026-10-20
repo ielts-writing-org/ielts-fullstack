@@ -5,7 +5,7 @@ import { and, eq } from "drizzle-orm";
 import { z } from "zod";
 
 import { requireSessionApi } from "#lib/server/auth.ts";
-import { practiceSession, task } from "#lib/server/db/app.schema.ts";
+import { practiceSessions, tasks } from "#lib/server/db/app.schema.ts";
 import { getDb } from "#lib/server/db/index.ts";
 
 export const saveTaskPrompt = command(
@@ -21,10 +21,10 @@ export const saveTaskPrompt = command(
 
 		const db = getDb(env.IELTS_WRITING_DB);
 		const result = await db
-			.update(task)
+			.update(tasks)
 			.set({ prompt })
-			.from(practiceSession)
-			.where(and(eq(practiceSession.id, practiceSessionId), eq(task.userId, user.id)));
+			.from(practiceSessions)
+			.where(and(eq(practiceSessions.id, practiceSessionId), eq(tasks.userId, user.id)));
 
 		if (!result.meta.changes) {
 			error(404, "Task does not exist");

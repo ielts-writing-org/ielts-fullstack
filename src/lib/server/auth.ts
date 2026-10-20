@@ -15,7 +15,7 @@ import { getDb } from "./db";
 import { error, redirect } from "@sveltejs/kit";
 import { resolve } from "$app/paths";
 import { env } from "cloudflare:workers";
-import { profile } from "./db/app.schema";
+import { profiles } from "./db/app.schema";
 
 export const createAuth = (d1: D1Database) => {
 	return betterAuth({
@@ -45,12 +45,12 @@ export const createAuth = (d1: D1Database) => {
 				create: {
 					after: async (user) => {
 						const db = getDb(env.IELTS_WRITING_DB);
-						await db.insert(profile).values({ userId: user.id });
+						await db.insert(profiles).values({ userId: user.id });
 					}
 				}
 			}
 		},
-		database: drizzleAdapter(getDb(d1), { provider: "sqlite" })
+		database: drizzleAdapter(getDb(d1), { provider: "sqlite", usePlural: true })
 	});
 };
 
@@ -65,7 +65,7 @@ export const auth = createAuth(null!);
 export function requireSession(locals: App.Locals) {
 	const { session, user } = locals;
 
-	if (!session || !user || !profile) {
+	if (!session || !user || !profiles) {
 		redirect(307, resolve("/(public)/sign-in"));
 	}
 
