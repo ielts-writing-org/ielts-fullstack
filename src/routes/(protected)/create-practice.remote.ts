@@ -10,9 +10,10 @@ import { getDb } from "#lib/server/db/index.ts";
 export const createPractice = command(
 	z.object({
 		taskCategory: taskCategorySchema,
-		taskId: z.uuidv7().optional()
+		taskId: z.uuidv7().optional(),
+		practiceSessionType: z.enum(["timed", "free"])
 	}),
-	async ({ taskCategory, taskId }) => {
+	async ({ taskCategory, taskId, practiceSessionType: practiceType }) => {
 		const { locals } = getRequestEvent();
 
 		const { user } = requireSessionApi(locals);
@@ -37,7 +38,7 @@ export const createPractice = command(
 				name: "Draft",
 				response: "",
 				taskId: taskId,
-				type: "free",
+				type: practiceType,
 				userId: user.id
 			})
 			.returning({ id: practiceSession.id });

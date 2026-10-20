@@ -109,7 +109,7 @@
 			title="Task"
 			{hasImage}
 			image={hasImage ? taskContext.image : undefined}
-			timer={{ endAt: data.endAt, onTimedUp: handleTimedUp }}
+			timer={data.type === "timed" ? { endAt: data.endAt, onTimedUp: handleTimedUp } : undefined}
 			bind:content={taskContext.prompt}
 			bind:isDirty={isPromptDirty}
 			canUnlock={data.task.isOwner}

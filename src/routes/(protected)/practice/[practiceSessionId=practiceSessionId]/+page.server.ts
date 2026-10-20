@@ -27,15 +27,16 @@ export const load = (async ({ locals, params }) => {
 	const category = practiceSession.task.category;
 
 	return {
-		endAt: TASK_DURATIONS[category] + Math.floor(practiceSession.startedAt.getTime() / 1000),
-		pageDescription: `IELTS Writing task ${category}`,
+		type: practiceSession.type,
 		pageName: practiceSession.name,
-		response: practiceSession.response,
+		pageDescription: `IELTS Writing task ${category}`,
 		task: {
 			category: category,
 			isOwner: practiceSession.task.userId === user.id,
 			prompt: practiceSession.task.prompt
 		},
+		response: practiceSession.response,
+		endAt: TASK_DURATIONS[category] + Math.floor(practiceSession.startedAt.getTime() / 1000),
 		timedUpAction: practiceSession.timeUpAction
 	};
 }) satisfies PageServerLoad;

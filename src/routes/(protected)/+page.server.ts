@@ -8,8 +8,9 @@ import type { PageServerLoad } from "./$types";
 
 const PRACTICE_OPTIONS = [
 	{
-		description: "Summarize, describe, or explain visual data. Present an overview.",
+		taskCategory: "1" as const,
 		name: "Academic Visual Report",
+		description: "Summarize, describe, or explain visual data. Present an overview.",
 		requirements: "20 mins • min 150 words",
 		supportLabel: "Supported Visual Types:",
 		supportTypes: [
@@ -20,12 +21,12 @@ const PRACTICE_OPTIONS = [
 			"Process Diagram",
 			"Map",
 			"Multiple Visuals"
-		],
-		taskType: "1" as const
+		]
 	},
 	{
-		description: "Write a formal academic essay presenting structured arguments.",
+		taskCategory: "2" as const,
 		name: "Academic Discursive Essay",
+		description: "Write a formal academic essay presenting structured arguments.",
 		requirements: "40 mins • min 250 words",
 		supportLabel: "Supported Question Types:",
 		supportTypes: [
@@ -34,8 +35,7 @@ const PRACTICE_OPTIONS = [
 			"Advantages & Disadvantages",
 			"Problems & Solutions",
 			"Two-Part Direct Questions"
-		],
-		taskType: "2" as const
+		]
 	}
 ];
 

@@ -8,18 +8,20 @@
 
 	type Props = {
 		practiceOptions: {
-			description: string;
+			taskCategory: "1" | "2";
 			name: string;
+			description: string;
 			requirements: string;
 			supportLabel: string;
 			supportTypes: string[];
-			taskType: "1" | "2";
 		}[];
 	};
 
 	const { practiceOptions }: Props = $props();
 
-	const handleCreateCustomTaskPractice = (taskType: TaskCategory) => {
+	let selectedPracticeSessionType = $state<"timed" | "free">("timed");
+
+	const handleCreateCustomTaskPractice = (taskCategory: TaskCategory) => {
 		openModal({
 			title: "Start a custom task practice",
 			content: {
@@ -28,7 +30,7 @@
 					options: [
 						{
 							icon: AlarmClock,
-							time: taskType === "1" ? 20 : 40,
+							time: taskCategory === "1" ? 20 : 40,
 							value: "timed"
 						},
 						{
@@ -40,7 +42,10 @@
 			},
 			primaryButton: {
 				action: async () => {
-					const result = await createPractice({ taskCategory: taskType });
+					const result = await createPractice({
+						taskCategory,
+						practiceSessionType: selectedPracticeSessionType
+					});
 					if (result.success) {
 						goto(result.location);
 					}
@@ -63,7 +68,7 @@
 			class="flex min-h-60 flex-col overflow-hidden rounded-box border border-base-content/20 bg-base-100 p-4 hover:border-primary">
 			<div class="flex justify-between gap-1.5 text-xs">
 				<span class="badge rounded-box badge-soft badge-sm font-semibold badge-primary">
-					TASK {option.taskType}
+					TASK {option.taskCategory}
 				</span>
 				<span class="flex items-center gap-1 text-base-content/75">
 					<Clock3 size="1em" />
@@ -82,8 +87,8 @@
 			</div>
 			<button
 				class="btn mt-auto btn-outline btn-primary"
-				onclick={() => handleCreateCustomTaskPractice(option.taskType)}>
-				Start Task {option.taskType} Practice
+				onclick={() => handleCreateCustomTaskPractice(option.taskCategory)}>
+				Start Task {option.taskCategory} Practice
 				<ArrowRight size="1em" />
 			</button>
 		</article>
@@ -107,7 +112,7 @@
 				<input
 					class="appearance-none"
 					type="radio"
-					name="practiceType"
+					bind:group={selectedPracticeSessionType}
 					value={option.value}
 					defaultChecked={i === 0} />
 				<option.icon class="w-full flex-1" />
