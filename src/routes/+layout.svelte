@@ -39,7 +39,9 @@
 						<h1 class="leading-6 font-semibold text-primary sm:text-lg">
 							IELTS Writing Practice Platform
 						</h1>
-						<h2 class="hidden text-base-content/75 sm:text-xs">with IELTS Academic AI Tutor</h2>
+						<h2 class="hidden text-xs text-base-content/75 sm:inline">
+							with IELTS Academic AI Tutor
+						</h2>
 					</div>
 				</a>
 			</div>
