@@ -10,30 +10,32 @@
 	import { type EvaluateRequest, evaluateRequestSchema } from "#lib/schemas/evaluate-request.ts";
 	import { getFirstZodError } from "#lib/utils/error.ts";
 	import { buildEvaluateRequestFormData, isCriteriaKey } from "./utils";
+	import { saveEvaluation } from "./save-evaluation.remote";
 
 	type Props = {
+		practiceSessionId: string;
 		practiceSessionContext: PracticeSessionContext;
 		evaluation: Evaluation | undefined;
 	};
 
-	let { evaluation = $bindable(), practiceSessionContext }: Props = $props();
+	let { practiceSessionId, evaluation = $bindable(), practiceSessionContext }: Props = $props();
 
 	let isExecuting = $state(false);
 	let abortController = $state<AbortController>(new AbortController());
 
 	const CRITERIA_MAP = {
-		coherence_and_cohesion: "Coherence and Cohesion",
-		grammatical_range_and_accuracy: "Grammatical Range and Accuracy",
-		lexical_resource: "Lexical Resource",
-		task_response: "Task Response"
+		taskResponse: "Task Response",
+		coherenceAndCohesion: "Coherence and Cohesion",
+		grammaticalRangeAndAccuracy: "Grammatical Range and Accuracy",
+		lexicalResource: "Lexical Resource"
 	} as const satisfies Record<keyof Evaluation["criteria"], string>;
 
 	const EMPTY_CRITERION = {
 		band: null,
 		checks: [],
 		problems: [],
-		why_not_next_band: undefined,
-		why_this_band: ""
+		whyNotNextBand: undefined,
+		whyThisBand: ""
 	} satisfies EvaluationCriterion;
 
 	async function handleEvaluate() {
@@ -51,12 +53,12 @@
 			isExecuting = true;
 			evaluation = {
 				criteria: {
-					coherence_and_cohesion: { ...EMPTY_CRITERION },
-					grammatical_range_and_accuracy: { ...EMPTY_CRITERION },
-					lexical_resource: { ...EMPTY_CRITERION },
-					task_response: { ...EMPTY_CRITERION }
+					coherenceAndCohesion: { ...EMPTY_CRITERION },
+					grammaticalRangeAndAccuracy: { ...EMPTY_CRITERION },
+					lexicalResource: { ...EMPTY_CRITERION },
+					taskResponse: { ...EMPTY_CRITERION }
 				},
-				overall_band: null
+				overallBand: null
 			};
 
 			const response = await fetch(`${page.url.pathname}/evaluate`, {
@@ -81,8 +83,8 @@
 					return;
 				}
 
-				if (stack.length === 1 && key === "overall_band") {
-					evaluation.overall_band = value as Evaluation["overall_band"];
+				if (stack.length === 1 && key === "overallBand") {
+					evaluation.overallBand = value as Evaluation["overallBand"];
 				} else if (stack.length === 2 && stack[1]?.key === "criteria" && isCriteriaKey(key)) {
 					evaluation.criteria[key] = value as EvaluationCriterion;
 				}
@@ -94,7 +96,9 @@
 				.pipeThrough(
 					new TransformStream<EventSourceMessage>({
 						transform(chunk, controller) {
-							if (chunk.data === "[DONE]") return;
+							if (chunk.data === "[DONE]") {
+								return;
+							}
 
 							try {
 								const json = JSON.parse(chunk.data);
@@ -132,6 +136,9 @@
 			evaluation = undefined;
 		} finally {
 			isExecuting = false;
+			if (evaluation) {
+				await saveEvaluation({ practiceSessionId, evaluation });
+			}
 		}
 	}
 
@@ -163,10 +170,11 @@
 			{:else}
 				{#each Object.entries(evaluation.criteria) as [name, criterion] (name)}
 					<details class="collapse-arrow collapse bg-base-100">
-						<summary class="collapse-title cursor-pointer p-0 font-semibold">
-							<div>
+						<summary class="collapse-title cursor-pointer p-0">
+							<span class="font-semibold">
 								{CRITERIA_MAP[name as keyof Evaluation["criteria"]] || name}
-							</div>
+							</span>
+
 							{#if criterion.band}
 								{const band = $state(criterion.band)}
 								<div
@@ -181,15 +189,18 @@
 								<div class="animate-pulse text-base-content/75">Analyzing…</div>
 							{/if}
 						</summary>
-						{#if criterion.why_this_band}
+						{#if criterion.whyThisBand}
 							{const checks = $state(criterion.checks)}
 							{const problems = $state(criterion.problems)}
 
 							<div class="collapse-content text-sm">
-								<p class="text-base-content/75">{criterion.why_this_band}</p>
-								<p class="indent-2 text-base-content/75">
+								<p class="text-base-content/75">
+									<span class="font-semibold">Summary:</span>
+									{criterion.whyThisBand}
+								</p>
+								<p class="text-base-content/75">
 									<span class="font-semibold">Advice:</span>
-									{criterion.why_not_next_band}
+									{criterion.whyNotNextBand}
 								</p>
 								{#if checks && checks.length > 0}
 									<p class="mt-2 font-semibold text-base-content/75">Checks:</p>
@@ -210,7 +221,7 @@
 															{check.status}
 														</span>
 													</summary>
-													<div class="collapse-content p-0 indent-2 text-base-content/75">
+													<div class="collapse-content p-0 text-base-content/75">
 														{check.why}
 													</div>
 												</details>
@@ -222,19 +233,22 @@
 								{#if problems && problems.length > 0}
 									<p class="mt-2 font-semibold text-base-content/75">Problems:</p>
 									<ul class="list pl-6">
-										{#each problems as problem (problem.name)}
+										{#each problems as problem, i (i)}
 											<li class="list-decimal py-1">
 												<details class="collapse">
 													<summary
 														class="collapse-title flex cursor-pointer flex-col justify-between p-0 sm:flex-row">
 														{problem.name}
 													</summary>
-													<div class="collapse-content text-base-content/75">
-														{problem.description}
-													</div>
-													<div class="collapse-content text-base-content/75">
-														<span class="font-semibold">Advice:</span>
-														{problem.advice}
+													<div class="collapse-content px-0 text-base-content/75">
+														<p>
+															<span class="font-semibold">Evidence:</span>
+															{problem.evidence}
+														</p>
+														<p>
+															<span class="font-semibold">Advice:</span>
+															{problem.advice}
+														</p>
 													</div>
 												</details>
 											</li>
@@ -254,7 +268,7 @@
 				Evaluate
 			</button>
 			{#if evaluation}
-				{const band = $state(evaluation.overall_band)}
+				{const band = $state(evaluation.overallBand)}
 				{#if band}
 					<div
 						class={[

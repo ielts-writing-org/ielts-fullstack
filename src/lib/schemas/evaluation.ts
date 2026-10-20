@@ -10,7 +10,7 @@ const evaluationCheckSchema = z.object({
 
 const evaluationProblemSchema = z.object({
 	name: z.string().min(1),
-	description: z.string().min(1),
+	evidence: z.string().min(1),
 	advice: z.string().min(1)
 });
 
@@ -23,8 +23,8 @@ const evaluationCriterionSchema = z
 		problems: z.array(evaluationProblemSchema).meta({
 			description: "Fixable problems exist in the response."
 		}),
-		why_this_band: z.string(),
-		why_not_next_band: z.string().optional()
+		whyThisBand: z.string(),
+		whyNotNextBand: z.string().optional()
 	})
 	.meta({
 		id: "EvaluateCriterion"
@@ -32,12 +32,12 @@ const evaluationCriterionSchema = z
 
 export const evaluationSchema = z.object({
 	criteria: z.object({
-		task_response: evaluationCriterionSchema,
-		coherence_and_cohesion: evaluationCriterionSchema,
-		lexical_resource: evaluationCriterionSchema,
-		grammatical_range_and_accuracy: evaluationCriterionSchema
+		taskResponse: evaluationCriterionSchema,
+		coherenceAndCohesion: evaluationCriterionSchema,
+		lexicalResource: evaluationCriterionSchema,
+		grammaticalRangeAndAccuracy: evaluationCriterionSchema
 	}),
-	overall_band: z.number().min(0).max(9).multipleOf(0.5).nullable().meta({
+	overallBand: z.number().min(0).max(9).multipleOf(0.5).nullable().meta({
 		description: "The overall score based on the 4 criteria."
 	})
 });

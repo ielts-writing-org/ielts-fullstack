@@ -17,8 +17,6 @@ export const saveTaskPrompt = command(
 		const { locals } = getRequestEvent();
 		const { user } = requireSessionApi(locals);
 
-		console.log(prompt);
-
 		const db = getDb(env.IELTS_WRITING_DB);
 		const result = await db
 			.update(tasks)

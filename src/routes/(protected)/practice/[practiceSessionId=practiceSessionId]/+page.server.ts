@@ -17,7 +17,7 @@ export const load = (async ({ locals, params }) => {
 	const db = getDb(env.IELTS_WRITING_DB);
 	const practiceSession = await db.query.practiceSessions.findFirst({
 		where: (practices, { eq }) => eq(practices.id, practiceSessionId),
-		with: { task: true }
+		with: { task: true, evaluation: true }
 	});
 
 	if (!practiceSession) {
@@ -36,6 +36,7 @@ export const load = (async ({ locals, params }) => {
 			prompt: practiceSession.task.prompt
 		},
 		response: practiceSession.response,
+		evaluation: practiceSession.evaluation?.result,
 		endAt: TASK_DURATIONS[category] + Math.floor(practiceSession.startedAt.getTime() / 1000),
 		timedUpAction: practiceSession.timeUpAction
 	};

@@ -2,10 +2,10 @@ import type { Evaluation } from "#lib/schemas/evaluation.ts";
 import { type EvaluateRequest, evaluateRequestSchema } from "#lib/schemas/evaluate-request.ts";
 
 const CRITERIA_KEYS = [
-	"coherence_and_cohesion",
-	"grammatical_range_and_accuracy",
-	"lexical_resource",
-	"task_response"
+	"taskResponse",
+	"coherenceAndCohesion",
+	"grammaticalRangeAndAccuracy",
+	"lexicalResource"
 ] as const satisfies readonly (keyof Evaluation["criteria"])[];
 
 type CriteriaKeys = (typeof CRITERIA_KEYS)[number];

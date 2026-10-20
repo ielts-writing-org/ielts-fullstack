@@ -17,18 +17,18 @@
 	const { data } = $props();
 
 	type PracticeContext = {
-		evaluation?: Evaluation;
+		practiceSessionContext: PracticeSessionContext;
+		evaluation: Evaluation | undefined;
 		messages: ChatMessage[];
-		taskContext: PracticeSessionContext;
 	};
 
-	const { evaluation, messages, taskContext } = $state<PracticeContext>({
-		evaluation: undefined,
-		messages: [],
-		taskContext: {
+	const { practiceSessionContext, evaluation, messages } = $state<PracticeContext>({
+		practiceSessionContext: {
 			...untrack(() => data).task,
 			response: untrack(() => data).response
-		}
+		},
+		evaluation: untrack(() => data).evaluation,
+		messages: []
 	});
 
 	const linters = $state<Array<WorkerLinter>>([]);
@@ -41,14 +41,14 @@
 	async function handleSaveTaskPrompt() {
 		await saveTaskPrompt({
 			practiceSessionId: page.params.practiceSessionId!,
-			prompt: taskContext.prompt
+			prompt: practiceSessionContext.prompt
 		});
 	}
 
 	async function handleSaveTaskResponse() {
 		await saveTaskResponse({
 			practiceSessionId: page.params.practiceSessionId!,
-			response: taskContext.response
+			response: practiceSessionContext.response
 		});
 	}
 
@@ -103,24 +103,24 @@
 
 <main class="flex flex-1 flex-col gap-2 p-2 lg:flex-row lg:overflow-y-hidden">
 	<section class="flex flex-1 flex-col gap-2 lg:flex-3 lg:overflow-y-auto xl:flex-2">
-		{const hasImage = taskContext.category === "1"}
+		{const hasImage = practiceSessionContext.category === "1"}
 		<AppEditor
 			class="flex-1"
 			title="Task"
 			{hasImage}
-			image={hasImage ? taskContext.image : undefined}
+			image={hasImage ? practiceSessionContext.image : undefined}
 			timer={data.type === "timed" ? { endAt: data.endAt, onTimedUp: handleTimedUp } : undefined}
-			bind:content={taskContext.prompt}
+			bind:content={practiceSessionContext.prompt}
 			bind:isDirty={isPromptDirty}
 			canUnlock={data.task.isOwner}
-			isUnlocked={data.task.isOwner && !taskContext.response && timedUpAction !== "stop"}
+			isUnlocked={data.task.isOwner && !practiceSessionContext.response && timedUpAction !== "stop"}
 			{linters}
 			onPostContentChanged={handleSaveTaskPrompt} />
 
 		<AppEditor
 			class="flex-3"
 			title="Your response"
-			bind:content={taskContext.response}
+			bind:content={practiceSessionContext.response}
 			bind:isDirty={isResponseDirty}
 			canUnlock={true}
 			isUnlocked={timedUpAction !== "stop"}
@@ -136,7 +136,10 @@
 			</label>
 
 			<div class="tab-content border-base-content/20">
-				<EvaluationPanel practiceSessionContext={taskContext} {evaluation} />
+				<EvaluationPanel
+					practiceSessionId={page.params.practiceSessionId!}
+					{practiceSessionContext}
+					{evaluation} />
 			</div>
 
 			<label class="tab [--tab-border-color:var(--color-base-content)]/20">
@@ -144,7 +147,7 @@
 				Chat
 			</label>
 			<div class="tab-content border-base-content/20">
-				<ChatPanel {taskContext} {evaluation} {messages} />
+				<ChatPanel taskContext={practiceSessionContext} {evaluation} {messages} />
 			</div>
 		</div>
 	</aside>
