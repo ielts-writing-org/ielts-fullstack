@@ -14,7 +14,6 @@
 			name: string;
 		};
 		profile: {
-			id: string;
 			target: number;
 		};
 	};
@@ -61,7 +60,7 @@
 		});
 	}
 
-	function handleChangerTarget() {
+	function handleChangeTarget() {
 		openModal({
 			title: "Change target band",
 			content: { snippet: targetInputSnippet },
@@ -69,7 +68,7 @@
 				color: "primary",
 				text: "Save",
 				action: async () => {
-					await saveTarget({ profileId: profile.id, target: target });
+					await saveTarget({ target: target });
 					await invalidate("data:profile");
 				}
 			},
@@ -124,7 +123,7 @@
 
 	<button
 		class="badge cursor-pointer badge-soft badge-xs font-semibold hover:bg-primary hover:text-primary-content"
-		onclick={handleChangerTarget}
+		onclick={handleChangeTarget}
 		title="Change target">
 		Target: Band {target}
 	</button>
