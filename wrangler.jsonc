@@ -2,7 +2,7 @@
 	"$schema": "./node_modules/wrangler/config-schema.json",
 	"name": "ielts-fullstack",
 	"compatibility_date": "2026-09-30",
-	"compatibility_flags": ["nodejs_als"],
+	"compatibility_flags": ["nodejs_compat"],
 	"main": ".svelte-kit/cloudflare/_worker.js",
 	"assets": {
 		"binding": "ASSETS",
@@ -19,7 +19,7 @@
 	"r2_buckets": [
 		{
 			"binding": "IELTS_WRITING_BUCKET",
-			"bucket_name": "my-bucket"
+			"bucket_name": "ielts-writing-bucket"
 		}
 	],
 	"d1_databases": [
@@ -39,5 +39,24 @@
 	},
 	"cache": {
 		"enabled": true
+	},
+	"routes": [
+		{
+			"pattern": "ielts-writing.ptus04.id.vn",
+			"custom_domain": true,
+			"enabled": true,
+			"previews_enabled": false
+		}
+	],
+	"observability": {
+		"issues": {
+			"enabled": true
+		},
+		"logs": {
+			"enabled": true
+		},
+		"traces": {
+			"enabled": true
+		}
 	}
 }
