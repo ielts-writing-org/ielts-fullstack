@@ -1,5 +1,6 @@
-import { relations, sql } from "drizzle-orm";
-import { check, integer, real, sqliteTable, text } from "drizzle-orm/sqlite-core";
+import type { Evaluation } from "#lib/schemas/evaluation.ts";
+import { relations } from "drizzle-orm";
+import { integer, real, sqliteTable, text } from "drizzle-orm/sqlite-core";
 import { users } from "./auth.schema";
 import { now, withBaseColumns } from "./common";
 
@@ -8,105 +9,74 @@ import { now, withBaseColumns } from "./common";
  *                                  TABLES                                    *
  *                                                                            *
  *****************************************************************************/
-export const profiles = sqliteTable("profiles", {
-	...withBaseColumns(),
+export const profiles = sqliteTable(
+	"profiles",
+	withBaseColumns({
+		userId: text("user_id").references(() => users.id, { onDelete: "cascade" }),
 
-	userId: text("user_id").references(() => users.id, { onDelete: "cascade" }),
+		target: real("target").notNull().default(0),
+		theme: text("theme").notNull().default("light")
+	})
+);
 
-	target: real("target").notNull().default(0),
-	theme: text("theme").notNull().default("light")
-});
+export const tasks = sqliteTable(
+	"tasks",
+	withBaseColumns({
+		userId: text("user_id").references(() => users.id, { onDelete: "set null" }),
 
-export const tasks = sqliteTable("tasks", {
-	...withBaseColumns(),
+		category: text("category", { enum: ["1", "2"] }).notNull(), // task 1, task 2
+		subcategory: text("subcategory").notNull().default("uncategorized"), // uncategorized, bar chart, pie chart, map, ...
+		prompt: text("prompt").notNull(),
+		image: text("image")
+	})
+);
 
-	userId: text("user_id").references(() => users.id, { onDelete: "set null" }),
+export const practiceSessions = sqliteTable(
+	"practice_sessions",
+	withBaseColumns({
+		userId: text("user_id")
+			.notNull()
+			.references(() => users.id, { onDelete: "cascade" }),
+		taskId: text("task_id")
+			.notNull()
+			.references(() => tasks.id, { onDelete: "restrict" }),
 
-	category: text("category", { enum: ["1", "2"] }).notNull(), // task 1, task 2
-	subcategory: text("subcategory").notNull().default("uncategorized"), // uncategorized, bar chart, pie chart, map, ...
-	prompt: text("prompt").notNull(),
-	image: text("image")
-});
+		name: text("name").notNull(),
+		type: text("type", { enum: ["free", "timed"] }).notNull(),
+		response: text("response").notNull(),
+		timeUpAction: text("time_up_action", { enum: ["stop", "continue"] }),
+		startedAt: integer("started_at", { mode: "timestamp_ms" }).notNull().default(now)
+	})
+);
 
-export const practiceSessions = sqliteTable("practice_sessions", {
-	...withBaseColumns(),
-	userId: text("user_id")
-		.notNull()
-		.references(() => users.id, { onDelete: "cascade" }),
-	taskId: text("task_id")
-		.notNull()
-		.references(() => tasks.id, { onDelete: "restrict" }),
+export const chatSessions = sqliteTable(
+	"chat_sessions",
+	withBaseColumns({
+		practiceSessionId: text("practice_session_id")
+			.notNull()
+			.references(() => practiceSessions.id, { onDelete: "cascade" })
+	})
+);
 
-	name: text("name").notNull(),
-	type: text("type", { enum: ["free", "timed"] }).notNull(),
-	response: text("response").notNull(),
-	timeUpAction: text("time_up_action", { enum: ["stop", "continue"] }),
-	startedAt: integer("started_at", { mode: "timestamp_ms" }).notNull().default(now)
-});
+export const chatMessages = sqliteTable(
+	"chat_messages",
+	withBaseColumns({
+		chatSessionId: text("chat_session_id")
+			.notNull()
+			.references(() => chatSessions.id, { onDelete: "cascade" }),
 
-export const chatSessions = sqliteTable("chat_sessions", {
-	...withBaseColumns(),
-
-	practiceId: text("id")
-		.notNull()
-		.references(() => practiceSessions.id, { onDelete: "cascade" })
-});
-
-export const chatMessages = sqliteTable("chat_messages", {
-	...withBaseColumns(),
-	chatSessionId: text("chat_session_id")
-		.notNull()
-		.references(() => chatSessions.id, { onDelete: "cascade" }),
-
-	from: text("from").notNull(),
-	message: text("message").notNull()
-});
+		from: text("from").notNull(),
+		message: text("message").notNull()
+	})
+);
 
 export const evaluations = sqliteTable(
 	"evaluations",
-	{
-		...withBaseColumns(),
+	withBaseColumns({
+		practiceSessionId: text("practice_session_id").notNull(),
 
-		practiceId: text("id")
-			.notNull()
-			.references(() => practiceSessions.id, { onDelete: "cascade" }),
-
-		overallBand: real("overall_band").notNull()
-	},
-	(table) => [
-		check(
-			"ck_overall_band",
-			sql`${table.overallBand} >= 0 AND ${table.overallBand} <= 9 AND (${table.overallBand} * 2) % 1 = 0`
-		)
-	]
-);
-
-export const criteria = sqliteTable(
-	"criteria",
-	{
-		...withBaseColumns(),
-
-		evaluationId: text("evaluation_id")
-			.notNull()
-			.references(() => evaluations.id, { onDelete: "cascade" }),
-
-		name: text("name", {
-			enum: [
-				"task_response",
-				"coherence_and_cohesion",
-				"lexical_resource",
-				"grammatical_range_and_accuracy"
-			]
-		}).notNull(),
-		band: real("band").notNull(),
-		checks: text("checks", { mode: "json" }).notNull(),
-		problems: text("problems", { mode: "json" }).notNull(),
-		whyThisBand: text("why_this_band").notNull(),
-		whyNotNextBand: text("why_not_next_band")
-	},
-	(table) => [
-		check("ck_band", sql`${table.band} >= 0 AND ${table.band} <= 9 AND (${table.band} * 2) % 1 = 0`)
-	]
+		result: text("result", { mode: "json" }).$type<Evaluation>().notNull()
+	})
 );
 
 export type ProfileEntity = typeof profiles.$inferSelect;
@@ -115,7 +85,6 @@ export type PracticeSessionEntity = typeof practiceSessions.$inferSelect;
 export type ChatSessionEntity = typeof chatSessions.$inferSelect;
 export type ChatMessageEntity = typeof chatMessages.$inferSelect;
 export type EvaluationEntity = typeof evaluations.$inferSelect;
-export type CriterionEntity = typeof criteria.$inferSelect;
 
 /******************************************************************************
  *                                                                            *
@@ -141,7 +110,7 @@ export const practiceSessionsRelations = relations(practiceSessions, ({ one, man
 
 export const chatSessionsRelations = relations(chatSessions, ({ one }) => ({
 	practiceSession: one(practiceSessions, {
-		fields: [chatSessions.practiceId],
+		fields: [chatSessions.practiceSessionId],
 		references: [practiceSessions.id]
 	})
 }));
@@ -153,17 +122,9 @@ export const chatMessagesRelations = relations(chatMessages, ({ one }) => ({
 	})
 }));
 
-export const evaluationsRelations = relations(evaluations, ({ many, one }) => ({
+export const evaluationsRelations = relations(evaluations, ({ one }) => ({
 	practiceSession: one(practiceSessions, {
-		fields: [evaluations.practiceId],
+		fields: [evaluations.practiceSessionId],
 		references: [practiceSessions.id]
-	}),
-	criteria: many(criteria)
-}));
-
-export const criterionsRelations = relations(criteria, ({ one }) => ({
-	evaluation: one(evaluations, {
-		fields: [criteria.evaluationId],
-		references: [evaluations.id]
 	})
 }));
