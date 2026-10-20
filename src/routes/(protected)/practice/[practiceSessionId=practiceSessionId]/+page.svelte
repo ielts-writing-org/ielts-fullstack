@@ -5,7 +5,7 @@
 	import { onDestroy, onMount, untrack } from "svelte";
 	import type { ChatMessage } from "#lib/schemas/chat-message.ts";
 	import type { Evaluation } from "#lib/schemas/evaluation.ts";
-	import type { TaskContext } from "#lib/schemas/task-context.ts";
+	import type { PracticeSessionContext } from "#lib/schemas/task-context.ts";
 	import { openModal } from "#lib/components/Modal.svelte";
 	import AppEditor from "./AppEditor.svelte";
 	import ChatPanel from "./chat/ChatPanel.svelte";
@@ -19,7 +19,7 @@
 	type PracticeContext = {
 		evaluation?: Evaluation;
 		messages: ChatMessage[];
-		taskContext: TaskContext;
+		taskContext: PracticeSessionContext;
 	};
 
 	const { evaluation, messages, taskContext } = $state<PracticeContext>({
@@ -136,7 +136,7 @@
 			</label>
 
 			<div class="tab-content border-base-content/20">
-				<EvaluationPanel {taskContext} {evaluation} />
+				<EvaluationPanel practiceSessionContext={taskContext} {evaluation} />
 			</div>
 
 			<label class="tab [--tab-border-color:var(--color-base-content)]/20">

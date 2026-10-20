@@ -5,18 +5,18 @@
 	import { type EventSourceMessage, EventSourceParserStream } from "eventsource-parser/stream";
 	import { ZodError } from "zod";
 	import type { Evaluation, EvaluationCriterion } from "#lib/schemas/evaluation.ts";
-	import type { TaskContext } from "#lib/schemas/task-context.ts";
+	import type { PracticeSessionContext } from "#lib/schemas/task-context.ts";
 	import { openModal } from "#lib/components/Modal.svelte";
 	import { type EvaluateRequest, evaluateRequestSchema } from "#lib/schemas/evaluate-request.ts";
 	import { getFirstZodError } from "#lib/utils/error.ts";
 	import { buildEvaluateRequestFormData, isCriteriaKey } from "./utils";
 
 	type Props = {
-		evaluation?: Evaluation;
-		taskContext: TaskContext;
+		practiceSessionContext: PracticeSessionContext;
+		evaluation: Evaluation | undefined;
 	};
 
-	let { evaluation = $bindable(), taskContext }: Props = $props();
+	let { evaluation = $bindable(), practiceSessionContext }: Props = $props();
 
 	let isExecuting = $state(false);
 	let abortController = $state<AbortController>(new AbortController());
@@ -39,12 +39,12 @@
 	async function handleEvaluate() {
 		try {
 			if (isExecuting) {
-				abortController?.abort();
+				abortController.abort();
 				abortController = new AbortController();
 				return;
 			}
 
-			const request = mapToEvaluateRequest(taskContext);
+			const request = mapToEvaluateRequest(practiceSessionContext);
 			const vRequest = evaluateRequestSchema.parse(request);
 			const form = buildEvaluateRequestFormData(vRequest);
 
@@ -135,7 +135,7 @@
 		}
 	}
 
-	function mapToEvaluateRequest(context: TaskContext): EvaluateRequest {
+	function mapToEvaluateRequest(context: PracticeSessionContext): EvaluateRequest {
 		if (context.category === "1") {
 			if (!context.image) {
 				throw new Error("Task 1 requires an image before submitting for evaluation.");

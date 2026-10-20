@@ -1,10 +1,10 @@
 import { z } from "zod";
 import { chatMessageSchema } from "./chat-message";
 import { evaluationSchema } from "./evaluation";
-import { taskContextSchema } from "./task-context";
+import { practiceSessionContextSchema } from "./task-context";
 
 export const chatRequestSchema = z.object({
-	taskContext: taskContextSchema,
+	taskContext: practiceSessionContextSchema,
 	evaluation: evaluationSchema.optional(),
 	messages: chatMessageSchema.array().min(1)
 });

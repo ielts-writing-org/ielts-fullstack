@@ -3,7 +3,7 @@
 	import type { ChatMessage } from "#lib/schemas/chat-message.ts";
 	import { chatRequestSchema } from "#lib/schemas/chat-request.ts";
 	import type { Evaluation } from "#lib/schemas/evaluation.ts";
-	import type { TaskContext } from "#lib/schemas/task-context.ts";
+	import type { PracticeSessionContext } from "#lib/schemas/task-context.ts";
 	import { getFirstZodError } from "#lib/utils/error.ts";
 	import { page } from "$app/state";
 	import { MessagesSquare, Send } from "@lucide/svelte";
@@ -16,7 +16,7 @@
 	type Props = {
 		evaluation?: Evaluation;
 		messages: ChatMessage[];
-		taskContext: TaskContext;
+		taskContext: PracticeSessionContext;
 	};
 
 	let { evaluation, messages = $bindable([]), taskContext }: Props = $props();
