@@ -19,6 +19,7 @@ import { profiles } from "./db/app.schema";
 
 export const createAuth = (d1: D1Database) => {
 	return betterAuth({
+		appName: "IELTS Writing Practice Platform",
 		baseURL: ORIGIN,
 		secret: BETTER_AUTH_SECRET,
 		socialProviders: {
@@ -35,9 +36,17 @@ export const createAuth = (d1: D1Database) => {
 		],
 		advanced: {
 			cookies: {
-				session_token: {
-					name: "session_token"
-				}
+				session_token: { name: "session_token" }
+			},
+			// Enable database joins for better performance
+			database: { joins: true },
+			ipAddress: {
+				/**
+				 * Without proper IP address headers, rate limiting may not work correctly when behind a proxy or CDN.
+				 * The server might see all requests as coming from the same IP.
+				 * For Cloudflare:
+				 */
+				ipAddressHeaders: ["cf-connecting-ip", "x-forwarded-for"]
 			}
 		},
 		databaseHooks: {
@@ -50,7 +59,8 @@ export const createAuth = (d1: D1Database) => {
 				}
 			}
 		},
-		database: drizzleAdapter(getDb(d1), { provider: "sqlite", usePlural: true })
+		database: drizzleAdapter(getDb(d1), { provider: "sqlite", usePlural: true }),
+		onAPIError: { errorURL: "/sign-in" }
 	});
 };
 

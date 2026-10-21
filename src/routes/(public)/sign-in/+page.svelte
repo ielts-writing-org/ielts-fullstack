@@ -2,7 +2,7 @@
 	import { resolve } from "$app/paths";
 	import { page } from "$app/state";
 	import { Sparkles } from "@lucide/svelte";
-	import { untrack } from "svelte";
+	import { onMount, untrack } from "svelte";
 	import AppLogo from "#lib/components/AppLogo.svelte";
 	import GitHub from "#lib/components/icons/GitHub.svelte";
 	import { openModal } from "#lib/components/Modal.svelte";
@@ -39,6 +39,31 @@
 			});
 		}
 	}
+
+	onMount(() => {
+		const error = page.url.searchParams.get("error");
+
+		if (!error) {
+			return;
+		}
+
+		let title: string;
+		let content: string;
+
+		if (error === "access_denied") {
+			title = "Access Denied";
+			content = "You have denied access to your third-party account.";
+		} else if (error === "state_mismatch") {
+			title = "State Mismatch";
+			content =
+				"The state returned by your OAuth provider is not match any record saved in the system. Please try again.";
+		} else {
+			title = "Unhandled Sign in error";
+			content = "Please try again.";
+		}
+
+		openModal({ title, content, primaryButton: "Close" });
+	});
 </script>
 
 <svelte:head>
