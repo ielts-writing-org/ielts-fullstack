@@ -32,6 +32,7 @@
 	const queue = $state<ModalConfig<GenericSnippet>[]>([]);
 	let current = $state<ModalConfig<GenericSnippet>>();
 	let modal = $state<HTMLDialogElement>();
+	let isBusy = $state<boolean>(false);
 
 	export function openModal<SContent extends SnippetWithFirstArg<SContent>>(
 		config: ModalConfig<SContent>
@@ -62,6 +63,19 @@
 		internalOpen();
 	}
 </script>
+
+<script lang="ts">
+	import { beforeNavigate } from "$app/navigation";
+
+	beforeNavigate(({ cancel, shallow }) => {
+		const canLeave = shallow || !isBusy;
+		if (!canLeave && !window.confirm("The action has not been completed. Navigate anyway?")) {
+			cancel();
+		}
+	});
+</script>
+
+<svelte:window on:beforeunload={(e) => isBusy && e.preventDefault()} />
 
 <dialog class="modal" bind:this={modal}>
 	{#if current}
@@ -110,7 +124,7 @@
 	{:else}
 		<button
 			class={[
-				"btn",
+				"btn disabled:pointer-events-auto disabled:cursor-not-allowed",
 				source.color === "primary" && "btn-primary",
 				source.color === "success" && "btn-success",
 				source.color === "warning" && "btn-warning",
@@ -118,8 +132,11 @@
 				source.style === "ghost" && "btn-ghost",
 				source.style === "outline" && "btn-outline"
 			]}
+			disabled={isBusy}
 			onclick={async () => {
+				isBusy = true;
 				await source.action?.();
+				isBusy = false;
 				if (!source.explicitClose) close();
 			}}>
 			{source.text}
