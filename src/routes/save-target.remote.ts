@@ -1,4 +1,4 @@
-import { requireSessionApi } from "#lib/server/auth.ts";
+import { getSessionApi } from "#lib/server/auth.ts";
 import { profiles } from "#lib/server/db/app.schema.ts";
 import { getDb } from "#lib/server/db/index.ts";
 import { command, getRequestEvent } from "$app/server";
@@ -13,7 +13,7 @@ export const saveTarget = command(
 	}),
 	async ({ target }) => {
 		const { locals } = getRequestEvent();
-		const { profile: userProfile } = requireSessionApi(locals);
+		const { profile: userProfile } = getSessionApi(locals);
 
 		const db = getDb(env.IELTS_WRITING_DB);
 		const result = await db.update(profiles).set({ target }).where(eq(profiles.id, userProfile.id));

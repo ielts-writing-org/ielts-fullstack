@@ -1,6 +1,6 @@
 import { error } from "@sveltejs/kit";
 import { env } from "cloudflare:workers";
-import { requireSession } from "#lib/server/auth.ts";
+import { getSession } from "#lib/server/auth.ts";
 import { getDb } from "#lib/server/db/index.ts";
 import type { PageServerLoad } from "./$types";
 
@@ -12,7 +12,7 @@ const TASK_DURATIONS = {
 export const load = (async ({ locals, params }) => {
 	const { practiceSessionId } = params;
 
-	const { user } = requireSession(locals);
+	const { user } = getSession(locals);
 
 	const db = getDb(env.IELTS_WRITING_DB);
 	const practiceSession = await db.query.practiceSessions.findFirst({

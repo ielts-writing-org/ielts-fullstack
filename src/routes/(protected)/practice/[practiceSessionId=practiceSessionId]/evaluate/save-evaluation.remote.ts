@@ -1,5 +1,5 @@
 import { evaluationSchema } from "#lib/schemas/evaluation.ts";
-import { requireSessionApi } from "#lib/server/auth.ts";
+import { getSessionApi } from "#lib/server/auth.ts";
 import { evaluations } from "#lib/server/db/app.schema.ts";
 import { getDb } from "#lib/server/db/index.ts";
 import { command, getRequestEvent } from "$app/server";
@@ -14,7 +14,7 @@ export const saveEvaluation = command(
 	}),
 	async ({ practiceSessionId, evaluation }) => {
 		const { locals } = getRequestEvent();
-		const { user } = requireSessionApi(locals);
+		const { user } = getSessionApi(locals);
 
 		const db = getDb(env.IELTS_WRITING_DB);
 		const practiceSession = await db.query.practiceSessions.findFirst({

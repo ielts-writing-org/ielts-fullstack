@@ -72,7 +72,7 @@ export const createAuth = (d1: D1Database) => {
  */
 export const auth = createAuth(null!);
 
-export function requireSession(locals: App.Locals) {
+export function getSession(locals: App.Locals) {
 	const { session, user, profile } = locals;
 
 	if (!session || !user || !profile) {
@@ -82,7 +82,7 @@ export function requireSession(locals: App.Locals) {
 	return { session, user };
 }
 
-export function requireSessionApi(locals: App.Locals) {
+export function getSessionApi(locals: App.Locals) {
 	const { session, user, profile } = locals;
 
 	if (!session || !user || !profile) {

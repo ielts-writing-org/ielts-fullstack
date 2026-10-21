@@ -1,7 +1,7 @@
 import { getRequestEvent } from "$app/server";
 import { env } from "cloudflare:workers";
 
-import { requireSession } from "#lib/server/auth.ts";
+import { getSession } from "#lib/server/auth.ts";
 import { getDb } from "#lib/server/db/index.ts";
 
 import type { PageServerLoad } from "./$types";
@@ -85,7 +85,7 @@ const CRITERIA = [
 
 export const load = (async () => {
 	const { locals } = getRequestEvent();
-	const { user } = requireSession(locals);
+	const { user } = getSession(locals);
 
 	const db = getDb(env.IELTS_WRITING_DB);
 	const practices = await db.query.practiceSessions.findMany({
