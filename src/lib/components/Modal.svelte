@@ -29,38 +29,42 @@
 				explicitClose?: boolean;
 		  };
 
-	const queue = $state<ModalConfig<GenericSnippet>[]>([]);
+	const stack = $state<ModalConfig<GenericSnippet>[]>([]);
 	let current = $state<ModalConfig<GenericSnippet>>();
 	let modal = $state<HTMLDialogElement>();
 	let isBusy = $state<boolean>(false);
 
-	export function openModal<SContent extends SnippetWithFirstArg<SContent>>(
+	export async function openModal<SContent extends SnippetWithFirstArg<SContent>>(
 		config: ModalConfig<SContent>
 	) {
-		queue.push(config as ModalConfig<Snippet<[unknown]>>);
-		internalOpen();
-	}
-
-	function internalOpen() {
 		if (!modal) throw new Error("Modal is missing");
 
-		if (modal.open) return;
+		if (current) {
+			modal.requestClose();
+			await waitForTransition(modal);
 
-		const next = queue.shift();
-		if (!next) return;
+			stack.unshift(current);
+		}
 
-		current = next;
+		current = config as ModalConfig<Snippet<[unknown]>>;
 		modal.showModal();
 	}
 
-	export async function close() {
+	export async function closeModal() {
 		if (!modal) throw new Error("Modal is missing");
 
 		modal.requestClose();
 		await waitForTransition(modal);
 
 		current = undefined;
-		internalOpen();
+
+		const next = stack.pop();
+		if (!next) {
+			return;
+		}
+
+		current = next;
+		modal.showModal();
 	}
 </script>
 
@@ -120,7 +124,7 @@
 
 {#snippet actionButtonSnippet(source: ModalConfigButton)}
 	{#if typeof source === "string"}
-		<button class="btn" onclick={close}>{source}</button>
+		<button class="btn" onclick={closeModal}>{source}</button>
 	{:else}
 		<button
 			class={[
@@ -135,9 +139,13 @@
 			disabled={isBusy}
 			onclick={async () => {
 				isBusy = true;
-				await source.action?.();
-				isBusy = false;
-				if (!source.explicitClose) close();
+				try {
+					await source.action?.();
+				} finally {
+					isBusy = false;
+				}
+
+				if (!source.explicitClose) closeModal();
 			}}>
 			{source.text}
 		</button>
