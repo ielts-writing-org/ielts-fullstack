@@ -21,7 +21,9 @@
 	let { user, profile }: Props = $props();
 
 	let target = $derived(profile.target);
-	const showPracticeFunctions = $derived(page.route.id !== "/(protected)");
+	const showPracticeFunctions = $derived(
+		page.route.id === "/(protected)/practice/[practiceSessionId=practiceSessionId]"
+	);
 
 	async function handleSignOut() {
 		openModal({
