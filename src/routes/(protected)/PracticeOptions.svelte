@@ -41,7 +41,7 @@
 				}
 			},
 			primaryButton: {
-				action: async () => {
+				onclick: async () => {
 					const result = await createPractice({
 						taskCategory,
 						practiceSessionType: selectedPracticeSessionType

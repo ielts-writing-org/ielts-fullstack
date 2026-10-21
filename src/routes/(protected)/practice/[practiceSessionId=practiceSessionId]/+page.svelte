@@ -64,7 +64,7 @@
 			primaryButton: {
 				text: "I got it!",
 				color: "primary",
-				action: () => {
+				onclick: () => {
 					setTimedUpAction({
 						practiceSessionId: page.params.practiceSessionId!,
 						timedUpAction: "stop"

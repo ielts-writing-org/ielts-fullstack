@@ -1,42 +1,50 @@
 <script lang="ts" module>
-	import { type Snippet } from "svelte";
+	import { type Component, type ComponentProps, type Snippet } from "svelte";
 	import { waitForTransition } from "#lib/utils/dom.ts";
 
 	type SnippetArgs<T> = T extends Snippet<infer P> ? P : never;
 	type SnippetFirstArg<T> = SnippetArgs<T> extends [] ? never : SnippetArgs<T>[0];
 	type SnippetWithFirstArg<T> = Snippet<[SnippetFirstArg<T>]>;
 	type GenericSnippet = Snippet<[unknown]>;
+	type GenericComponent = Component<Record<string, unknown>>;
 
-	type ModalConfig<SContent extends SnippetWithFirstArg<SContent>> = {
+	type ModalConfig<
+		SContent extends SnippetWithFirstArg<SContent>,
+		CContent extends Component<ComponentProps<CContent>>
+	> = {
 		title:
 			string | { text: string; color: "default" | "primary" | "success" | "warning" | "error" };
 		content?:
 			| string
 			| (SnippetFirstArg<SContent> extends never
 					? { snippet: SContent }
-					: { snippet: SContent; args: SnippetFirstArg<SContent> });
-		primaryButton: ModalConfigButton;
-		secondaryButton?: ModalConfigButton;
+					: { snippet: SContent; args: SnippetFirstArg<SContent> })
+			| (ComponentProps<CContent> extends Record<string, never>
+					? { component: CContent }
+					: { component: CContent; props: ComponentProps<CContent> });
+		primaryButton?: ModalButtonConfig;
+		secondaryButton?: ModalButtonConfig;
 	};
 
-	type ModalConfigButton =
+	type ModalButtonConfig =
 		| string
 		| {
 				text: string;
-				action?: () => unknown | Promise<unknown>;
+				onclick?: () => unknown | Promise<unknown>;
 				color?: "default" | "primary" | "success" | "warning" | "error";
 				style?: "default" | "outline" | "ghost";
 				explicitClose?: boolean;
 		  };
 
-	const stack = $state<ModalConfig<GenericSnippet>[]>([]);
-	let current = $state<ModalConfig<GenericSnippet>>();
+	const stack = $state<ModalConfig<GenericSnippet, GenericComponent>[]>([]);
+	let current = $state<ModalConfig<GenericSnippet, GenericComponent>>();
 	let modal = $state<HTMLDialogElement>();
 	let isBusy = $state<boolean>(false);
 
-	export async function openModal<SContent extends SnippetWithFirstArg<SContent>>(
-		config: ModalConfig<SContent>
-	) {
+	export async function openModal<
+		SContent extends SnippetWithFirstArg<SContent>,
+		CContent extends Component<ComponentProps<CContent>>
+	>(config: ModalConfig<SContent, CContent>) {
 		if (!modal) throw new Error("Modal is missing");
 
 		if (current) {
@@ -46,7 +54,7 @@
 			stack.unshift(current);
 		}
 
-		current = config as ModalConfig<Snippet<[unknown]>>;
+		current = config as unknown as ModalConfig<GenericSnippet, GenericComponent>;
 		modal.showModal();
 	}
 
@@ -104,25 +112,29 @@
 			{#if current.content}
 				{#if typeof current.content === "string"}
 					<p class="my-4">{current.content}</p>
-				{:else}
+				{:else if "snippet" in current.content}
 					<div class="my-4">
 						{@render current.content.snippet(current.content.args)}
 					</div>
+				{:else}
+					<current.content.component {...current.content.props} />
 				{/if}
 			{/if}
 
 			<!-- Actions -->
-			<div class="modal-action">
-				{@render actionButtonSnippet(current.primaryButton)}
-				{#if current.secondaryButton}
-					{@render actionButtonSnippet(current.secondaryButton)}
-				{/if}
-			</div>
+			{#if current.primaryButton}
+				<div class="modal-action">
+					{@render modalButton(current.primaryButton)}
+					{#if current.secondaryButton}
+						{@render modalButton(current.secondaryButton)}
+					{/if}
+				</div>
+			{/if}
 		</div>
 	{/if}
 </dialog>
 
-{#snippet actionButtonSnippet(source: ModalConfigButton)}
+{#snippet modalButton(source: ModalButtonConfig)}
 	{#if typeof source === "string"}
 		<button class="btn" onclick={closeModal}>{source}</button>
 	{:else}
@@ -140,7 +152,7 @@
 			onclick={async () => {
 				isBusy = true;
 				try {
-					await source.action?.();
+					await source.onclick?.();
 				} finally {
 					isBusy = false;
 				}

@@ -36,7 +36,7 @@
 				text: "Sign out",
 				color: "error",
 				style: "ghost",
-				action: async () => {
+				onclick: async () => {
 					const result = await authClient.signOut();
 					if (result.data && result.data.success) {
 						await cookieStore.delete("theme");
@@ -69,7 +69,7 @@
 			primaryButton: {
 				color: "primary",
 				text: "Save",
-				action: async () => {
+				onclick: async () => {
 					await saveTarget({ target: target });
 					await invalidate("data:profile");
 				}
@@ -78,7 +78,7 @@
 				color: "error",
 				style: "ghost",
 				text: "Cancel",
-				action: () => (target = profile.target)
+				onclick: () => (target = profile.target)
 			}
 		});
 	}
@@ -94,7 +94,7 @@
 				text: "Back to dashboard",
 				color: "error",
 				style: "ghost",
-				action: () => goto(resolve("/(protected)"))
+				onclick: () => goto(resolve("/(protected)"))
 			},
 			secondaryButton: {
 				text: "Cancel",
