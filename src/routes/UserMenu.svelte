@@ -7,6 +7,7 @@
 	import ThemeController from "#lib/components/ThemeController.svelte";
 	import { saveTarget } from "./save-target.remote";
 	import { goto, invalidate } from "$app/navigation";
+	import ChangeSessionName from "./ChangeSessionName.svelte";
 
 	type Props = {
 		user: {
@@ -110,6 +111,13 @@
 			primaryButton: "Close"
 		});
 	}
+
+	async function handleChangePracticeName() {
+		openModal({
+			title: "Chage Practice Session name",
+			content: { component: ChangeSessionName }
+		});
+	}
 </script>
 
 <!-- <a
@@ -158,12 +166,7 @@
 			<li>
 				<button
 					class="justify-end active:bg-primary active:text-primary-content"
-					onclick={() => {
-						openModal({
-							title: "Feature is not implemented",
-							primaryButton: "Close"
-						});
-					}}>
+					onclick={handleChangePracticeName}>
 					Change practice name
 					<PenLine size="1em" />
 				</button>

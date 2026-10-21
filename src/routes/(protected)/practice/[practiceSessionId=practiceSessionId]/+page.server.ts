@@ -9,7 +9,9 @@ const TASK_DURATIONS = {
 	"2": 40 * 60 // 40 minutes in seconds
 } as const;
 
-export const load = (async ({ locals, params }) => {
+export const load = (async ({ locals, params, depends }) => {
+	depends("data:practiceSession");
+
 	const { practiceSessionId } = params;
 
 	const { user } = getSession(locals);
