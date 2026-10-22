@@ -28,14 +28,26 @@ export const load = (async ({ locals, params, depends }) => {
 
 	const category = practiceSession.task.category;
 
+	let taskImage: string | undefined;
+	if (practiceSession.task.image) {
+		const image = await env.IELTS_WRITING_BUCKET.get(practiceSession.task.image);
+		if (image) {
+			const blob = await image.blob();
+			const bytes = await blob.bytes();
+			taskImage = Buffer.from(bytes).toString("base64");
+		}
+	}
+
 	return {
 		type: practiceSession.type,
 		pageName: practiceSession.name,
 		pageDescription: `IELTS Writing task ${category}`,
 		task: {
+			id: practiceSession.task.id,
 			category: category,
 			isOwner: practiceSession.task.userId === user.id,
-			prompt: practiceSession.task.prompt
+			prompt: practiceSession.task.prompt,
+			image: taskImage
 		},
 		response: practiceSession.response,
 		evaluation: practiceSession.evaluation?.result,

@@ -2,8 +2,11 @@
 	import { debounce } from "#lib/utils/debounce.ts";
 	import { Pen, PenOff } from "@lucide/svelte";
 	import type { WorkerLinter } from "harper.js";
-	import { onDestroy } from "svelte";
+	import { onDestroy, untrack } from "svelte";
 	import Timer from "./Timer.svelte";
+	import { saveTaskImage } from "./save-task-image.remote";
+	import { openModal } from "#lib/components/Modal.svelte";
+	import { page } from "$app/state";
 
 	type Props = {
 		class?: string;
@@ -48,6 +51,8 @@
 		}
 
 		image = file;
+
+		saveTaskImage.submit();
 	}
 
 	const handlePostContentChangedDebounced = debounce(async () => {
@@ -83,6 +88,19 @@
 			URL.revokeObjectURL(imagePreview);
 		}
 	});
+
+	$effect(() => {
+		const issues = saveTaskImage.fields.image.issues();
+		if (issues) {
+			untrack(() => {
+				openModal({
+					title: "Cannot upload image",
+					content: issues[0].message,
+					primaryButton: "Close"
+				});
+			});
+		}
+	});
 </script>
 
 <div class={["flex flex-col rounded-box border border-base-content/20 bg-base-100", props.class]}>
@@ -99,10 +117,17 @@
 		<div class="flex items-center gap-2">
 			<!-- Add image button -->
 			{#if props.hasImage && isUnlocked}
-				<label class={["btn btn-primary btn-xs", image ? "btn-outline" : "btn-primary"]}>
-					<input type="file" class="hidden" accept="image/*" onchange={handleAddImage} />
-					{image ? "Change" : "Add an"} image
-				</label>
+				<form {...saveTaskImage} class="contents" enctype="multipart/form-data">
+					<input {...saveTaskImage.fields.taskId.as("hidden", page.data.task.id)} />
+					<label class={["btn btn-primary btn-xs", image ? "btn-outline" : "btn-primary"]}>
+						<input
+							{...saveTaskImage.fields.image.as("file")}
+							class="hidden"
+							accept="image/*"
+							onchange={handleAddImage} />
+						{image ? "Change" : "Add an"} image
+					</label>
+				</form>
 			{/if}
 
 			<!-- Timer Display -->
@@ -149,8 +174,8 @@
 					onChange={handleContentChanged} />
 
 				<!-- Image preview -->
-				{#if props.hasImage && imagePreview}
-					<div class="flex min-h-fit flex-1 items-center justify-center gap-2">
+				{#if props.hasImage && isReady && imagePreview}
+					<div class="flex min-h-fit flex-1 flex-col items-center justify-center gap-2">
 						<img src={imagePreview} alt="Task" class="placeholder max-w-full" />
 					</div>
 				{/if}
