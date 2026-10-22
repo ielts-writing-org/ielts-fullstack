@@ -17,6 +17,7 @@ export class ImagesClient {
 			.output({ format: "image/webp", quality: 70 });
 		const stream = compressedImage.image({ encoding: "base64" });
 		const response = new Response(stream);
-		return await response.text();
+		const base64Image = await response.text();
+		return `data:image/webp;base64,${base64Image}`;
 	}
 }
