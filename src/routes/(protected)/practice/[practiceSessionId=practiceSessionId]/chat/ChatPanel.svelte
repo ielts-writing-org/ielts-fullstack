@@ -10,6 +10,7 @@
 	import { type EventSourceMessage, EventSourceParserStream } from "eventsource-parser/stream";
 	import { marked } from "marked";
 	import { ZodError } from "zod";
+	import sanitize from "sanitize-html";
 
 	import { buildChatRequestFormData } from "./utils";
 
@@ -142,7 +143,7 @@
 								"chat-bubble wrap-break-word",
 								{ "chat-bubble-primary": chat.from === "user" }
 							]}>
-							{@html marked.parse(chat.message)}
+							{@html sanitize(marked.parse(chat.message, { async: false }))}
 						</div>
 					</div>
 				{/each}
@@ -150,7 +151,9 @@
 			{#if isExecuting && aiResponse}
 				<div class="chat-start chat">
 					<div class="chat-header">AI Tutor</div>
-					<div class="chat-bubble wrap-break-word">{@html marked.parse(aiResponse)}</div>
+					<div class="chat-bubble wrap-break-word">
+						{@html sanitize(marked.parse(aiResponse, { async: false }))}
+					</div>
 				</div>
 			{/if}
 		</div>
