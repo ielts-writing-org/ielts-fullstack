@@ -31,7 +31,7 @@ export const saveEvaluation = command(
 			.insert(evaluations)
 			.values({ practiceSessionId, result: evaluation })
 			.onConflictDoUpdate({
-				target: evaluations.id,
+				target: evaluations.practiceSessionId,
 				set: { result: evaluation }
 			});
 

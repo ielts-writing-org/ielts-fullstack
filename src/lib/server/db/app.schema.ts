@@ -73,7 +73,7 @@ export const chatMessages = sqliteTable(
 export const evaluations = sqliteTable(
 	"evaluations",
 	withBaseColumns({
-		practiceSessionId: text("practice_session_id").notNull(),
+		practiceSessionId: text("practice_session_id").notNull().unique(),
 
 		result: text("result", { mode: "json" }).$type<Evaluation>().notNull()
 	})
