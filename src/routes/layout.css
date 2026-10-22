@@ -15,7 +15,6 @@
 
 @theme {
 	--animate-watermark: watermark 30s linear infinite;
-
 	@keyframes watermark {
 		from {
 			mask-position: 0 0;
@@ -24,9 +23,27 @@
 			mask-position: -500px 300px;
 		}
 	}
+
+	--animate-typing: typing 2s steps(30), blink 0.7s infinite;
+	@keyframes typing {
+		from {
+			width: 0;
+		}
+		to {
+			width: fit-content;
+		}
+	}
+
+	--animate-blink: blink 0.7s infinite;
+	@keyframes blink {
+		50% {
+			border-color: transparent;
+		}
+	}
 }
 
 * {
+	interpolate-size: allow-keywords;
 	@apply scrollbar-thin;
 }
 

@@ -25,24 +25,26 @@
 </svelte:head>
 
 <main
-	class="flex w-full max-w-xl flex-1 flex-col items-center justify-center gap-6 self-center bg-base-100 px-4 py-12 text-center">
-	<!-- Error code with subtle animation -->
-	<div class="flex flex-col items-center gap-2" aria-hidden="true">
-		<span class="text-7xl font-extrabold text-primary">{page.error?.status}</span>
-		<div class="h-px w-24 bg-primary/30"></div>
+	class="flex w-full max-w-xl flex-1 flex-col items-center justify-center gap-6 self-center bg-base-100 px-4 py-12 text-center font-mono">
+	<div class="flex flex-col items-center gap-2 sm:flex-row" aria-hidden="true">
+		<h2 class="text-7xl font-extrabold text-primary">
+			{page.error?.status}
+		</h2>
+		<div class="divider hidden divider-horizontal divider-primary sm:flex"></div>
+
+		<div class="flex flex-col items-center gap-2">
+			{const detail = getErrorDetail(page.status)}
+			<h1
+				class="animate-typing overflow-hidden border-r-4 border-primary text-2xl font-semibold text-nowrap text-base-content">
+				{detail.message}
+			</h1>
+			<h3 class="max-w-xs text-sm text-base-content/70">{detail.subMessage}</h3>
+		</div>
 	</div>
 
-	<!-- Message -->
-	{const detail = getErrorDetail(page.status)}
-	<div class="flex flex-col items-center gap-3">
-		<h1 class="text-2xl font-semibold text-base-content">{detail.message}</h1>
-		<p class="max-w-xs text-sm text-base-content/70">{detail.subMessage}</p>
-	</div>
-
-	<!-- Action buttons -->
 	<div class="flex w-full flex-col items-center gap-3 sm:flex-row sm:justify-center">
 		<button class="btn btn-wide gap-2 btn-primary md:order-2" onclick={() => history.back()}>
-			<Undo2 size="1.125em" aria-hidden="true" />
+			<Undo2 size="1em" aria-hidden="true" />
 			Go Back
 		</button>
 	</div>
