@@ -59,7 +59,8 @@
 				text: "Cancel",
 				color: "primary",
 				style: "default"
-			}
+			},
+			bypassBusy: true
 		});
 	}
 
@@ -100,7 +101,8 @@
 			secondaryButton: {
 				text: "Cancel",
 				color: "primary"
-			}
+			},
+			bypassBusy: true
 		});
 	}
 
