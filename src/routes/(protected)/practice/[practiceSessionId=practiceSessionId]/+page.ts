@@ -1,5 +1,7 @@
 import type { PageLoad } from "./$types";
 
+export const ssr = false;
+
 export const load = (async ({ data }) => {
 	let taskImage: File | undefined;
 	if (data.task.image) {
