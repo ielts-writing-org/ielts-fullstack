@@ -29,15 +29,16 @@ export const saveTaskImage = form(
 			error(404, "Task does not exist.");
 		}
 
-		let imageName = task.image;
-		if (imageName) {
-			await env.IELTS_WRITING_BUCKET.delete(imageName);
-		}
+		const oldImageName = task.image;
 
-		imageName = `${uuidv7()}.webp`;
+		const newImageName = `${uuidv7()}.webp`;
 		const compressed = await ImagesClient.instance.compressAsBlob(image);
-		await env.IELTS_WRITING_BUCKET.put(imageName, compressed);
-		await db.update(tasks).set({ image: imageName }).where(eq(tasks.id, taskId));
+		await env.IELTS_WRITING_BUCKET.put(newImageName, compressed);
+		await db.update(tasks).set({ image: newImageName }).where(eq(tasks.id, taskId));
+
+		if (oldImageName) {
+			await env.IELTS_WRITING_BUCKET.delete(oldImageName);
+		}
 
 		return { success: true };
 	}
