@@ -24,6 +24,7 @@
 					: { component: CContent; props: ComponentProps<CContent> });
 		primaryButton?: ModalButtonConfig;
 		secondaryButton?: ModalButtonConfig;
+		bypassBusy?: boolean;
 	};
 
 	type ModalButtonConfig =
@@ -80,14 +81,14 @@
 	import { beforeNavigate } from "$app/navigation";
 
 	beforeNavigate(({ cancel, shallow }) => {
-		const canLeave = shallow || !isBusy;
+		const canLeave = shallow || !isBusy || current?.bypassBusy;
 		if (!canLeave && !window.confirm("The action has not been completed. Navigate anyway?")) {
 			cancel();
 		}
 	});
 </script>
 
-<svelte:window on:beforeunload={(e) => isBusy && e.preventDefault()} />
+<svelte:window on:beforeunload={(e) => isBusy && !current?.bypassBusy && e.preventDefault()} />
 
 <dialog class="modal" bind:this={modal}>
 	{#if current}
