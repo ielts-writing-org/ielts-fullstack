@@ -46,7 +46,6 @@ export const createPractice = command(
 			location: resolve("/(protected)/practice/[practiceSessionId=practiceSessionId]", {
 				practiceSessionId: createdPracticeSession.id
 			}),
-			status: 303,
 			success: true
 		};
 	}
