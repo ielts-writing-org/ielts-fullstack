@@ -9,7 +9,7 @@ import { z } from "zod";
 
 export const saveTarget = command(
 	z.object({
-		target: z.float32()
+		target: z.number().min(0).max(9).multipleOf(0.5)
 	}),
 	async ({ target }) => {
 		const { locals } = getRequestEvent();
