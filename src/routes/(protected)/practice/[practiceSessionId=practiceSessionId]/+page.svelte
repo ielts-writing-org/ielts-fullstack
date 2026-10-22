@@ -108,7 +108,7 @@
 			class="flex-1"
 			title="Task"
 			{hasImage}
-			image={hasImage ? practiceSessionContext.image : undefined}
+			bind:image={practiceSessionContext.image}
 			timer={data.type === "timed" ? { endAt: data.endAt, onTimedUp: handleTimedUp } : undefined}
 			bind:content={practiceSessionContext.prompt}
 			bind:isDirty={isPromptDirty}
