@@ -79,7 +79,7 @@ export function getSession(locals: App.Locals) {
 		redirect(307, resolve("/(public)/sign-in"));
 	}
 
-	return { session, user };
+	return { session, user, profile };
 }
 
 export function getSessionApi(locals: App.Locals) {
