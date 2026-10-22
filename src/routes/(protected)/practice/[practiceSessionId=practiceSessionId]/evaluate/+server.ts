@@ -1,13 +1,13 @@
-import { error } from "@sveltejs/kit";
 import { AiClient } from "#lib/server/infrastructure/ai-client.ts";
 import { ImagesClient } from "#lib/server/infrastructure/images-client.ts";
 import { computeDeterministicStats } from "#lib/utils/stats.ts";
 import type { RequestHandler } from "./$types";
 import { parseEvaluateRequestForm } from "./utils";
+import { getSessionApi } from "#lib/server/auth.ts";
 
 // TODO: Rate limit
 export const POST: RequestHandler = async ({ locals, request }) => {
-	if (!locals.session) error(401);
+	getSessionApi(locals);
 
 	const form = await request.formData();
 	const pForm = parseEvaluateRequestForm(form);
