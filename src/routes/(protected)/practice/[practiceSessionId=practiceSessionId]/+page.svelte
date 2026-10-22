@@ -11,7 +11,7 @@
 	import ChatPanel from "./chat/ChatPanel.svelte";
 	import EvaluationPanel from "./evaluate/EvaluationPanel.svelte";
 	import { saveTaskPrompt } from "./save-task-prompt.remote.js";
-	import { saveTaskResponse } from "./save-task-response.remote.js";
+	import { savePracticeResponse } from "./save-practice-response.remote.js";
 	import { setTimedUpAction } from "./set-timed-up-action.remote.js";
 
 	const { data } = $props();
@@ -46,7 +46,7 @@
 	}
 
 	async function handleSaveTaskResponse() {
-		await saveTaskResponse({
+		await savePracticeResponse({
 			practiceSessionId: page.params.practiceSessionId!,
 			response: practiceSessionContext.response
 		});

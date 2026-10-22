@@ -3,12 +3,11 @@ import { error } from "@sveltejs/kit";
 import { env } from "cloudflare:workers";
 import { and, eq } from "drizzle-orm";
 import { z } from "zod";
-
 import { getSessionApi } from "#lib/server/auth.ts";
 import { practiceSessions } from "#lib/server/db/app.schema.ts";
 import { getDb } from "#lib/server/db/index.ts";
 
-export const saveTaskResponse = command(
+export const savePracticeResponse = command(
 	z.object({
 		practiceSessionId: z.uuidv7(),
 		response: z.string()
