@@ -64,8 +64,8 @@
 			primaryButton: {
 				text: "I got it!",
 				color: "primary",
-				onclick: () => {
-					setTimedUpAction({
+				onclick: async () => {
+					await setTimedUpAction({
 						practiceSessionId: page.params.practiceSessionId!,
 						timedUpAction: "stop"
 					});
