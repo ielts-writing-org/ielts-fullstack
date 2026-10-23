@@ -40,7 +40,9 @@
 				<span class="truncate font-semibold">{practiceSession.name}</span>
 				<small class="hidden text-xs sm:block">{practiceSession.meta}</small>
 				<span class="text-right text-xs">
-					{practiceSession.band ? `Overall band ${practiceSession.band}` : "No evaluation"}
+					{practiceSession.band
+						? `Overall band ${practiceSession.band.toFixed(1)}`
+						: "No evaluation"}
 				</span>
 			</a>
 		{/each}

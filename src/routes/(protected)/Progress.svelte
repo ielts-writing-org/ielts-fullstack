@@ -1,4 +1,6 @@
 <script lang="ts">
+	import { roundToNearestHalf } from "#lib/utils/math.ts";
+
 	type Props = {
 		criteria: {
 			name: string;
@@ -50,7 +52,7 @@
 								style:--size="2em"
 								aria-valuenow={score}
 								role="progressbar">
-								{score}
+								{roundToNearestHalf(score)}
 							</div>
 							<div class="text-xs">Task {index + 1}</div>
 						</div>
