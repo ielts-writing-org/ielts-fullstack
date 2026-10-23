@@ -53,10 +53,10 @@
 			isExecuting = true;
 			evaluation = {
 				criteria: {
+					taskResponse: { ...EMPTY_CRITERION },
 					coherenceAndCohesion: { ...EMPTY_CRITERION },
-					grammaticalRangeAndAccuracy: { ...EMPTY_CRITERION },
 					lexicalResource: { ...EMPTY_CRITERION },
-					taskResponse: { ...EMPTY_CRITERION }
+					grammaticalRangeAndAccuracy: { ...EMPTY_CRITERION }
 				},
 				overallBand: null
 			};
