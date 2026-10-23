@@ -180,8 +180,8 @@
 								<div
 									class={[
 										band! >= 7.5 && "text-success",
-										band! >= 6.5 && criterion.band! < 7.5 && "text-warning",
-										band! < 6.5 && "text-error"
+										band! >= 5.5 && criterion.band! < 7.5 && "text-warning",
+										band! < 5.5 && "text-error"
 									]}>
 									Band {band.toPrecision(2)}
 								</div>
@@ -274,8 +274,8 @@
 						class={[
 							"badge",
 							band >= 7.5 && "badge-success",
-							band >= 6.5 && band < 7.5 && "badge-warning",
-							band < 6.5 && "badge-error"
+							band >= 5.5 && band < 7.5 && "badge-warning",
+							band < 5.5 && "badge-error"
 						]}>
 						Est. Band {band.toPrecision(2)}
 					</div>
