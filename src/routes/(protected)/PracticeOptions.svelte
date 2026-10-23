@@ -75,7 +75,7 @@
 					{option.requirements}
 				</span>
 			</div>
-			<h3 class="mt-3 font-semibold">{option.name}</h3>
+			<h3 class="mt-3 font-bold">{option.name}</h3>
 			<p class="mb-3 truncate text-xs text-base-content/75">
 				{option.description}
 			</p>
