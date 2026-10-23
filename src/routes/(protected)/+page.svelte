@@ -1,5 +1,5 @@
 <script lang="ts">
-	import Ads from "./Ads.svelte";
+	import About from "./About.svelte";
 	import PracticeOptions from "./PracticeOptions.svelte";
 	import Progress from "./Progress.svelte";
 	import RecentPractices from "./RecentPractices.svelte";
@@ -28,6 +28,6 @@
 
 	<section class="mt-4 grid w-full grid-cols-1 gap-4 lg:grid-cols-[1.55fr_1fr]">
 		<RecentPractices practiceSessions={data.practices} />
-		<Ads />
+		<About />
 	</section>
 </main>
