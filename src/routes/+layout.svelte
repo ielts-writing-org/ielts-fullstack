@@ -15,7 +15,7 @@
 </script>
 
 <Modal />
-<div class="flex h-screen w-full flex-col overflow-y-auto bg-base-100 text-base-content">
+<div class="flex h-dvh w-full flex-col overflow-y-auto bg-base-100 text-base-content">
 	<header
 		class="navbar sticky top-0 z-10 flex shrink-0 gap-2 border-b border-base-content/10 bg-base-100 not-lg:flex-wrap">
 		{#if isPracticePage}
@@ -39,7 +39,7 @@
 						<h1 class="leading-6 font-semibold text-primary sm:text-lg">
 							IELTS Writing Practice Platform
 						</h1>
-						<h2 class="hidden text-xs text-base-content/75 sm:inline">
+						<h2 class="hidden text-xs font-semibold text-base-content/75 sm:inline">
 							with IELTS Academic AI Tutor
 						</h2>
 					</div>
