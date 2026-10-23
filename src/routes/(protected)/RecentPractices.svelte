@@ -4,7 +4,7 @@
 
 	type Props = {
 		practiceSessions: {
-			band: string;
+			band: number | null | undefined;
 			category: string;
 			id: string;
 			meta: string;
@@ -30,7 +30,7 @@
 	{:else}
 		{#each practiceSessions as practiceSession (practiceSession.id)}
 			<a
-				class="mt-1.5 grid min-h-7.5 cursor-pointer grid-cols-[45px_minmax(0,1fr)_120px] items-center gap-1.5 rounded-box bg-base-200 px-2.5 text-xs hover:bg-base-300 sm:grid-cols-[45px_minmax(170px,1fr)_150px_120px]"
+				class="mt-1.5 grid min-h-7.5 cursor-pointer grid-cols-[45px_minmax(0,1fr)_120px] items-center gap-1.5 rounded-box border border-primary-content px-2.5 text-xs hover:bg-primary hover:text-primary-content sm:grid-cols-[45px_minmax(170px,1fr)_150px_120px]"
 				href={resolve("/(protected)/practice/[practiceSessionId=practiceSessionId]", {
 					practiceSessionId: practiceSession.id
 				})}>
@@ -38,8 +38,10 @@
 					{practiceSession.category}
 				</span>
 				<span class="truncate font-semibold">{practiceSession.name}</span>
-				<small class="hidden text-xs text-base-content/75 sm:block">{practiceSession.meta}</small>
-				<span class="text-right text-xs">Overall band {practiceSession.band}</span>
+				<small class="hidden text-xs sm:block">{practiceSession.meta}</small>
+				<span class="text-right text-xs">
+					{practiceSession.band ? `Overall band ${practiceSession.band}` : "No evaluation"}
+				</span>
 			</a>
 		{/each}
 	{/if}

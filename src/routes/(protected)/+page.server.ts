@@ -89,7 +89,7 @@ export const load = (async () => {
 
 	const db = getDb(env.IELTS_WRITING_DB);
 	const practices = await db.query.practiceSessions.findMany({
-		limit: 3,
+		limit: 4,
 		orderBy: (practiceSessions, { desc }) => [desc(practiceSessions.updatedAt)],
 		where: (practiceSessions, { eq }) => eq(practiceSessions.userId, user.id),
 		with: {
@@ -101,7 +101,7 @@ export const load = (async () => {
 		criteria: CRITERIA,
 		practiceOptions: PRACTICE_OPTIONS,
 		practices: practices.map((p) => ({
-			band: "N/A",
+			band: p.evaluation?.result.overallBand,
 			category: `Task ${p.task.category}`,
 			id: p.id,
 			meta: p.updatedAt.toLocaleString(), // Yesterday, 3 days ago
