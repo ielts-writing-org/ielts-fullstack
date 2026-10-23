@@ -1,10 +1,11 @@
+import { getSession } from "#lib/server/auth.ts";
+import { evaluations, practiceSessions, tasks } from "#lib/server/db/app.schema.ts";
+import { getDb } from "#lib/server/db/index.ts";
 import { getRequestEvent } from "$app/server";
 import { env } from "cloudflare:workers";
-
-import { getSession } from "#lib/server/auth.ts";
-import { getDb } from "#lib/server/db/index.ts";
-
+import { eq, sql } from "drizzle-orm";
 import type { PageServerLoad } from "./$types";
+import { roundToNearestHalf } from "#lib/utils/math.ts";
 
 const PRACTICE_OPTIONS = [
 	{
@@ -48,41 +49,6 @@ const RECOMMENDED_TASK = {
 	type: "2" as const
 };
 
-const CRITERIA = [
-	{
-		bar: "w-[73%] bg-[#5a50ea]",
-		direction: "up",
-		name: "Task Response / Achievement",
-		note: "Main idea clear; expand supporting arguments.",
-		score: "6.5",
-		scoreColor: "text-[#5045eb]"
-	},
-	{
-		bar: "w-[78%] bg-[#8841ea]",
-		direction: "steady",
-		name: "Coherence & Cohesion",
-		note: "Logical paragraphing; diverse linking words.",
-		score: "7.0",
-		scoreColor: "text-[#5045eb]"
-	},
-	{
-		bar: "w-[78%] bg-[#07966e]",
-		direction: "up",
-		name: "Lexical Resource",
-		note: "Good academic collocations; reduce repetition.",
-		score: "7.0",
-		scoreColor: "text-[#039b78]"
-	},
-	{
-		bar: "w-[60%] bg-[#e58600]",
-		direction: "up",
-		name: "Grammar Range & Accuracy",
-		note: "Accurate simple sentences; watch comma splices.",
-		score: "6.0",
-		scoreColor: "text-[#e68500]"
-	}
-];
-
 export const load = (async () => {
 	const { locals } = getRequestEvent();
 	const { user } = getSession(locals);
@@ -93,12 +59,54 @@ export const load = (async () => {
 		orderBy: (practiceSessions, { desc }) => [desc(practiceSessions.updatedAt)],
 		where: (practiceSessions, { eq }) => eq(practiceSessions.userId, user.id),
 		with: {
-			task: true
+			task: true,
+			evaluation: true
 		}
 	});
 
+	// Statistics
+	const avg = await db
+		.select({
+			tr: sql`avg(${evaluations.result} ->> '$.criteria.taskResponse.band')`.mapWith(Number),
+			cc: sql`avg(${evaluations.result} ->> '$.criteria.coherenceAndCohesion.band')`.mapWith(
+				Number
+			),
+			lr: sql`avg(${evaluations.result} ->> '$.criteria.lexicalResource.band')`.mapWith(Number),
+			gra: sql`avg(${evaluations.result} ->> '$.criteria.grammaticalRangeAndAccuracy.band')`.mapWith(
+				Number
+			),
+			overall: sql`avg(${evaluations.result} ->> '$.overallBand')`.mapWith(Number)
+		})
+		.from(practiceSessions)
+		.where(eq(practiceSessions.userId, user.id))
+		.innerJoin(evaluations, eq(practiceSessions.id, evaluations.practiceSessionId))
+		.innerJoin(tasks, eq(tasks.id, practiceSessions.taskId))
+		.groupBy(tasks.category);
+
+	const criteria = [
+		{
+			name: "Task Achievement / Response",
+			scores: [avg[0].tr, avg[1].tr]
+		},
+		{
+			name: "Coherence & Cohesion",
+			scores: [avg[0].cc, avg[1].cc]
+		},
+		{
+			name: "Lexical Resource",
+			scores: [avg[0].lr, avg[1].lr]
+		},
+		{
+			name: "Grammar Range & Accuracy",
+			scores: [avg[0].gra, avg[1].gra]
+		}
+	];
+
+	const rawOverallBand = (avg[0].overall * 1) / 3 + (avg[1].overall * 2) / 3;
+	const roundedOverallBand = roundToNearestHalf(rawOverallBand);
+
 	return {
-		criteria: CRITERIA,
+		criteria: criteria,
 		practiceOptions: PRACTICE_OPTIONS,
 		practices: practices.map((p) => ({
 			band: p.evaluation?.result.overallBand,
@@ -107,6 +115,7 @@ export const load = (async () => {
 			meta: p.updatedAt.toLocaleString(), // Yesterday, 3 days ago
 			name: p.name
 		})),
+		overallBand: roundedOverallBand,
 		recommendedTask: RECOMMENDED_TASK
 	};
 }) satisfies PageServerLoad;
