@@ -40,15 +40,6 @@ const PRACTICE_OPTIONS = [
 	}
 ];
 
-const RECOMMENDED_TASK = {
-	category: "Opinion Essay",
-	description:
-		"Your recent essays demonstrate strong lexical range (Band 7.0), but your arguments need deeper explanation and concrete examples to reach Band 7.5+ in Task Response.",
-	est: 40,
-	title: "Community Service in High School",
-	type: "2" as const
-};
-
 export const load = (async () => {
 	const { locals } = getRequestEvent();
 	const { user } = getSession(locals);
@@ -63,6 +54,14 @@ export const load = (async () => {
 			evaluation: true
 		}
 	});
+
+	const recentPracticeSessions = practices.map((p) => ({
+		band: p.evaluation?.result.overallBand,
+		category: `Task ${p.task.category}`,
+		id: p.id,
+		meta: p.updatedAt.toLocaleString(), // Yesterday, 3 days ago
+		name: p.name
+	}));
 
 	// Statistics
 	const avg = await db
@@ -108,14 +107,20 @@ export const load = (async () => {
 	return {
 		criteria: criteria,
 		practiceOptions: PRACTICE_OPTIONS,
-		practices: practices.map((p) => ({
-			band: p.evaluation?.result.overallBand,
-			category: `Task ${p.task.category}`,
-			id: p.id,
-			meta: p.updatedAt.toLocaleString(), // Yesterday, 3 days ago
-			name: p.name
-		})),
+		practices: recentPracticeSessions,
 		overallBand: roundedOverallBand,
-		recommendedTask: RECOMMENDED_TASK
+		recentPracticeSession: {
+			practiceSession: {
+				id: practices[0].id,
+				name: practices[0].name,
+				type: practices[0].type,
+				updatedAt: practices[0].updatedAt
+			},
+			task: {
+				category: practices[0].task.category,
+				subcategory: practices[0].task.subcategory,
+				prompt: practices[0].task.prompt
+			}
+		}
 	};
 }) satisfies PageServerLoad;
