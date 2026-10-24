@@ -2,13 +2,11 @@
 	import type { PathnameWithSearchOrHash } from "$app/types";
 	import type { RouteIdWithSearchOrHash } from "$app/types";
 	import { resolve } from "$app/paths";
-	import { Sparkle } from "@lucide/svelte";
 
 	const items = [
 		{ active: true, href: "/(protected)", label: "Practice" },
 		{ href: "/(protected)", label: "Tasks" },
-		{ href: "/(protected)", label: "History" },
-		{ highlight: true, href: "/(protected)", label: "AI Tutor" }
+		{ href: "/(protected)", label: "History" }
 	] satisfies {
 		active?: boolean;
 		highlight?: boolean;
@@ -26,13 +24,9 @@
 				"rounded-box px-3 py-1.5 font-semibold",
 				item.active
 					? "bg-primary-content text-primary hover:text-primary"
-					: "text-base-content hover:text-primary",
-				item.highlight ? "relative hover:text-warning" : ""
+					: "text-base-content hover:text-primary"
 			]}
 			href={resolve(item.href)}>
-			{#if item.highlight}
-				<Sparkle class="absolute top-1 right-0.5 text-warning" size="0.875em" />
-			{/if}
 			{item.label}
 		</a>
 	{/each}

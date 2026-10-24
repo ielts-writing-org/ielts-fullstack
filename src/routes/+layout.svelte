@@ -36,7 +36,7 @@
 					aria-label="IELTS Writing Practice Platform Home">
 					<AppLogo />
 					<div class="flex flex-col">
-						<h1 class="leading-6 font-semibold text-primary sm:text-lg">
+						<h1 class="leading-6 font-bold text-primary sm:text-lg">
 							IELTS Writing Practice Platform
 						</h1>
 						<h2 class="hidden text-xs font-semibold text-base-content/75 sm:inline">

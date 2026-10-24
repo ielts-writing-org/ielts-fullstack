@@ -11,7 +11,7 @@
 
 <div
 	class={[
-		"prose max-w-3xl self-center p-4",
+		"prose max-w-3xl self-center p-4 font-['Times']",
 		"prose-headings:font-bold prose-headings:text-primary",
 		"prose-h1:text-center",
 		"prose-h2:mt-2 prose-h2:mb-1 ",
