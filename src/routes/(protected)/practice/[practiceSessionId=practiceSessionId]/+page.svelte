@@ -40,7 +40,7 @@
 
 	async function handleSaveTaskPrompt() {
 		await saveTaskPrompt({
-			practiceSessionId: page.params.practiceSessionId!,
+			taskId: data.task.id,
 			prompt: practiceSessionContext.prompt
 		});
 	}

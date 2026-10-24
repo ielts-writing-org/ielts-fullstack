@@ -10,10 +10,10 @@ import { getDb } from "#lib/server/db/index.ts";
 
 export const saveTaskPrompt = command(
 	z.object({
-		practiceSessionId: z.uuidv7(),
+		taskId: z.uuidv7(),
 		prompt: z.string()
 	}),
-	async ({ practiceSessionId, prompt }) => {
+	async ({ taskId, prompt }) => {
 		const { locals } = getRequestEvent();
 		const { user } = getSessionApi(locals);
 
@@ -22,7 +22,7 @@ export const saveTaskPrompt = command(
 			.update(tasks)
 			.set({ prompt })
 			.from(practiceSessions)
-			.where(and(eq(practiceSessions.id, practiceSessionId), eq(tasks.userId, user.id)));
+			.where(and(eq(tasks.id, taskId), eq(tasks.userId, user.id)));
 
 		if (!result.meta.changes) {
 			error(404, "Task does not exist");
