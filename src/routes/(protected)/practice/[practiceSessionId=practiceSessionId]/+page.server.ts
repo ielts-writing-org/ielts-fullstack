@@ -3,6 +3,7 @@ import { env } from "cloudflare:workers";
 import { getSession } from "#lib/server/auth.ts";
 import { getDb } from "#lib/server/db/index.ts";
 import type { PageServerLoad } from "./$types";
+import type { ChatMessage } from "#lib/schemas/chat-message.ts";
 
 const TASK_DURATIONS = {
 	"1": 20 * 60, // 20 minutes in seconds
@@ -19,7 +20,7 @@ export const load = (async ({ locals, params, depends }) => {
 	const db = getDb(env.IELTS_WRITING_DB);
 	const practiceSession = await db.query.practiceSessions.findFirst({
 		where: (practices, { eq }) => eq(practices.id, practiceSessionId),
-		with: { task: true, evaluation: true }
+		with: { task: true, evaluation: true, chatMessages: true }
 	});
 
 	if (!practiceSession) {
@@ -51,6 +52,9 @@ export const load = (async ({ locals, params, depends }) => {
 		},
 		response: practiceSession.response,
 		evaluation: practiceSession.evaluation?.result,
+		chatMessages: practiceSession.chatMessages.map(
+			(m) => ({ from: m.from, message: m.message }) satisfies ChatMessage
+		),
 		endAt: TASK_DURATIONS[category] + Math.floor(practiceSession.startedAt.getTime() / 1000),
 		timedUpAction: practiceSession.timeUpAction
 	};

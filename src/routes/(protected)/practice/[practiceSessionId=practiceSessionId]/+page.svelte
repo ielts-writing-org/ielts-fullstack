@@ -28,15 +28,19 @@
 			response: untrack(() => data).response
 		},
 		evaluation: untrack(() => data).evaluation,
-		messages: []
+		messages: untrack(() => data).chatMessages
 	});
 
 	const linters = $state<Array<WorkerLinter>>([]);
 	let isPromptDirty = $state<boolean>(false);
 	let isResponseDirty = $state<boolean>(false);
+	let isEvaluationBusy = $state<boolean>(false);
+	let isChatBusy = $state<boolean>(false);
 
 	let timedUpAction = $derived(data.timedUpAction);
-	const isDirty = $derived<boolean>(isPromptDirty || isResponseDirty);
+	const isDirty = $derived<boolean>(
+		isPromptDirty || isResponseDirty || isEvaluationBusy || isChatBusy
+	);
 
 	async function handleSaveTaskPrompt() {
 		await saveTaskPrompt({
@@ -83,7 +87,7 @@
 
 	beforeNavigate(({ cancel, shallow }) => {
 		const canLeave = shallow || !isDirty;
-		if (!canLeave && !window.confirm("You have unsaved changes. Leave anyway?")) {
+		if (!canLeave && !window.confirm("The application is busy. Leave anyway?")) {
 			cancel();
 		}
 	});
@@ -139,7 +143,8 @@
 				<EvaluationPanel
 					practiceSessionId={page.params.practiceSessionId!}
 					{practiceSessionContext}
-					{evaluation} />
+					{evaluation}
+					isBusy={isEvaluationBusy} />
 			</div>
 
 			<label class="tab [--tab-border-color:var(--color-base-content)]/20">
@@ -147,7 +152,12 @@
 				Chat
 			</label>
 			<div class="tab-content border-base-content/20">
-				<ChatPanel taskContext={practiceSessionContext} {evaluation} {messages} />
+				<ChatPanel
+					practiceSessionId={page.params.practiceSessionId!}
+					{practiceSessionContext}
+					{evaluation}
+					{messages}
+					isBusy={isChatBusy} />
 			</div>
 		</div>
 	</aside>

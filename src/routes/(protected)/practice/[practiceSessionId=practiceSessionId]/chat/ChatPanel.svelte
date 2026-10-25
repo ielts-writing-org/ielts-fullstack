@@ -11,25 +11,25 @@
 	import { marked } from "marked";
 	import { ZodError } from "zod";
 	import sanitize from "sanitize-html";
-
 	import { buildChatRequestFormData } from "./utils";
+	import { saveChatMessage } from "./save-chat-message.remote";
 
 	type Props = {
-		evaluation?: Evaluation;
+		practiceSessionId: string;
+		evaluation: Evaluation | undefined;
 		messages: ChatMessage[];
-		taskContext: PracticeSessionContext;
+		practiceSessionContext: PracticeSessionContext;
+		isBusy: boolean;
 	};
 
-	let { evaluation, messages = $bindable([]), taskContext }: Props = $props();
+	let { messages = $bindable([]), isBusy = $bindable(false), ...props }: Props = $props();
 
 	let chatInput = $state<string>("");
-	let aiResponse = $state<string>("");
-	let isExecuting = $state<boolean>(false);
 	let abortController = $state<AbortController>(new AbortController());
 
 	async function handleChat() {
 		try {
-			if (isExecuting) {
+			if (isBusy) {
 				abortController?.abort();
 				abortController = new AbortController();
 				return;
@@ -40,12 +40,12 @@
 				return;
 			}
 
-			isExecuting = true;
+			isBusy = true;
 
 			const vRequest = chatRequestSchema.parse({
-				evaluation,
-				messages: [...messages, { from: "user" as const, message }],
-				taskContext
+				taskContext: props.practiceSessionContext,
+				evaluation: props.evaluation,
+				messages: [...messages, { from: "user" as const, message }]
 			});
 
 			const form = buildChatRequestFormData(vRequest);
@@ -68,7 +68,11 @@
 
 			messages.push({ from: "user", message: message });
 			chatInput = "";
-			aiResponse = "";
+
+			messages[messages.length] = {
+				from: "assistant",
+				message: ""
+			};
 
 			const reader = stream
 				.pipeThrough(new TextDecoderStream())
@@ -95,13 +99,19 @@
 			while (true) {
 				const { done, value } = await reader.read();
 				if (done) {
+					Promise.all([
+						saveChatMessage({
+							practiceSessionId: props.practiceSessionId,
+							chatMessage: messages[messages.length - 2]
+						}),
+						saveChatMessage({
+							practiceSessionId: props.practiceSessionId,
+							chatMessage: messages[messages.length - 1]
+						})
+					]);
 					break;
 				}
-				aiResponse += value;
-			}
-
-			if (response) {
-				messages.push({ from: "assistant", message: aiResponse });
+				messages[messages.length - 1].message += value;
 			}
 		} catch (e) {
 			if (e instanceof ZodError) {
@@ -115,12 +125,12 @@
 				});
 			}
 		} finally {
-			isExecuting = false;
+			isBusy = false;
 		}
 	}
 </script>
 
-<div class={["h-full w-full rounded-box", isExecuting && "aura aura-holo"]}>
+<div class={["h-full w-full rounded-box", isBusy && "aura aura-holo"]}>
 	<div class="flex h-full w-full flex-col gap-2 rounded-box bg-base-100 p-3">
 		<div
 			class="prose prose-sm flex max-w-none flex-1 flex-col gap-2 overflow-y-auto prose-p:my-0 prose-p:py-0">
@@ -141,20 +151,12 @@
 						<div
 							class={[
 								"chat-bubble wrap-break-word",
-								{ "chat-bubble-primary": chat.from === "user" }
+								chat.from === "user" && "chat-bubble-primary"
 							]}>
 							{@html sanitize(marked.parse(chat.message, { async: false }))}
 						</div>
 					</div>
 				{/each}
-			{/if}
-			{#if isExecuting && aiResponse}
-				<div class="chat-start chat">
-					<div class="chat-header">AI Tutor</div>
-					<div class="chat-bubble wrap-break-word">
-						{@html sanitize(marked.parse(aiResponse, { async: false }))}
-					</div>
-				</div>
 			{/if}
 		</div>
 
@@ -163,14 +165,14 @@
 				<input
 					type="text"
 					placeholder="Ask a question..."
-					required={!isExecuting}
-					disabled={isExecuting}
+					required={!isBusy}
+					disabled={isBusy}
 					bind:value={chatInput} />
 			</label>
-			<button class="btn join-item btn-primary" disabled={isExecuting} onclick={handleChat}>
-				<span class="loading loading-sm loading-dots" hidden={!isExecuting}></span>
-				<span class="hidden sm:inline" hidden={isExecuting}>Send</span>
-				<Send class={[isExecuting && "hidden"]} size="1em" />
+			<button class="btn join-item btn-primary" disabled={isBusy} onclick={handleChat}>
+				<span class="loading loading-sm loading-dots" hidden={!isBusy}></span>
+				<span class="hidden sm:inline" hidden={isBusy}>Send</span>
+				<Send class={[isBusy && "hidden"]} size="1em" />
 			</button>
 		</form>
 	</div>

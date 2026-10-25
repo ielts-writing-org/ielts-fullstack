@@ -16,11 +16,16 @@
 		practiceSessionId: string;
 		practiceSessionContext: PracticeSessionContext;
 		evaluation: Evaluation | undefined;
+		isBusy: boolean;
 	};
 
-	let { practiceSessionId, evaluation = $bindable(), practiceSessionContext }: Props = $props();
+	let {
+		practiceSessionId,
+		evaluation = $bindable(),
+		practiceSessionContext,
+		isBusy = $bindable(false)
+	}: Props = $props();
 
-	let isExecuting = $state(false);
 	let abortController = $state<AbortController>(new AbortController());
 
 	const CRITERIA_MAP = {
@@ -40,7 +45,7 @@
 
 	async function handleEvaluate() {
 		try {
-			if (isExecuting) {
+			if (isBusy) {
 				abortController.abort();
 				abortController = new AbortController();
 				return;
@@ -50,7 +55,7 @@
 			const vRequest = evaluateRequestSchema.parse(request);
 			const form = buildEvaluateRequestFormData(vRequest);
 
-			isExecuting = true;
+			isBusy = true;
 			evaluation = {
 				criteria: {
 					taskResponse: { ...EMPTY_CRITERION },
@@ -135,7 +140,7 @@
 
 			evaluation = undefined;
 		} finally {
-			isExecuting = false;
+			isBusy = false;
 			if (evaluation) {
 				await saveEvaluation({ practiceSessionId, evaluation });
 			}
@@ -159,7 +164,7 @@
 	}
 </script>
 
-<div class={["h-full w-full rounded-box", isExecuting && "aura aura-holo"]}>
+<div class={["h-full w-full rounded-box", isBusy && "aura aura-holo"]}>
 	<div class="flex h-full w-full flex-col gap-2 rounded-box bg-base-100 p-3">
 		<div class="flex flex-1 flex-col gap-2 overflow-y-auto">
 			{#if evaluation === undefined}
@@ -185,7 +190,7 @@
 									]}>
 									Band {band.toPrecision(2)}
 								</div>
-							{:else if isExecuting}
+							{:else if isBusy}
 								<div class="animate-pulse text-base-content/75">Analyzing…</div>
 							{/if}
 						</summary>
@@ -263,7 +268,7 @@
 		</div>
 
 		<div class="flex items-center justify-between">
-			<button class="group btn btn-primary" onclick={handleEvaluate} disabled={isExecuting}>
+			<button class="group btn btn-primary" onclick={handleEvaluate} disabled={isBusy}>
 				<span class="loading loading-spinner not-group-disabled:hidden"></span>
 				Evaluate
 			</button>
@@ -279,7 +284,7 @@
 						]}>
 						Est. Band {band.toPrecision(2)}
 					</div>
-				{:else if isExecuting}
+				{:else if isBusy}
 					<div class="badge animate-pulse badge-ghost">Estimating...</div>
 				{/if}
 			{/if}
