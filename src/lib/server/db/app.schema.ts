@@ -49,23 +49,14 @@ export const practiceSessions = sqliteTable(
 	})
 );
 
-export const chatSessions = sqliteTable(
-	"chat_sessions",
-	withBaseColumns({
-		practiceSessionId: text("practice_session_id")
-			.notNull()
-			.references(() => practiceSessions.id, { onDelete: "cascade" })
-	})
-);
-
 export const chatMessages = sqliteTable(
 	"chat_messages",
 	withBaseColumns({
-		chatSessionId: text("chat_session_id")
+		practiceSessionId: text("practice_session_id")
 			.notNull()
-			.references(() => chatSessions.id, { onDelete: "cascade" }),
+			.references(() => practiceSessions.id, { onDelete: "cascade" }),
 
-		from: text("from").notNull(),
+		from: text("from", { enum: ["assistant", "user"] }).notNull(),
 		message: text("message").notNull()
 	})
 );
@@ -82,7 +73,6 @@ export const evaluations = sqliteTable(
 export type ProfileEntity = typeof profiles.$inferSelect;
 export type TaskEntity = typeof tasks.$inferSelect;
 export type PracticeSessionEntity = typeof practiceSessions.$inferSelect;
-export type ChatSessionEntity = typeof chatSessions.$inferSelect;
 export type ChatMessageEntity = typeof chatMessages.$inferSelect;
 export type EvaluationEntity = typeof evaluations.$inferSelect;
 
@@ -91,12 +81,19 @@ export type EvaluationEntity = typeof evaluations.$inferSelect;
  *                                RELATIONS                                   *
  *                                                                            *
  *****************************************************************************/
+export const profilesRelations = relations(profiles, ({ one }) => ({
+	user: one(users, {
+		fields: [profiles.id],
+		references: [users.id]
+	})
+}));
+
 export const tasksRelations = relations(tasks, ({ many, one }) => ({
-	practiceSessions: many(practiceSessions),
 	user: one(users, {
 		fields: [tasks.userId],
 		references: [users.id]
-	})
+	}),
+	practiceSessions: many(practiceSessions)
 }));
 
 export const practiceSessionsRelations = relations(practiceSessions, ({ one, many }) => ({
@@ -104,27 +101,20 @@ export const practiceSessionsRelations = relations(practiceSessions, ({ one, man
 		fields: [practiceSessions.taskId],
 		references: [tasks.id]
 	}),
-	chatSessions: many(chatSessions),
-	evaluation: one(evaluations)
-}));
-
-export const chatSessionsRelations = relations(chatSessions, ({ one }) => ({
-	practiceSession: one(practiceSessions, {
-		fields: [chatSessions.practiceSessionId],
-		references: [practiceSessions.id]
-	})
-}));
-
-export const chatMessagesRelations = relations(chatMessages, ({ one }) => ({
-	chatSession: one(chatSessions, {
-		fields: [chatMessages.chatSessionId],
-		references: [chatSessions.id]
-	})
+	evaluation: one(evaluations),
+	chatMessages: many(chatMessages)
 }));
 
 export const evaluationsRelations = relations(evaluations, ({ one }) => ({
 	practiceSession: one(practiceSessions, {
 		fields: [evaluations.practiceSessionId],
+		references: [practiceSessions.id]
+	})
+}));
+
+export const chatMessagesRelations = relations(chatMessages, ({ one }) => ({
+	practiceSession: one(practiceSessions, {
+		fields: [chatMessages.practiceSessionId],
 		references: [practiceSessions.id]
 	})
 }));
