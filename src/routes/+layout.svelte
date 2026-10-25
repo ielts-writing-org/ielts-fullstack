@@ -22,7 +22,7 @@
 			<div class="navbar-start gap-2">
 				<AppLogo />
 				<div class="flex-1 overflow-hidden">
-					<h2 class="block overflow-hidden text-lg font-bold text-ellipsis text-primary">
+					<h2 class="block truncate text-lg font-bold text-primary">
 						{page.data.pageName}
 					</h2>
 					<h3 class="text-xs">{page.data.pageDescription}</h3>

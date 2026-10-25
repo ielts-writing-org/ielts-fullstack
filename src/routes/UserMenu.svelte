@@ -129,7 +129,7 @@
 </a> -->
 
 <div class="flex flex-col items-end gap-1 overflow-hidden">
-	<div dir="rtl" class="w-full overflow-hidden text-left font-semibold text-nowrap text-ellipsis">
+	<div dir="rtl" class="w-full truncate text-left font-semibold">
 		{user.name}
 	</div>
 
