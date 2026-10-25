@@ -1,10 +1,12 @@
 import { sql } from "drizzle-orm";
-import { integer, text, type SQLiteTableFn } from "drizzle-orm/sqlite-core";
+import { integer, text, type SQLiteColumnBuilderBase } from "drizzle-orm/sqlite-core";
 import { uuidv7 } from "uuidv7";
 
 export const now = sql`(cast(unixepoch('subsecond') * 1000 as integer))`;
 
-export function withBaseColumns<T extends ReturnType<Parameters<SQLiteTableFn>[1]>>(columns: T) {
+export function withBaseColumns<TColumnsMap extends Record<string, SQLiteColumnBuilderBase>>(
+	columns: TColumnsMap
+) {
 	return {
 		id: text("id").primaryKey().$defaultFn(uuidv7),
 		...columns,
