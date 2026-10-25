@@ -25,7 +25,7 @@
 	<p class="mb-4">Enter a new practice session name:</p>
 	<label class="validator input">
 		<SavePen size="1em" />
-		<input class="input" bind:value={newName} minlength="3" maxlength="24" required />
+		<input class="input" bind:value={newName} minlength="1" maxlength="64" required />
 	</label>
 
 	<div class="modal-action">

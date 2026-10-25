@@ -10,7 +10,7 @@ import z from "zod";
 export const changeSessionName = command(
 	z.object({
 		practiceSessionId: z.uuidv7(),
-		newName: z.string().min(3).max(24)
+		newName: z.string().min(1).max(64)
 	}),
 	async ({ practiceSessionId, newName }) => {
 		const { locals } = getRequestEvent();
