@@ -13,40 +13,44 @@ In conclusion, the platform aims to make writing practice more interactive, resp
 1. NodeJS Runtime >=18.0.0.
 2. A Cloudflare account.
 
-## Server KV entries
+## KV entries
 
-| Namespace | Key               | Description                                        |
-| --------- | ----------------- | -------------------------------------------------- |
-| TASK1_KV  | chat-prompt       | The chat prompt to use when chat with AI           |
-| TASK1_KV  | evaluation-prompt | The evaluation prompt to use when evaluate with AI |
-| TASK2_KV  | chat-prompt       | The chat prompt to use when chat with AI           |
-| TASK2_KV  | evaluation-prompt | The evaluation prompt to use when evaluate with AI |
+| Namespace        | Key                                      | Description                                        |
+| ---------------- | ---------------------------------------- | -------------------------------------------------- |
+| IELTS_WRITING_KV | chat-prompt-1, chat-prompt-2             | The system prompt to be used when chat with AI     |
+| IELTS_WRITING_KV | evaluation-prompt-1, evaluation-prompt-2 | The system prompt to be used when evaluate with AI |
 
-## How to run the local development server
+## Start the local development server
 
 1. Clone this repo.
-2. Run the following command to install required libraries:
+2. Install dependencies:
 
    ```bash
-   npm install --legacy-peer-deps
+   npm install
    ```
 
-3. Run the following command to start the development server:
+3. Generate worker configurations:
+
+   ```bash
+   npm run gen
+   ```
+
+4. Start the development server:
 
    ```bash
    npm run dev
    ```
 
-4. Follow each terminal's returns to continue.
+5. Wait until the application fully idle. Then create database tables:
 
-## How to open Cloudflare Explorer
+   ```bash
+   npm run db:push
+   ```
 
-Currently, there is no way to open Cloudflare Explorer in SvelteKit project without building and previewing the app. You will have to run the following command to start it as a standalone server:
+6. Use `localflare` to add above KV entries:
 
-```bash
-npx localflare attach
-```
-
-This will then open a webpage at: <https://studio.localflare.dev?port=8788> and require an allowance to access local api service at <http://localhost:8788/__localflare/>
+   ```bash
+   npx localflare attach
+   ```
 
 Read more: <https://localflare.dev/docs/cli-attach-mode>
