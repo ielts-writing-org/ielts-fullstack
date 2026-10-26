@@ -1,8 +1,14 @@
-<script>
+<script lang="ts">
 	import { marked } from "marked";
 	import sanitize from "sanitize-html";
+	import { onMount } from "svelte";
 
-	const { data } = $props();
+	let pp = $state<string>("");
+
+	onMount(async () => {
+		const req = await fetch("/pp.md");
+		pp = await req.text();
+	});
 </script>
 
 <svelte:head>
@@ -19,5 +25,5 @@
 		"prose-h3:mt-2 prose-h3:mb-1 prose-h3:indent-2",
 		"prose-a:link prose-a:link-primary! prose-a:link-hover!"
 	]}>
-	{@html sanitize(marked.parse(data.pp, { async: false }))}
+	{@html sanitize(marked.parse(pp, { async: false }))}
 </div>
