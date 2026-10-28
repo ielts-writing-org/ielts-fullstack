@@ -112,9 +112,9 @@
 			<!-- Content -->
 			{#if current.content}
 				{#if typeof current.content === "string"}
-					<p class="my-4">{current.content}</p>
+					<p class="my-4 max-h-[50dvh] overflow-y-auto">{current.content}</p>
 				{:else if "snippet" in current.content}
-					<div class="my-4">
+					<div class="my-4 max-h-[50dvh] overflow-y-auto">
 						{@render current.content.snippet(current.content.args)}
 					</div>
 				{:else}
