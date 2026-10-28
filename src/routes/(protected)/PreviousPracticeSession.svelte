@@ -1,18 +1,21 @@
-<script lang="ts">
+<script lang="ts" generics="Category extends TaskCategory">
 	import { resolve } from "$app/paths";
-	import { ArrowRight } from "@lucide/svelte";
+	import { ArrowRight, Clock, InfinityIcon } from "@lucide/svelte";
 	import type { TaskCategory } from "#lib/schemas/task-category.ts";
+	import type { TaskSubcategory } from "#lib/schemas/task-subcategory.ts";
+	import type { PracticeSessionType } from "#lib/schemas/practice-session-type.ts";
+	import { timeLimitMinutesFor } from "#lib/utils/ielts.ts";
 
 	type Props = {
 		practiceSession: {
 			id: string;
 			name: string;
-			type: "free" | "timed";
+			type: PracticeSessionType;
 			updatedAt: Date;
 		};
 		task: {
-			category: TaskCategory;
-			subcategory?: string;
+			category: Category;
+			subcategory: TaskSubcategory<Category> | null;
 			prompt: string;
 		};
 	};
@@ -25,17 +28,22 @@
 	aria-label="Recommended practice">
 	<div class="max-w-full min-w-0 flex-1">
 		<div class="flex flex-wrap items-center gap-2 text-xs font-semibold">
-			<div class="badge badge-soft badge-sm badge-primary">PREVIOUS PRACTICE SESSION</div>
 			<div class="font-semibold text-base-content/75">
-				<span>
-					Task {task.category}{task.subcategory === "uncategorized" ? "" : `: ${task.subcategory}`}
+				<span class="badge badge-soft badge-sm badge-primary">
+					Task {task.category}
 				</span>
-				<span class="mx-1">•</span>
-				{#if practiceSession.type === "timed"}
-					<span>Est. {task.category === "1" ? 20 : 40} min</span>
-				{:else}
-					<span>Unlimited time</span>
-				{/if}
+				<span class="badge badge-ghost badge-sm font-medium">
+					{task.subcategory ? task.subcategory : "Uncategorized"}
+				</span>
+				<span class="badge badge-ghost badge-sm font-medium">
+					{#if practiceSession.type === "timed"}
+						<Clock class="size-4" />
+						{timeLimitMinutesFor(task.category)} min limit
+					{:else}
+						<InfinityIcon class="size-4" />
+						Unlimited time
+					{/if}
+				</span>
 			</div>
 		</div>
 		<h1 class="my-1.5 truncate font-bold">{practiceSession.name}</h1>

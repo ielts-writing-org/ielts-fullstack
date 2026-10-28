@@ -6,6 +6,7 @@ import { env } from "cloudflare:workers";
 import { eq, sql } from "drizzle-orm";
 import type { PageServerLoad } from "./$types";
 import { roundToNearestHalf } from "#lib/utils/math.ts";
+import { formatRelativeTime } from "#lib/utils/time.ts";
 
 const PRACTICE_OPTIONS = [
 	{
@@ -56,10 +57,10 @@ export const load = (async () => {
 	});
 
 	const recentPracticeSessions = practices.map((p) => ({
-		band: p.evaluation?.result.overallBand,
+		band: p.evaluation?.result.estimatedBand,
 		category: `Task ${p.task.category}`,
 		id: p.id,
-		meta: p.updatedAt.toLocaleString(), // Yesterday, 3 days ago
+		meta: formatRelativeTime(p.updatedAt),
 		name: p.name
 	}));
 
@@ -82,45 +83,52 @@ export const load = (async () => {
 		.innerJoin(tasks, eq(tasks.id, practiceSessions.taskId))
 		.groupBy(tasks.category);
 
+	const task1 = avg[0];
+	const task2 = avg[1];
+
 	const criteria = [
 		{
 			name: "Task Achievement / Response",
-			scores: [avg[0].tr, avg[1].tr]
+			scores: [task1?.tr ?? 0, task2?.tr ?? 0]
 		},
 		{
 			name: "Coherence & Cohesion",
-			scores: [avg[0].cc, avg[1].cc]
+			scores: [task1?.cc ?? 0, task2?.cc ?? 0]
 		},
 		{
 			name: "Lexical Resource",
-			scores: [avg[0].lr, avg[1].lr]
+			scores: [task1?.lr ?? 0, task2?.lr ?? 0]
 		},
 		{
 			name: "Grammar Range & Accuracy",
-			scores: [avg[0].gra, avg[1].gra]
+			scores: [task1?.gra ?? 0, task2?.gra ?? 0]
 		}
 	];
 
-	const rawOverallBand = (avg[0].overall * 1) / 3 + (avg[1].overall * 2) / 3;
+	const rawOverallBand = ((task1?.overall ?? 0) * 1) / 3 + ((task2?.overall ?? 0) * 2) / 3;
 	const roundedOverallBand = roundToNearestHalf(rawOverallBand);
+
+	const latest = practices[0];
 
 	return {
 		criteria: criteria,
 		practiceOptions: PRACTICE_OPTIONS,
 		practices: recentPracticeSessions,
 		overallBand: roundedOverallBand,
-		recentPracticeSession: {
-			practiceSession: {
-				id: practices[0].id,
-				name: practices[0].name,
-				type: practices[0].type,
-				updatedAt: practices[0].updatedAt
-			},
-			task: {
-				category: practices[0].task.category,
-				subcategory: practices[0].task.subcategory,
-				prompt: practices[0].task.prompt
-			}
-		}
+		recentPracticeSession: latest
+			? {
+					practiceSession: {
+						id: latest.id,
+						name: latest.name,
+						type: latest.type,
+						updatedAt: latest.updatedAt
+					},
+					task: {
+						category: latest.task.category,
+						subcategory: latest.task.subcategory,
+						prompt: latest.task.prompt
+					}
+				}
+			: null
 	};
 }) satisfies PageServerLoad;

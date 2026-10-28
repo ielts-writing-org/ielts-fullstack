@@ -58,7 +58,7 @@
 					</div>
 				</div>
 				<div class="flex justify-end gap-4">
-					{#each criterion.scores as taskAvg, index (taskAvg)}
+					{#each criterion.scores as taskAvg, index (index)}
 						<div
 							class="tooltip tooltip-left"
 							data-tip={`Average task ${index + 1} band: ${roundToNearestHalf(taskAvg).toFixed(1)}`}>

@@ -14,9 +14,11 @@
 </svelte:head>
 
 <main class="w-full flex-1 px-3 py-3 sm:px-4 sm:py-4 lg:px-9">
-	<PreviousPracticeSession
-		practiceSession={data.recentPracticeSession.practiceSession}
-		task={data.recentPracticeSession.task} />
+	{#if data.recentPracticeSession}
+		<PreviousPracticeSession
+			practiceSession={data.recentPracticeSession.practiceSession}
+			task={data.recentPracticeSession.task} />
+	{/if}
 
 	<div class="my-4 flex flex-col gap-2 sm:flex-row sm:items-baseline sm:justify-between">
 		<h2 class="font-semibold">What do you want to practice?</h2>
@@ -28,7 +30,7 @@
 		<Statistics
 			criteria={data.criteria}
 			overallBand={data.overallBand}
-			bandTarget={data.profile?.target ?? 0} />
+			bandTarget={data.profile?.bandTarget ?? 0} />
 	</section>
 
 	<section class="mt-4 grid w-full grid-cols-1 gap-4 lg:grid-cols-[1.55fr_1fr]">
