@@ -1,30 +1,23 @@
 <script lang="ts">
-	import { resolve } from "$app/paths";
-	import { page } from "$app/state";
-	import { LogOut, Palette, PenLine, Undo2 } from "@lucide/svelte";
+	import { LogOut, Palette } from "@lucide/svelte";
 	import { authClient } from "#lib/auth/auth-client.ts";
 	import { openModal } from "#lib/components/Modal.svelte";
-	import ThemeController from "#lib/components/ThemeController.svelte";
-	import { saveTarget } from "./save-target.remote";
-	import { goto, invalidate } from "$app/navigation";
-	import ChangeSessionName from "./ChangeSessionName.svelte";
+	import ChangeBandTarget from "./ChangeBandTarget.svelte";
+	import ChangeTheme from "./ChangeTheme.svelte";
 
 	type Props = {
 		user: {
-			image?: null | string;
 			name: string;
+			image?: string | null;
 		};
 		profile: {
-			target: number;
+			bandTarget: number;
 		};
 	};
 
-	let { user, profile }: Props = $props();
+	let props: Props = $props();
 
-	let target = $derived(profile.target);
-	const showPracticeFunctions = $derived(
-		page.route.id === "/(protected)/practice/[practiceSessionId=practiceSessionId]"
-	);
+	let target = $derived(props.profile.bandTarget);
 
 	async function handleSignOut() {
 		openModal({
@@ -67,70 +60,21 @@
 	function handleChangeTarget() {
 		openModal({
 			title: "Change target band",
-			content: { snippet: targetInputSnippet },
-			primaryButton: {
-				color: "primary",
-				text: "Save",
-				onclick: async () => {
-					await saveTarget({ target: target });
-					await invalidate("data:profile");
-				}
-			},
-			secondaryButton: {
-				color: "error",
-				style: "ghost",
-				text: "Cancel",
-				onclick: () => (target = profile.target)
-			}
-		});
-	}
-
-	function handleBackToDashboard() {
-		openModal({
-			title: {
-				text: "Back to dashboard confirmation",
-				color: "error"
-			},
-			content: "You are about to return to dashboard.",
-			primaryButton: {
-				text: "Back to dashboard",
-				color: "error",
-				style: "ghost",
-				onclick: () => goto(resolve("/(protected)"))
-			},
-			secondaryButton: {
-				text: "Cancel",
-				color: "primary"
-			},
-			bypassBusy: true
+			content: { component: ChangeBandTarget, props: { bandTarget: props.profile.bandTarget } }
 		});
 	}
 
 	function handleChangeTheme() {
 		openModal({
 			title: "Change theme",
-			content: { snippet: themeSnippet },
-			primaryButton: "Close"
-		});
-	}
-
-	async function handleChangePracticeName() {
-		openModal({
-			title: "Chage Practice Session name",
-			content: { component: ChangeSessionName }
+			content: { component: ChangeTheme, props: {} }
 		});
 	}
 </script>
 
-<!-- <a
-	class="badge hidden badge-outline badge-sm font-semibold badge-warning sm:inline-flex"
-	href={resolve("/(public)")}>
-	🔥 5-Day Streak
-</a> -->
-
 <div class="flex flex-col items-end gap-1 overflow-hidden">
 	<div dir="rtl" class="w-full truncate text-left font-semibold">
-		{user.name}
+		{props.user.name}
 	</div>
 
 	<button
@@ -147,7 +91,10 @@
 		style="anchor-name: --avatar"
 		popovertarget="avatar-popover"
 		title="Open Menu">
-		<img class="w-10 rounded-full ring ring-base-content/20" src={user.image} alt={user.name} />
+		<img
+			class="w-10 rounded-full ring ring-base-content/20"
+			src={props.user.image}
+			alt={props.user.name} />
 	</button>
 
 	<ul
@@ -155,26 +102,6 @@
 		style="position-anchor: --avatar"
 		id="avatar-popover"
 		popover="auto">
-		{#if showPracticeFunctions}
-			<li>
-				<button
-					class="justify-end active:bg-primary active:text-primary-content"
-					onclick={handleBackToDashboard}>
-					Back to Dashboard
-					<Undo2 size="1em" />
-				</button>
-			</li>
-
-			<li>
-				<button
-					class="justify-end active:bg-primary active:text-primary-content"
-					onclick={handleChangePracticeName}>
-					Change practice name
-					<PenLine size="1em" />
-				</button>
-			</li>
-		{/if}
-
 		<li>
 			<button
 				class="justify-end active:bg-primary active:text-primary-content"
@@ -196,32 +123,3 @@
 		</li>
 	</ul>
 </div>
-
-{#snippet targetInputSnippet()}
-	<p class="mb-4">Set your target band:</p>
-	<div class="w-full">
-		<input
-			class="range w-full range-primary range-sm"
-			type="range"
-			min="0"
-			max="9"
-			step="0.5"
-			bind:value={target} />
-		{const range = new Array(10)}
-		<div class="mt-2 flex justify-between px-2.5 text-xs">
-			{#each range}
-				<span>|</span>
-			{/each}
-		</div>
-		<div class="mt-2 flex justify-between px-2.5 text-xs">
-			{#each range, i}
-				<span>{i}</span>
-			{/each}
-		</div>
-	</div>
-{/snippet}
-
-{#snippet themeSnippet()}
-	<p class="mb-4">Select an available theme below:</p>
-	<ThemeController />
-{/snippet}
