@@ -28,8 +28,8 @@
 					content: {
 						snippet: signInErrorSnippet,
 						args: {
-							errorMessage: result.error.message ?? "Unknown Error",
-							errorCode: result.error.code ?? "UNKNOWN_CODE",
+							errorMessage: result.error.message,
+							errorCode: result.error.code,
 							statusCode: result.error.status,
 							status: result.error.statusText
 						}
@@ -72,24 +72,23 @@
 </svelte:head>
 
 {#snippet signInErrorSnippet(props: {
-	errorMessage: string;
-	errorCode: string;
+	errorMessage: string | undefined;
+	errorCode: string | undefined;
 	status: string;
 	statusCode: number;
 })}
-	<div>
-		<p>
-			There was an error while signing you in:
-			<span class="font-semibold text-error">{props.errorMessage}</span>
-		</p>
-		<p class="mt-4">
+	<p class="font-semibold text-error">
+		{props.errorMessage ?? "There was an unexpected error while signing you in"}
+	</p>
+	<p class="mt-4">
+		{#if props.errorCode}
 			<span class="font-semibold">Error Code:</span>
 			{props.errorCode}
 			<br />
-			<span class="font-semibold">Status:</span>
-			{props.statusCode} - {props.status}
-		</p>
-	</div>
+		{/if}
+		<span class="font-semibold">Status:</span>
+		{props.statusCode} - {props.status}
+	</p>
 {/snippet}
 
 <main
