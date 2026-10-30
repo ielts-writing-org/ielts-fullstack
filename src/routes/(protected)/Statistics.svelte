@@ -2,15 +2,19 @@
 	import { roundToNearestHalf } from "#lib/utils/math.ts";
 
 	type Props = {
-		criteria: {
-			name: string;
-			scores: number[];
-		}[];
+		statistics: {
+			criteria: {
+				name: string;
+				task1: number;
+				task2: number;
+			}[];
+			estimatedBand: number;
+		};
+
 		bandTarget: number;
-		overallBand: number;
 	};
 
-	const { criteria, bandTarget, overallBand }: Props = $props();
+	const props: Props = $props();
 </script>
 
 <aside
@@ -23,17 +27,17 @@
 		<span
 			class={[
 				"badge badge-sm font-semibold whitespace-nowrap",
-				overallBand >= bandTarget && "badge-success",
-				overallBand < bandTarget && "badge-warning"
+				props.statistics.estimatedBand >= props.bandTarget && "badge-success",
+				props.statistics.estimatedBand < props.bandTarget && "badge-warning"
 			]}>
-			Estimated Average Band: {overallBand}
+			Estimated Average Band: {props.statistics.estimatedBand}
 		</span>
 	</div>
 	<div class="flex flex-col gap-2">
-		{#each criteria as criterion (criterion.name)}
+		{#each props.statistics.criteria as criterion (criterion.name)}
 			<div class="flex gap-4">
 				<div class="flex-1">
-					{const criterionAvg = (criterion.scores[0] * 1) / 3 + (criterion.scores[1] * 2) / 3}
+					{const criterionAvg = (criterion.task1 * 1) / 3 + (criterion.task2 * 2) / 3}
 					<div class="text-sm font-semibold">{criterion.name}</div>
 					<div class="flex items-center gap-2">
 						<div
@@ -58,30 +62,33 @@
 					</div>
 				</div>
 				<div class="flex justify-end gap-4">
-					{#each criterion.scores as taskAvg, index (index)}
-						<div
-							class="tooltip tooltip-left"
-							data-tip={`Average task ${index + 1} band: ${roundToNearestHalf(taskAvg).toFixed(1)}`}>
-							<div class="flex flex-col items-center">
-								<div
-									class={[
-										"radial-progress",
-										taskAvg >= 7.5 && "text-success",
-										taskAvg >= 5.5 && taskAvg < 7.5 && "text-warning",
-										taskAvg < 5.5 && "text-error"
-									]}
-									style:--value={(taskAvg / 9) * 100}
-									style:--size="2em"
-									aria-valuenow={taskAvg}
-									role="progressbar">
-									{roundToNearestHalf(taskAvg).toFixed(1)}
-								</div>
-								<div class="text-xs">Task {index + 1}</div>
-							</div>
-						</div>
-					{/each}
+					{@render taskBandSnippet("1", criterion.task1)}
+					{@render taskBandSnippet("2", criterion.task2)}
 				</div>
 			</div>
 		{/each}
 	</div>
 </aside>
+
+{#snippet taskBandSnippet(taskCategory: string, taskAvg: number)}
+	<div
+		class="tooltip tooltip-left"
+		data-tip={`Average task ${taskCategory} band: ${roundToNearestHalf(taskAvg).toFixed(1)}`}>
+		<div class="flex flex-col items-center">
+			<div
+				class={[
+					"radial-progress",
+					taskAvg >= 7.5 && "text-success",
+					taskAvg >= 5.5 && taskAvg < 7.5 && "text-warning",
+					taskAvg < 5.5 && "text-error"
+				]}
+				style:--value={(taskAvg / 9) * 100}
+				style:--size="2em"
+				aria-valuenow={taskAvg}
+				role="progressbar">
+				{roundToNearestHalf(taskAvg).toFixed(1)}
+			</div>
+			<div class="text-xs">Task {taskCategory}</div>
+		</div>
+	</div>
+{/snippet}

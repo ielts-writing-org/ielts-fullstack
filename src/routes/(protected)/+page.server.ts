@@ -56,65 +56,43 @@ export const load = (async () => {
 		}
 	});
 
-	const recentPracticeSessions = practices.map((p) => ({
-		band: p.evaluation?.result.estimatedBand,
-		category: `Task ${p.task.category}`,
-		id: p.id,
-		meta: formatRelativeTime(p.updatedAt),
-		name: p.name
-	}));
-
-	// Statistics
-	const avg = await db
-		.select({
-			tr: sql`avg(${evaluations.result} ->> '$.criteria.taskResponse.band')`.mapWith(Number),
-			cc: sql`avg(${evaluations.result} ->> '$.criteria.coherenceAndCohesion.band')`.mapWith(
-				Number
-			),
-			lr: sql`avg(${evaluations.result} ->> '$.criteria.lexicalResource.band')`.mapWith(Number),
-			gra: sql`avg(${evaluations.result} ->> '$.criteria.grammaticalRangeAndAccuracy.band')`.mapWith(
-				Number
-			),
-			overall: sql`avg(${evaluations.result} ->> '$.overallBand')`.mapWith(Number)
-		})
-		.from(practiceSessions)
-		.where(eq(practiceSessions.userId, user.id))
-		.innerJoin(evaluations, eq(practiceSessions.id, evaluations.practiceSessionId))
-		.innerJoin(tasks, eq(tasks.id, practiceSessions.taskId))
-		.groupBy(tasks.category);
-
-	const task1 = avg[0];
-	const task2 = avg[1];
-
-	const criteria = [
-		{
-			name: "Task Achievement / Response",
-			scores: [task1?.tr ?? 0, task2?.tr ?? 0]
-		},
-		{
-			name: "Coherence & Cohesion",
-			scores: [task1?.cc ?? 0, task2?.cc ?? 0]
-		},
-		{
-			name: "Lexical Resource",
-			scores: [task1?.lr ?? 0, task2?.lr ?? 0]
-		},
-		{
-			name: "Grammar Range & Accuracy",
-			scores: [task1?.gra ?? 0, task2?.gra ?? 0]
-		}
-	];
-
-	const rawOverallBand = ((task1?.overall ?? 0) * 1) / 3 + ((task2?.overall ?? 0) * 2) / 3;
-	const roundedOverallBand = roundToNearestHalf(rawOverallBand);
-
 	const latest = practices[0];
 
+	// Statistics
+	// prettier-ignore
+	const [stats] = await db
+	.select({
+		task1: {
+			ta: sql<number>`coalesce(avg(case when ${tasks.category} = '1' then ${evaluations.result} ->> '$.criteria.taskAchievement.band' end), 0)`,
+			cc: sql<number>`coalesce(avg(case when ${tasks.category} = '1' then ${evaluations.result} ->> '$.criteria.coherenceAndCohesion.band' end), 0)`,
+			lr: sql<number>`coalesce(avg(case when ${tasks.category} = '1' then ${evaluations.result} ->> '$.criteria.lexicalResource.band' end), 0)`,
+			gra: sql<number>`coalesce(avg(case when ${tasks.category} = '1' then ${evaluations.result} ->> '$.criteria.grammaticalRangeAndAccuracy.band' end), 0)`,
+			estimatedBand: sql<number>`coalesce(avg(case when ${tasks.category} = '1' then ${evaluations.result} ->> '$.estimatedBand' end), 0)`
+		},
+		task2: {
+			tr: sql<number>`coalesce(avg(case when ${tasks.category} = '2' then ${evaluations.result} ->> '$.criteria.taskResponse.band' end), 0)`,
+			cc: sql<number>`coalesce(avg(case when ${tasks.category} = '2' then ${evaluations.result} ->> '$.criteria.coherenceAndCohesion.band' end), 0)`,
+			lr: sql<number>`coalesce(avg(case when ${tasks.category} = '2' then ${evaluations.result} ->> '$.criteria.lexicalResource.band' end), 0)`,
+			gra: sql<number>`coalesce(avg(case when ${tasks.category} = '2' then ${evaluations.result} ->> '$.criteria.grammaticalRangeAndAccuracy.band' end), 0)`,
+			estimatedBand: sql<number>`coalesce(avg(case when ${tasks.category} = '2' then ${evaluations.result} ->> '$.estimatedBand' end), 0)`
+		}
+	})
+	.from(practiceSessions)
+	.innerJoin(evaluations, eq(practiceSessions.id, evaluations.practiceSessionId))
+	.innerJoin(tasks, eq(tasks.id, practiceSessions.taskId))
+	.where(eq(practiceSessions.userId, user.id));
+
+	const rawOverallBand = (stats.task1.estimatedBand * 1) / 3 + (stats.task2.estimatedBand * 2) / 3;
+
 	return {
-		criteria: criteria,
 		practiceOptions: PRACTICE_OPTIONS,
-		practices: recentPracticeSessions,
-		overallBand: roundedOverallBand,
+		practices: practices.map((p) => ({
+			band: p.evaluation?.result.estimatedBand,
+			category: `Task ${p.task.category}`,
+			id: p.id,
+			meta: formatRelativeTime(p.updatedAt),
+			name: p.name
+		})),
 		recentPracticeSession: latest
 			? {
 					practiceSession: {
@@ -129,6 +107,31 @@ export const load = (async () => {
 						prompt: latest.task.prompt
 					}
 				}
-			: null
+			: null,
+		statistics: {
+			criteria: [
+				{
+					name: "Task Achievement / Response",
+					task1: stats.task1.ta,
+					task2: stats.task2.tr
+				},
+				{
+					name: "Coherence & Cohesion",
+					task1: stats.task1.cc,
+					task2: stats.task2.cc
+				},
+				{
+					name: "Lexical Resource",
+					task1: stats.task1.lr,
+					task2: stats.task2.lr
+				},
+				{
+					name: "Grammar Range & Accuracy",
+					task1: stats.task1.gra,
+					task2: stats.task2.gra
+				}
+			],
+			estimatedBand: roundToNearestHalf(rawOverallBand)
+		}
 	};
 }) satisfies PageServerLoad;

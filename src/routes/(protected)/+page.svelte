@@ -27,10 +27,7 @@
 
 	<section class="grid w-full grid-cols-1 gap-4 xl:grid-cols-[minmax(0,1.55fr)_minmax(320px,1fr)]">
 		<PracticeOptions practiceOptions={data.practiceOptions} />
-		<Statistics
-			criteria={data.criteria}
-			overallBand={data.overallBand}
-			bandTarget={data.profile?.bandTarget ?? 0} />
+		<Statistics statistics={data.statistics} bandTarget={data.profile?.bandTarget ?? 0} />
 	</section>
 
 	<section class="mt-4 grid w-full grid-cols-1 gap-4 lg:grid-cols-[1.55fr_1fr]">
