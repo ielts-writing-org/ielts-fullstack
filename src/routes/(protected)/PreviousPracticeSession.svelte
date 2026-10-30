@@ -5,6 +5,7 @@
 	import type { TaskSubcategory } from "#lib/schemas/task-subcategory.ts";
 	import type { PracticeSessionType } from "#lib/schemas/practice-session-type.ts";
 	import { timeLimitMinutesFor } from "#lib/utils/ielts.ts";
+	import { formatRelativeTime } from "#lib/utils/time.ts";
 
 	type Props = {
 		practiceSession: {
@@ -46,10 +47,10 @@
 				</span>
 			</div>
 		</div>
-		<h1 class="my-1.5 truncate font-bold">{practiceSession.name}</h1>
+		<h1 class="my-1.5 truncate font-semibold">{practiceSession.name}</h1>
 		<p class="max-w-3xl text-xs text-base-content/75">{task.prompt}</p>
 	</div>
-	<div class="tooltip" data-tip={practiceSession.updatedAt.toLocaleString()}>
+	<div class="tooltip" data-tip={formatRelativeTime(practiceSession.updatedAt)}>
 		<a
 			class="btn btn-primary"
 			href={resolve("/(protected)/practice/[practiceSessionId=practiceSessionId]", {

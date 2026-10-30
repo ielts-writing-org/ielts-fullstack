@@ -18,7 +18,9 @@
 <div class="rounded-box border border-base-content/20 bg-base-100 p-3.5 hover:border-primary">
 	<div class="mb-2.5 flex items-center justify-between">
 		<h2 class="text-sm font-semibold">Recent Practice Sessions</h2>
-		<a class="flex items-center text-xs font-semibold text-primary" href={resolve("/(protected)")}>
+		<a
+			class="flex items-center text-xs font-semibold text-primary"
+			href={resolve("/(protected)/history")}>
 			View complete history <ChevronRight size={14} />
 		</a>
 	</div>
