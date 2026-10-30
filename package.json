@@ -21,12 +21,14 @@
 		"db:generate": "drizzle-kit generate",
 		"db:migrate": "drizzle-kit migrate",
 		"db:studio": "drizzle-kit studio",
-		"auth:schema": "auth generate --config src/lib/server/auth.ts --output src/lib/server/db/auth.schema.ts --yes"
+		"auth:schema": "auth generate --config src/lib/server/auth/cli.ts --output src/lib/server/db/auth.schema.ts --yes"
 	},
 	"dependencies": {
 		"@better-auth/infra": "^0.4.22",
 		"@lucide/svelte": "^1.61.0",
 		"@streamparser/json": "^0.0.26",
+		"@upstash/ratelimit": "^2.2.0",
+		"@upstash/redis": "^1.40.0",
 		"better-auth": "^1.7.12",
 		"drizzle-orm": "^0.45.4",
 		"eventsource-parser": "^4.1.2",

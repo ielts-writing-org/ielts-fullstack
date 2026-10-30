@@ -3,10 +3,9 @@ import { error } from "@sveltejs/kit";
 import { env } from "cloudflare:workers";
 import { and, eq } from "drizzle-orm";
 import { z } from "zod";
-
-import { getSessionApi } from "#lib/server/auth.ts";
 import { practiceSessions, tasks } from "#lib/server/db/app.schema.ts";
 import { getDb } from "#lib/server/db/index.ts";
+import { getApiSession } from "#lib/server/auth/index.ts";
 
 export const saveTaskPrompt = command(
 	z.object({
@@ -15,7 +14,7 @@ export const saveTaskPrompt = command(
 	}),
 	async ({ taskId, prompt }) => {
 		const { locals } = getRequestEvent();
-		const { user } = getSessionApi(locals);
+		const { user } = getApiSession(locals);
 
 		const db = getDb(env.IELTS_WRITING_DB);
 		const result = await db

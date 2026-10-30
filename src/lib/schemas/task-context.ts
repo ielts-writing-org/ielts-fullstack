@@ -4,6 +4,7 @@ import { taskCategorySchema } from "./task-category";
 export const practiceSessionContextSchema = z.object({
 	category: taskCategorySchema,
 	image: z.instanceof(File).optional(),
+	imageName: z.string().optional(),
 	prompt: z.string(),
 	response: z.string()
 });

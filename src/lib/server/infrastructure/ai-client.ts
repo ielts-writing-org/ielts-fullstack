@@ -1,10 +1,6 @@
 import { env } from "cloudflare:workers";
-
 import type { TaskCategory } from "#lib/schemas/task-category.ts";
-
-import { evaluationSchema } from "#lib/schemas/evaluation.ts";
 import { abortableStream } from "#lib/utils/abortable-stream.ts";
-
 import { ConfigProvider } from "./config-provider";
 
 type AiConfig = {
@@ -49,33 +45,6 @@ export class AiClient {
 				chat_template_kwargs: { enable_thinking: AI_CONFIGS.enableThinking },
 				max_completion_tokens: AI_CONFIGS.maxOutputTokens,
 				messages: this.includeSystemPrompt(messages, systemPrompt),
-				seed: AI_CONFIGS.seed,
-				stream: true,
-				temperature: AI_CONFIGS.temperature
-			}),
-			signal
-		);
-	}
-
-	async evaluate(
-		messages: AiClientMessages,
-		taskCategory: TaskCategory,
-		signal: AbortSignal
-	): Promise<ReadableStream> {
-		const systemPrompt = await this.configProvider.getEvaluationPrompt(taskCategory);
-
-		return await abortableStream(
-			this.ai.run(AI_CONFIGS.id, {
-				chat_template_kwargs: { enable_thinking: AI_CONFIGS.enableThinking },
-				max_completion_tokens: AI_CONFIGS.maxOutputTokens,
-				messages: this.includeSystemPrompt(messages, systemPrompt),
-				response_format: {
-					json_schema: {
-						name: "ielts-writing-evaluation-schema",
-						schema: evaluationSchema.toJSONSchema()
-					},
-					type: "json_schema"
-				},
 				seed: AI_CONFIGS.seed,
 				stream: true,
 				temperature: AI_CONFIGS.temperature

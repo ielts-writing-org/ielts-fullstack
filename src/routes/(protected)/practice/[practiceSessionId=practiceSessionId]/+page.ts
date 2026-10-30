@@ -21,6 +21,12 @@ export const load = (async ({ data }) => {
 		task: {
 			...data.task,
 			image: taskImage
+		},
+		practiceSession: {
+			title: data.title,
+			type: data.type,
+			taskCategory: data.task.category,
+			taskCategorySchema: data.task.subcategory
 		}
 	};
 }) satisfies PageLoad;

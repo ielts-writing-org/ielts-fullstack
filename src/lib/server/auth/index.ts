@@ -5,17 +5,19 @@ import {
 	GITHUB_CLIENT_SECRET
 } from "$app/env/private";
 import { ORIGIN } from "$app/env/public";
+import { resolve } from "$app/paths";
 import { getRequestEvent } from "$app/server";
 import { dash, sentinel } from "@better-auth/infra";
+import { error, redirect } from "@sveltejs/kit";
 import { drizzleAdapter } from "better-auth/adapters/drizzle";
 import { betterAuth } from "better-auth/minimal";
 import { admin } from "better-auth/plugins";
 import { sveltekitCookies } from "better-auth/svelte-kit";
-import { getDb } from "./db";
-import { error, redirect } from "@sveltejs/kit";
-import { resolve } from "$app/paths";
 import { env } from "cloudflare:workers";
-import { profiles } from "./db/app.schema";
+import { getDb } from "../db";
+import { profiles } from "../db/app.schema";
+import { redisSecondaryStorage } from "./secondary-storage";
+import { dev } from "$app/env";
 
 export const createAuth = (d1: D1Database) => {
 	return betterAuth({
@@ -35,20 +37,13 @@ export const createAuth = (d1: D1Database) => {
 			sveltekitCookies(getRequestEvent) // make sure this is the last plugin in the array
 		],
 		advanced: {
-			cookies: {
-				session_token: { name: "session_token" }
-			},
-			// Enable database joins for better performance
 			database: { joins: true },
 			ipAddress: {
-				/**
-				 * Without proper IP address headers, rate limiting may not work correctly when behind a proxy or CDN.
-				 * The server might see all requests as coming from the same IP.
-				 * For Cloudflare:
-				 */
+				// https://better-auth.com/docs/reference/security#ip-address-headers
 				ipAddressHeaders: ["cf-connecting-ip", "x-forwarded-for"]
 			}
 		},
+		database: drizzleAdapter(getDb(d1), { provider: "sqlite", usePlural: true }),
 		databaseHooks: {
 			user: {
 				create: {
@@ -59,20 +54,19 @@ export const createAuth = (d1: D1Database) => {
 				}
 			}
 		},
-		database: drizzleAdapter(getDb(d1), { provider: "sqlite", usePlural: true }),
-		onAPIError: { errorURL: "/sign-in" }
+		session: {
+			storeSessionInDatabase: true
+		},
+		verification: {
+			storeInDatabase: true
+		},
+		onAPIError: { errorURL: "/sign-in" },
+		rateLimit: { storage: "secondary-storage" },
+		secondaryStorage: dev ? undefined : redisSecondaryStorage
 	});
 };
 
-/**
- * DO NOT USE!
- *
- * This instance is used by the `auth` CLI for schema generation ONLY.
- * To access `auth` at runtime, use `event.locals.auth`.
- */
-export const auth = createAuth(null!);
-
-export function getSession(locals: App.Locals) {
+export function getPageSession(locals: App.Locals) {
 	const { session, user, profile } = locals;
 
 	if (!session || !user || !profile) {
@@ -82,7 +76,7 @@ export function getSession(locals: App.Locals) {
 	return { session, user, profile };
 }
 
-export function getSessionApi(locals: App.Locals) {
+export function getApiSession(locals: App.Locals) {
 	const { session, user, profile } = locals;
 
 	if (!session || !user || !profile) {

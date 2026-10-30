@@ -1,32 +1,32 @@
 <script lang="ts">
 	import { countCharacters, countWords } from "#lib/utils/stats.ts";
-	import {
-		type EditorFontFamily,
-		type EditorFontSize,
-		FONT_OPTIONS,
-		FONT_SIZES
-	} from "./editor-display.ts";
+	import { Check, TriangleAlert } from "@lucide/svelte";
+	import { type EditorFontFamily, FONT_OPTIONS } from "./editor-display.ts";
 
 	interface Props {
 		text?: string;
 		problemCount?: number;
 		fontFamily?: EditorFontFamily;
-		fontSize?: EditorFontSize;
+		/** Minimum acceptable word count (IELTS task requirement). */
+		wordTarget?: number;
 		onFontFamilyChange?: (fontFamily: EditorFontFamily) => void;
-		onFontSizeChange?: (fontSize: EditorFontSize) => void;
 	}
 
 	let {
 		text = "",
 		problemCount = 0,
 		fontFamily = "sans",
-		fontSize = "default",
-		onFontFamilyChange = () => {},
-		onFontSizeChange = () => {}
+		wordTarget = 0,
+		onFontFamilyChange = () => {}
 	}: Props = $props();
 
 	const words = $derived(countWords(text));
 	const chars = $derived(countCharacters(text));
+	const hasTarget = $derived(wordTarget > 0);
+	const goalMet = $derived(hasTarget && words >= wordTarget);
+	const goalProgress = $derived(
+		hasTarget ? Math.min(100, Math.round((words / wordTarget) * 100)) : 0
+	);
 </script>
 
 <footer
@@ -46,9 +46,35 @@
 
 	<span class="hidden h-2.5 w-px bg-base-content/20 @md:inline"></span>
 
-	<span class="@md:hidden">{words}w</span>
-	<span class="hidden @md:inline">{words} words</span>
-	<span class="@md:hidden">{chars}c</span>
+	{#if hasTarget}
+		<span
+			class={["inline-flex items-center gap-1.5", goalMet ? "text-success" : "text-warning"]}
+			title={goalMet
+				? `Minimum of ${wordTarget} words met`
+				: `${wordTarget - words} more words to reach the minimum`}>
+			{#if goalMet}
+				<Check class="size-3" />
+			{:else}
+				<TriangleAlert class="size-3" />
+			{/if}
+			<span class="@md:hidden">{words}/{wordTarget}w</span>
+			<span class="hidden @md:inline">{words} / {wordTarget} words</span>
+			<progress
+				class={[
+					"progress hidden w-16 @md:block",
+					goalMet ? "progress-success" : "progress-warning"
+				]}
+				value={goalProgress}
+				max="100"
+				aria-label="Minimum word count progress">
+			</progress>
+		</span>
+	{:else}
+		<span class="@md:hidden">{words}w</span>
+		<span class="hidden @md:inline">{words} words</span>
+	{/if}
+
+	<span class={["@md:hidden", hasTarget && "hidden"]}>{chars}c</span>
 	<span class="hidden @md:inline">{chars} chars</span>
 
 	<span class="flex-1"></span>
@@ -72,22 +98,4 @@
 			</button>
 		{/each}
 	</div>
-
-	<label
-		class="relative inline-flex h-4.5 items-center rounded-selector border-[0.5px] border-base-content/10 bg-base-200 pr-4.5 pl-2 text-[11px] font-medium text-base-content after:absolute after:top-1/2 after:right-1.25 after:-translate-y-1/2 after:cursor-pointer after:font-[-apple-system,BlinkMacSystemFont,'SF_Pro_Text',sans-serif] after:text-[9px] after:leading-none after:text-stone-500 after:content-['v']">
-		<span>{fontSize === "default" ? "Default" : `${fontSize}px`}</span>
-		<select
-			value={fontSize}
-			class="absolute inset-0 cursor-pointer border-0 bg-base-300 opacity-0"
-			aria-label="Font size"
-			onchange={(event) => {
-				const value = event.currentTarget.value;
-				onFontSizeChange(value === "default" ? "default" : Number(value));
-			}}>
-			<option value="default">Default</option>
-			{#each FONT_SIZES as size (size)}
-				<option value={size}>{size}px</option>
-			{/each}
-		</select>
-	</label>
 </footer>

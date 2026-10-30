@@ -1,12 +1,6 @@
-import { env } from "cloudflare:workers";
+import type { ImagesClient } from "./images-client.port";
 
-export class ImagesClient {
-	static get instance() {
-		return (ImagesClient.#instance ??= new ImagesClient(env.IELTS_WRITING_IMAGES));
-	}
-
-	static #instance: ImagesClient;
-
+export class CfImagesClient implements ImagesClient {
 	constructor(private readonly images: ImagesBinding) {}
 
 	async compress(image: Blob): Promise<string> {

@@ -1,4 +1,3 @@
-import { getSession } from "#lib/server/auth.ts";
 import { evaluations, practiceSessions, tasks } from "#lib/server/db/app.schema.ts";
 import { getDb } from "#lib/server/db/index.ts";
 import { getRequestEvent } from "$app/server";
@@ -7,6 +6,7 @@ import { eq, sql } from "drizzle-orm";
 import type { PageServerLoad } from "./$types";
 import { roundToNearestHalf } from "#lib/utils/math.ts";
 import { formatRelativeTime } from "#lib/utils/time.ts";
+import { getPageSession } from "#lib/server/auth/index.ts";
 
 const PRACTICE_OPTIONS = [
 	{
@@ -43,7 +43,7 @@ const PRACTICE_OPTIONS = [
 
 export const load = (async () => {
 	const { locals } = getRequestEvent();
-	const { user } = getSession(locals);
+	const { user } = getPageSession(locals);
 
 	const db = getDb(env.IELTS_WRITING_DB);
 	const practices = await db.query.practiceSessions.findMany({

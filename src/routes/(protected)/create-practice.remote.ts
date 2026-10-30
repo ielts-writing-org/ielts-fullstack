@@ -3,9 +3,9 @@ import { command, getRequestEvent } from "$app/server";
 import { env } from "cloudflare:workers";
 import { z } from "zod";
 import { taskCategorySchema } from "#lib/schemas/task-category.ts";
-import { getSessionApi } from "#lib/server/auth.ts";
 import { practiceSessions, tasks } from "#lib/server/db/app.schema.ts";
 import { getDb } from "#lib/server/db/index.ts";
+import { getApiSession } from "#lib/server/auth/index.ts";
 
 export const createPractice = command(
 	z.object({
@@ -15,7 +15,7 @@ export const createPractice = command(
 	}),
 	async ({ taskCategory, taskId, practiceSessionType: practiceType }) => {
 		const { locals } = getRequestEvent();
-		const { user } = getSessionApi(locals);
+		const { user } = getApiSession(locals);
 
 		const db = getDb(env.IELTS_WRITING_DB);
 		if (!taskId) {

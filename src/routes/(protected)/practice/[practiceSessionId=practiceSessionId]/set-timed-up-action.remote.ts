@@ -1,4 +1,4 @@
-import { getSessionApi } from "#lib/server/auth.ts";
+import { getApiSession } from "#lib/server/auth/index.ts";
 import { practiceSessions } from "#lib/server/db/app.schema.ts";
 import { getDb } from "#lib/server/db/index.ts";
 import { command, getRequestEvent } from "$app/server";
@@ -14,7 +14,7 @@ export const setTimedUpAction = command(
 	}),
 	async ({ practiceSessionId, timedUpAction }) => {
 		const { locals } = getRequestEvent();
-		const { user } = getSessionApi(locals);
+		const { user } = getApiSession(locals);
 
 		const db = getDb(env.IELTS_WRITING_DB);
 		const result = await db

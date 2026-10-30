@@ -9,8 +9,6 @@
  */
 export type EditorFontFamily = "sans" | "serif" | "mono";
 
-export type EditorFontSize = "default" | number;
-
 export const FONT_OPTIONS: {
 	value: EditorFontFamily;
 	label: string;
@@ -37,9 +35,6 @@ export const FONT_OPTIONS: {
 	}
 ];
 
-export const FONT_SIZES = [12, 13, 14, 15, 16, 17, 18, 20, 22];
-export const DEFAULT_FONT_SIZE = "default";
-
 /**
  * Convert persisted or caller-provided font family values to a supported option.
  *
@@ -62,24 +57,4 @@ export function normalizeFontFamily(value: string): EditorFontFamily {
  */
 export function fontStackFor(value: EditorFontFamily): string {
 	return FONT_OPTIONS.find((option) => option.value === value)?.stack ?? FONT_OPTIONS[0].stack;
-}
-
-/**
- * Convert persisted or caller-provided font size values to a supported editor size.
- *
- * Numeric values are rounded and clamped so user input cannot produce unreadable
- * or layout-breaking editor text.
- */
-export function normalizeFontSize(value: EditorFontSize | string): EditorFontSize {
-	if (value === DEFAULT_FONT_SIZE || value == null || value === "") {
-		return DEFAULT_FONT_SIZE;
-	}
-
-	const numericValue = typeof value === "number" ? value : Number(value);
-	if (!Number.isFinite(numericValue)) {
-		return DEFAULT_FONT_SIZE;
-	}
-
-	const rounded = Math.round(numericValue);
-	return Math.min(28, Math.max(11, rounded));
 }

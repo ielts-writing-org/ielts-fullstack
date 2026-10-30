@@ -1,10 +1,10 @@
 <script lang="ts">
 	import { debounce } from "#lib/utils/debounce.ts";
-	import { Pen, PenOff } from "@lucide/svelte";
+	import { Pen, PenOff, Trash } from "@lucide/svelte";
 	import type { WorkerLinter } from "harper.js";
 	import { onDestroy, untrack } from "svelte";
-	import Timer from "./Timer.svelte";
 	import { saveTaskImage } from "./save-task-image.remote";
+	import { clearTaskImage } from "./clear-task-image.remote";
 	import { openModal } from "#lib/components/Modal.svelte";
 	import { page } from "$app/state";
 
@@ -13,21 +13,23 @@
 		content: string;
 		hasImage?: boolean;
 		image?: Blob;
+		imageName?: string;
 		isDirty?: boolean;
 		canUnlock?: boolean;
 		isUnlocked?: boolean;
 		linters: WorkerLinter[];
 		onPostContentChanged: () => Promise<void> | void;
-		timer?: {
-			endAt: number;
-			onTimedUp: () => void;
-		};
 		title: string;
+		/** Minimum acceptable word count, surfaced in the editor status bar. */
+		wordTarget?: number;
+		/** Placeholder shown while the document is empty. */
+		placeholder?: string;
 	};
 
 	let {
 		content = $bindable(""),
 		image = $bindable(),
+		imageName = $bindable(),
 		isDirty = $bindable(false),
 		isUnlocked = $bindable(true),
 		...props
@@ -37,6 +39,25 @@
 	let currentState = $state<"Not saved" | "Saved" | "Saving">("Saved");
 
 	const imagePreview = $derived(props.hasImage && image ? URL.createObjectURL(image) : undefined);
+
+	/** Force an immediate save, bypassing the autosave debounce (Ctrl/Cmd + S). */
+	async function saveNow() {
+		if (!isDirty) {
+			return;
+		}
+
+		currentState = "Saving";
+		await props.onPostContentChanged();
+		currentState = "Saved";
+		isDirty = false;
+	}
+
+	function handleKeydown(event: KeyboardEvent) {
+		if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === "s") {
+			event.preventDefault();
+			void saveNow();
+		}
+	}
 
 	async function handleAddImage(e: Event & { currentTarget: EventTarget & HTMLInputElement }) {
 		const files = e.currentTarget.files;
@@ -52,7 +73,17 @@
 
 		image = file;
 
-		saveTaskImage.submit();
+		await saveTaskImage.submit();
+		imageName = saveTaskImage.result?.imageName;
+	}
+
+	async function handleRemoveImage() {
+		if (imagePreview) {
+			URL.revokeObjectURL(imagePreview);
+		}
+
+		await clearTaskImage({ taskId: page.data.task.id });
+		image = undefined;
 	}
 
 	const handlePostContentChangedDebounced = debounce(async () => {
@@ -103,11 +134,17 @@
 	});
 </script>
 
+<svelte:window onkeydown={handleKeydown} />
+
 <div class={["flex flex-col rounded-box border border-base-content/20 bg-base-100", props.class]}>
 	<div class="flex items-center justify-between gap-1 p-2">
 		<div class="flex items-center gap-2">
 			<label class="swap" title={getLockSupportText()}>
-				<input type="checkbox" bind:checked={isUnlocked} disabled={!props.canUnlock} />
+				<input
+					type="checkbox"
+					bind:checked={isUnlocked}
+					disabled={!props.canUnlock}
+					aria-label={isUnlocked ? "Lock editor" : "Unlock editor"} />
 				<Pen class="swap-on text-success" size="1em" />
 				<PenOff class="swap-off text-error" size="1em" />
 			</label>
@@ -115,24 +152,32 @@
 		</div>
 
 		<div class="flex items-center gap-2">
-			<!-- Add image button -->
+			<!-- Image controls -->
 			{#if props.hasImage && isUnlocked}
-				<form {...saveTaskImage} class="contents" enctype="multipart/form-data">
-					<input {...saveTaskImage.fields.taskId.as("hidden", page.data.task.id)} />
-					<label class={["btn btn-primary btn-xs", image ? "btn-outline" : "btn-primary"]}>
-						<input
-							{...saveTaskImage.fields.image.as("file")}
-							class="hidden"
-							accept="image/*"
-							onchange={handleAddImage} />
-						{image ? "Change" : "Add an"} image
-					</label>
-				</form>
-			{/if}
-
-			<!-- Timer Display -->
-			{#if props.timer}
-				<Timer {...props.timer} />
+				<div class="flex items-center gap-1">
+					<form {...saveTaskImage} class="contents" enctype="multipart/form-data">
+						<input {...saveTaskImage.fields.taskId.as("hidden", page.data.task.id)} />
+						<label class={["btn btn-primary btn-xs", image ? "btn-outline" : "btn-primary"]}>
+							<input
+								{...saveTaskImage.fields.image.as("file")}
+								class="hidden"
+								accept="image/*"
+								onchange={handleAddImage} />
+							{image ? "Change" : "Add an"} image
+						</label>
+					</form>
+					{#if image}
+						<button
+							class="btn btn-ghost text-error btn-xs"
+							title="Remove image"
+							aria-label="Remove task image"
+							disabled={clearTaskImage.pending > 0}
+							onclick={handleRemoveImage}>
+							<Trash size="1em" />
+							Remove image
+						</button>
+					{/if}
+				</div>
 			{/if}
 
 			<!-- Working indicator -->
@@ -170,13 +215,15 @@
 					linters={props.linters}
 					{content}
 					isEditable={isUnlocked}
+					wordTarget={props.wordTarget ?? 0}
+					placeholder={props.placeholder}
 					onReady={handleReady}
 					onChange={handleContentChanged} />
 
 				<!-- Image preview -->
 				{#if props.hasImage && isReady && imagePreview}
 					<div class="flex min-h-fit flex-1 flex-col items-center justify-center gap-2">
-						<img src={imagePreview} alt="Task" class="placeholder max-w-full" />
+						<img src={imagePreview} alt={imageName} class="placeholder max-w-full" />
 					</div>
 				{/if}
 			</div>

@@ -4,6 +4,8 @@
 	import { openModal } from "#lib/components/Modal.svelte";
 	import ChangeBandTarget from "./ChangeBandTarget.svelte";
 	import ChangeTheme from "./ChangeTheme.svelte";
+	import { resetTheme } from "#lib/components/ThemeController.svelte";
+	import { refreshAll } from "$app/navigation";
 
 	type Props = {
 		user: {
@@ -33,10 +35,8 @@
 				onclick: async () => {
 					const result = await authClient.signOut();
 					if (result.data && result.data.success) {
-						await cookieStore.delete("theme");
-						/* KNOWN ISSUE: Using SvelteKit refreshAll() does not rerun transformPageChunk() in server hook
-						so this will casuse any functionality based on transformPageChunk() broken */
-						window.location.reload();
+						await resetTheme();
+						await refreshAll();
 					}
 
 					if (result.error) {

@@ -1,6 +1,8 @@
 <script lang="ts">
 	import { resolve } from "$app/paths";
 	import { page } from "$app/state";
+	import { Clock, FileText, InfinityIcon } from "@lucide/svelte";
+	import { minWordsFor, timeLimitMinutesFor } from "#lib/utils/ielts.js";
 	import AppLogo from "#lib/components/AppLogo.svelte";
 	import Modal from "#lib/components/Modal.svelte";
 	import MainNav from "./MainNav.svelte";
@@ -8,32 +10,52 @@
 	import "./layout.css";
 
 	let { children, data } = $props();
-
-	const isPracticePage = $derived(
-		page.route.id === "/(protected)/practice/[practiceSessionId=practiceSessionId]"
-	);
 </script>
 
 <Modal />
+
 <div class="flex h-dvh w-full flex-col overflow-y-auto bg-base-100 text-base-content">
 	<header
 		class="navbar sticky top-0 z-10 flex shrink-0 gap-2 border-b border-base-content/10 bg-base-100 not-lg:flex-wrap">
-		{#if isPracticePage}
-			<div class="navbar-start gap-2">
-				<AppLogo />
-				<div class="flex-1 overflow-hidden">
-					<h2 class="block truncate text-lg font-bold text-primary">
-						{page.data.pageName}
+		{#if page.data.practiceSession}
+			{const session = page.data.practiceSession}
+			<div class="navbar-start min-w-0 gap-2">
+				<a class="contents" href={resolve("/(protected)")} aria-label="Dashboard">
+					<AppLogo />
+				</a>
+				<div class="min-w-0 flex-1 overflow-hidden">
+					<h1 class="block truncate text-lg font-bold text-primary">
+						{page.data.title}
+					</h1>
+					<h2 class="flex flex-nowrap overflow-x-auto text-xs font-semibold text-base-content/75">
+						<span class="badge badge-soft badge-sm badge-primary">
+							Task {session.taskCategory}
+						</span>
+						<span class="badge badge-ghost badge-sm font-medium">
+							{session.taskSubcategory ? session.taskSubcategory : "Uncategorized"}
+						</span>
+						<span class="badge badge-ghost badge-sm font-medium">
+							{#if session.type === "timed"}
+								<Clock class="size-4" />
+								{timeLimitMinutesFor(session.taskCategory)} min limit
+							{:else}
+								<InfinityIcon class="size-4" />
+								Unlimited time
+							{/if}
+						</span>
+						{const minWords = minWordsFor(session.taskCategory)}
+						<span
+							class="badge gap-1 badge-ghost badge-sm font-medium"
+							title={`A strong answer for this task is at least ${minWords} words`}>
+							<FileText class="size-4" />
+							Min {minWords} words
+						</span>
 					</h2>
-					<h3 class="text-xs">{page.data.pageDescription}</h3>
 				</div>
 			</div>
 		{:else}
 			<div class="navbar-start flex-1 items-center">
-				<a
-					class="flex items-center gap-2"
-					href={resolve("/(protected)")}
-					aria-label="IELTS Writing Practice Platform Home">
+				<a class="flex items-center gap-2" href={resolve("/(protected)")} aria-label="Dashboard">
 					<AppLogo />
 					<div class="flex flex-col">
 						<h1 class="leading-6 font-bold text-primary sm:text-lg">

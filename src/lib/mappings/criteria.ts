@@ -1,9 +1,15 @@
-import type { CriterionKeys } from "#lib/schemas/evaluation.ts";
+import type { Criteria, CriterionCheckStatus } from "#lib/schemas/criteria.ts";
 
-export const CRITERIA_MAP = [
-	{ key: "taskAchievement", label: "Task Achievement" },
-	{ key: "taskResponse", label: "Task Response" },
-	{ key: "coherenceAndCohesion", label: "Coherence & Cohesion" },
-	{ key: "lexicalResource", label: "Lexical Resource" },
-	{ key: "grammaticalRangeAndAccuracy", label: "Grammar Range & Accuracy" }
-] as const satisfies { key: CriterionKeys; label: string }[];
+export const CRITERIA_MAP = {
+	taskAchievement: "Task Achievement",
+	taskResponse: "Task Response",
+	coherenceAndCohesion: "Coherence & Cohesion",
+	lexicalResource: "Lexical Resource",
+	grammaticalRangeAndAccuracy: "Grammar Range & Accuracy"
+} as const satisfies Record<Criteria, string>;
+
+export const CRITERION_CHECK_STATUS_MAP = [
+	{ key: "met", label: "Met" },
+	{ key: "partially_met", label: "Partially met" },
+	{ key: "not_met", label: "Not met" }
+] as const satisfies { key: CriterionCheckStatus; label: string }[];

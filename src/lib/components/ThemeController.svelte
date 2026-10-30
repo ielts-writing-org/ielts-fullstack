@@ -1,6 +1,4 @@
-<script lang="ts">
-	import { onMount } from "svelte";
-
+<script lang="ts" module>
 	const themeGroups = {
 		"Light theme": [
 			{ themeName: "Light", themeValue: "light" },
@@ -17,17 +15,19 @@
 
 	let currentTheme = $state<ThemeNames>("light");
 
-	async function handleThemeChange(
-		e: Event & {
-			currentTarget: EventTarget & HTMLSelectElement;
-		}
-	) {
-		const currentTheme = e.currentTarget.value;
+	export async function resetTheme() {
+		currentTheme = "light";
 		document.documentElement.setAttribute("data-theme", currentTheme);
-		await cookieStore.set({
-			name: "theme",
-			value: currentTheme
-		});
+		await cookieStore.delete("theme");
+	}
+</script>
+
+<script lang="ts">
+	import { onMount } from "svelte";
+
+	async function handleThemeChange() {
+		document.documentElement.setAttribute("data-theme", currentTheme);
+		await cookieStore.set({ name: "theme", value: currentTheme });
 	}
 
 	onMount(() => {

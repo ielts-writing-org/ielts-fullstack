@@ -1,66 +1,86 @@
+import { chatRequestSchema, type ChatRequest } from "#lib/schemas/chat-request.ts";
+import { getApiSession } from "#lib/server/auth/index.ts";
 import { AiClient } from "#lib/server/infrastructure/ai-client.ts";
-import { ImagesClient } from "#lib/server/infrastructure/images-client.ts";
-import { computeDeterministicStats } from "#lib/utils/stats.ts";
+import { rateLimit } from "#lib/server/rate-limit.ts";
+import { computeDeterministicStats, type DeterministicStats } from "#lib/utils/stats.ts";
 import type { RequestHandler } from "./$types";
-import { parseChatRequestForm } from "./utils";
-import { getSessionApi } from "#lib/server/auth.ts";
+import { getZodErrors } from "#lib/utils/error.ts";
+import { env } from "cloudflare:workers";
+import { CfImagesClient } from "#lib/server/infrastructure/images-client/images-client.cf.ts";
 
-// TODO: Rate limit
-export const POST: RequestHandler = async ({ locals, request }) => {
-	getSessionApi(locals);
+export const POST: RequestHandler = async ({ locals, request, getClientAddress }) => {
+	await rateLimit(getClientAddress);
 
-	const formData = await request.formData();
-	const pForm = parseChatRequestForm(formData);
+	getApiSession(locals);
 
-	const taskContext = {
-		...pForm.taskContext,
-		stats: computeDeterministicStats(pForm.taskContext.response)
+	const json = await request.json<ChatRequest>();
+	const result = await chatRequestSchema.safeParseAsync(json);
+
+	if (!result.success || !result.data) {
+		return Response.json(
+			{
+				success: false,
+				zodErrors: getZodErrors(result.error)
+			},
+			{ status: 400 }
+		);
+	}
+
+	const validatedJson = {
+		...result.data,
+		practiceSession: {
+			response: result.data.practiceSession.response,
+			stats: computeDeterministicStats(result.data.practiceSession.response)
+		}
+	} satisfies ChatRequest & {
+		practiceSession: { stats: DeterministicStats };
 	};
+
+	let imageBase64: string | undefined;
+	if (validatedJson.task.category === "1" && validatedJson.task.imageName) {
+		const image = await env.IELTS_WRITING_BUCKET.get(validatedJson.task.imageName);
+		if (image) {
+			const blob = await image.blob();
+			const imagesClient = new CfImagesClient(env.IELTS_WRITING_IMAGES);
+			imageBase64 = await imagesClient.compress(blob);
+		}
+	}
 
 	const stream = await AiClient.instance.chat(
 		[
 			// Task context
 			{
+				role: "user",
 				content: [
-					// Task context without image
 					{
-						text: JSON.stringify(taskContext, (k, v) =>
-							k === "image" ? undefined : (v as unknown)
-						),
-						type: "text"
+						type: "text",
+						text: JSON.stringify(validatedJson)
 					},
-					// Task context image
-					...(pForm.taskContext.category === "1" && pForm.taskContext.image
+					...(imageBase64
 						? [
 								{
-									image_url: {
-										url: await ImagesClient.instance.compress(pForm.taskContext.image)
-									},
-									type: "image_url" as const
+									type: "image_url" as const,
+									image_url: { url: imageBase64 }
 								}
 							]
 						: [])
-				],
-				role: "user"
+				]
 			},
-			// AI previous evaluation
-			...(pForm.evaluation
-				? [{ content: JSON.stringify(pForm.evaluation), role: "assistant" as const }]
+			// Previous AI evaluation
+			...(validatedJson.evaluation
+				? [{ role: "assistant" as const, content: JSON.stringify(validatedJson.evaluation) }]
 				: []),
 			// Chat messages
-			...pForm.messages.map((c) => ({
-				content: [{ text: c.message, type: "text" as const }],
-				role: c.from
+			...validatedJson.messages.map((c) => ({
+				role: c.from,
+				content: [{ type: "text" as const, text: c.message }]
 			}))
 		],
-		pForm.taskContext.category,
+		validatedJson.task.category,
 		request.signal
 	);
 
 	return new Response(stream, {
-		headers: {
-			"cache-control": "no-cache",
-			"content-type": "text/event-stream"
-		}
+		headers: { "cache-control": "no-cache", "content-type": "text/event-stream" }
 	});
 };

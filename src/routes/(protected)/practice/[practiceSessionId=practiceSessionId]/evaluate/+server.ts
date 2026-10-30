@@ -1,52 +1,57 @@
-import { AiClient } from "#lib/server/infrastructure/ai-client.ts";
-import { ImagesClient } from "#lib/server/infrastructure/images-client.ts";
-import { computeDeterministicStats } from "#lib/utils/stats.ts";
 import type { RequestHandler } from "./$types";
-import { parseEvaluateRequestForm } from "./utils";
-import { getSessionApi } from "#lib/server/auth.ts";
+import { env } from "cloudflare:workers";
+import { evaluateRequestSchema } from "#lib/schemas/evaluate-request.ts";
+import type { ApiResult } from "#lib/schemas/api-result.ts";
+import { getApiSession } from "#lib/server/auth/index.ts";
+import { rateLimit } from "#lib/server/rate-limit.ts";
+import { getZodErrors } from "#lib/utils/error.ts";
+import { CfConfigProvider } from "#lib/server/infrastructure/config-provider/config-provider.cf.ts";
+import { CfBucketClient } from "#lib/server/infrastructure/bucket-client/bucket-client.cf.ts";
+import { CfImagesClient } from "#lib/server/infrastructure/images-client/images-client.cf.ts";
+import { CfEvaluationClient } from "./evaluation-client.cf";
+import { EvaluateHandler } from "./evaluate.handler";
 
-// TODO: Rate limit
-export const POST: RequestHandler = async ({ locals, request }) => {
-	getSessionApi(locals);
+export const POST: RequestHandler = async ({ locals, request, getClientAddress }) => {
+	await rateLimit(getClientAddress);
+	getApiSession(locals);
 
-	const form = await request.formData();
-	const pForm = parseEvaluateRequestForm(form);
+	const json = await request.json();
+	const validationResult = evaluateRequestSchema.safeParse(json);
 
-	const taskContext = {
-		...pForm,
-		stats: computeDeterministicStats(pForm.response)
-	};
-
-	const stream = await AiClient.instance.evaluate(
-		[
-			// Task context
+	if (!validationResult.success || !validationResult.data) {
+		return Response.json(
 			{
-				content: [
-					// Task context without image
-					{
-						text: JSON.stringify(taskContext, (k, v) =>
-							k === "image" ? undefined : (v as unknown)
-						),
-						type: "text"
-					},
-					// Task context image
-					...(pForm.id === "1" && pForm.image
-						? [
-								{
-									image_url: { url: await ImagesClient.instance.compress(pForm.image) },
-									type: "image_url" as const
-								}
-							]
-						: [])
-				],
-				role: "user"
-			}
-		],
-		pForm.id,
-		request.signal
-	);
+				success: false,
+				error: {
+					type: "validation",
+					fields: getZodErrors(validationResult.error)
+				}
+			} satisfies ApiResult,
+			{ status: 400 }
+		);
+	}
 
-	return new Response(stream, {
+	const configProvider = new CfConfigProvider(env.IELTS_WRITING_KV);
+	const evaluationClient = new CfEvaluationClient(configProvider, env.IELTS_WRITING_AI);
+	const bucketClient = new CfBucketClient(env.IELTS_WRITING_BUCKET);
+	const imagesClient = new CfImagesClient(env.IELTS_WRITING_IMAGES);
+	const handler = new EvaluateHandler(evaluationClient, bucketClient, imagesClient);
+
+	const handlerResult = await handler.execute(validationResult.data, request.signal);
+	if (!handlerResult.success) {
+		return Response.json(
+			{
+				success: false,
+				error: {
+					type: "bad_request",
+					message: handlerResult.message
+				}
+			} satisfies ApiResult,
+			{ status: 400 }
+		);
+	}
+
+	return new Response(handlerResult.stream, {
 		headers: { "cache-control": "no-cache", "content-type": "text/event-stream" }
 	});
 };

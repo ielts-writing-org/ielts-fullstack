@@ -1,48 +1,68 @@
 import { z } from "zod";
+import { bandSchema } from "./band";
+import { criterionCheckStatus } from "./criteria";
 
-const evaluationCheckSchema = z.object({
-	id: z.string(),
-	name: z.string().meta({ description: "Human-friendly name" }),
-	weight: z.number().min(0).max(1),
-	status: z.enum(["met", "partially_met", "not_met"]),
-	why: z.string().min(1)
-});
-
-const evaluationProblemSchema = z.object({
-	name: z.string().min(1),
-	evidence: z.string().min(1),
-	advice: z.string().min(1)
-});
-
-const evaluationCriterionSchema = z
+const criterionCheckSchema = z
 	.object({
-		band: z.number().min(0).max(9).multipleOf(0.5).nullable(),
-		checks: z.array(evaluationCheckSchema).min(1).meta({
-			description: "Include all checks even they are not met."
-		}),
-		problems: z.array(evaluationProblemSchema).meta({
-			description: "Fixable problems exist in the response."
-		}),
-		whyThisBand: z.string(),
-		whyNotNextBand: z.string().optional()
+		title: z.string(),
+		status: criterionCheckStatus,
+		evidence: z.string()
 	})
-	.meta({
-		id: "EvaluateCriterion"
-	});
+	.meta({ id: "CriterionCheck" });
 
-export const evaluationSchema = z.object({
+const strengthDetailsSchema = z
+	.object({
+		title: z.string(),
+		evidence: z.string()
+	})
+	.meta({ id: "CriterionStrength" });
+
+const weaknessDetailsSchema = z
+	.object({
+		title: z.string(),
+		evidence: z.string(),
+		advice: z.string()
+	})
+	.meta({ id: "CriterionWeakness" });
+
+const criterionSchema = z
+	.object({
+		band: bandSchema,
+		checks: z.array(criterionCheckSchema).min(1),
+		strength: z.array(strengthDetailsSchema),
+		weakness: z.array(weaknessDetailsSchema),
+		why: z.string(),
+		nextBandGap: z.string().nullable()
+	})
+	.meta({ id: "Criterion" });
+
+const task1EvaluationSchema = z.object({
+	taskCategory: z.literal("1"),
 	criteria: z.object({
-		taskResponse: evaluationCriterionSchema,
-		coherenceAndCohesion: evaluationCriterionSchema,
-		lexicalResource: evaluationCriterionSchema,
-		grammaticalRangeAndAccuracy: evaluationCriterionSchema
-	}),
-	overallBand: z.number().min(0).max(9).multipleOf(0.5).nullable().meta({
-		description: "The overall score based on the 4 criteria."
+		taskAchievement: criterionSchema,
+		coherenceAndCohesion: criterionSchema,
+		lexicalResource: criterionSchema,
+		grammaticalRangeAndAccuracy: criterionSchema
 	})
 });
 
-export type EvaluationCheck = z.infer<typeof evaluationCheckSchema>;
-export type EvaluationProblem = z.infer<typeof evaluationProblemSchema>;
-export type EvaluationCriterion = z.infer<typeof evaluationCriterionSchema>;
+const task2EvaluationSchema = z.object({
+	taskCategory: z.literal("2"),
+	criteria: z.object({
+		taskResponse: criterionSchema,
+		coherenceAndCohesion: criterionSchema,
+		lexicalResource: criterionSchema,
+		grammaticalRangeAndAccuracy: criterionSchema
+	})
+});
+
+export const evaluationSchema = z.intersection(
+	z.discriminatedUnion("taskCategory", [task1EvaluationSchema, task2EvaluationSchema]),
+	z.object({
+		summary: z.string(),
+		estimatedBand: bandSchema
+	})
+);
+
+export type EvaluationCriterion = z.infer<typeof criterionSchema>;
 export type Evaluation = z.infer<typeof evaluationSchema>;

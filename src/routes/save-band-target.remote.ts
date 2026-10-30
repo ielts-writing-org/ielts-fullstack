@@ -1,5 +1,5 @@
 import { bandSchema } from "#lib/schemas/band.ts";
-import { getSessionApi } from "#lib/server/auth.ts";
+import { getApiSession } from "#lib/server/auth/index.ts";
 import { profiles } from "#lib/server/db/app.schema.ts";
 import { getDb } from "#lib/server/db/index.ts";
 import { command, getRequestEvent } from "$app/server";
@@ -14,7 +14,7 @@ export const saveBandTarget = command(
 	}),
 	async ({ bandTarget }) => {
 		const { locals } = getRequestEvent();
-		const { profile: userProfile } = getSessionApi(locals);
+		const { profile: userProfile } = getApiSession(locals);
 
 		const db = getDb(env.IELTS_WRITING_DB);
 		const result = await db

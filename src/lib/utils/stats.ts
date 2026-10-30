@@ -1,11 +1,11 @@
-export interface TaskStats {
+export interface DeterministicStats {
 	words: number;
 	characters: number;
 	sentences: number;
 	paragraphs: number;
 }
 
-export function computeDeterministicStats(text: string | null | undefined): TaskStats {
+export function computeDeterministicStats(text: string | null | undefined): DeterministicStats {
 	if (!text)
 		return {
 			words: 0,

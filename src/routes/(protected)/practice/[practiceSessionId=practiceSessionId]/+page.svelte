@@ -1,54 +1,59 @@
 <script lang="ts">
 	import { page } from "$app/state";
 	import { Dialect, WorkerLinter } from "harper.js";
-	import { onDestroy, onMount } from "svelte";
+	import { onDestroy, onMount, untrack } from "svelte";
+	import type { TaskCategory } from "#lib/schemas/task-category.js";
 	import type { ChatMessage } from "#lib/schemas/chat-message.ts";
 	import type { Evaluation } from "#lib/schemas/evaluation.ts";
-	import type { PracticeSessionContext } from "#lib/schemas/task-context.ts";
+	import PreventLeaving from "#lib/components/PreventLeaving.svelte";
 	import { openModal } from "#lib/components/Modal.svelte";
+	import { minWordsFor } from "#lib/utils/ielts.ts";
 	import AppEditor from "./AppEditor.svelte";
+	import DocumentBar from "./DocumentBar.svelte";
 	import Tabs from "./Tabs.svelte";
 	import { saveTaskPrompt } from "./save-task-prompt.remote.js";
 	import { savePracticeResponse } from "./save-practice-response.remote.js";
 	import { setTimedUpAction } from "./set-timed-up-action.remote.js";
-	import PreventLeaving from "#lib/components/PreventLeaving.svelte";
 
 	const { data } = $props();
 
-	type PracticeContext = {
-		practiceSessionContext: PracticeSessionContext;
-		evaluation: Evaluation | undefined;
-		messages: ChatMessage[];
-	};
-
-	const { practiceSessionContext, evaluation, messages } = $derived<PracticeContext>({
-		practiceSessionContext: {
-			...data.task,
-			response: data.response
-		},
-		evaluation: data.evaluation,
-		messages: data.chatMessages
-	});
+	let category = $state<TaskCategory>(untrack(() => data.task.category));
+	let prompt = $state<string>(untrack(() => data.task.prompt));
+	let response = $state<string>(untrack(() => data.response));
+	let image = $state<File | undefined>(untrack(() => data.task.image));
+	let imageName = $state<string | undefined>(untrack(() => data.task.imageName ?? undefined));
+	let evaluation = $state<Evaluation | undefined>(untrack(() => data.evaluation));
+	let messages = $state<ChatMessage[]>(untrack(() => data.chatMessages));
 
 	const linters = $state<Array<WorkerLinter>>([]);
 	let isPromptDirty = $state<boolean>(false);
 	let isResponseDirty = $state<boolean>(false);
 	let isChatBusy = $state<boolean>(false);
 	let isEvaluationBusy = $state<boolean>(false);
+	let showTask = $state<boolean>(true);
+	let showAssistant = $state<boolean>(true);
 
 	let timedUpAction = $derived(data.timedUpAction);
+
+	const minWords = $derived(minWordsFor(category));
+
+	const responsePlaceholder = $derived(
+		category === "1"
+			? `Describe the visual in at least ${minWords} words...`
+			: `Write your essay in at least ${minWords} words...`
+	);
 
 	async function handleSaveTaskPrompt() {
 		await saveTaskPrompt({
 			taskId: data.task.id,
-			prompt: practiceSessionContext.prompt
+			prompt: prompt
 		});
 	}
 
 	async function handleSaveTaskResponse() {
 		await savePracticeResponse({
 			practiceSessionId: page.params.practiceSessionId!,
-			response: practiceSessionContext.response
+			response: response
 		});
 	}
 
@@ -88,46 +93,64 @@
 </script>
 
 <svelte:head>
-	<title>Task {data.task.category} | IELTS Writing Practice Platform</title>
-	<meta name="description" content={data.pageName} />
+	<title>{data.title} | IELTS Writing Practice Platform</title>
+	<meta name="description" content={data.title} />
 </svelte:head>
 
 <PreventLeaving by={isPromptDirty || isResponseDirty || isEvaluationBusy || isChatBusy} />
 
-<main class="flex flex-1 flex-col gap-2 p-2 lg:flex-row lg:overflow-y-hidden">
+<main class="flex flex-1 flex-col gap-2 bg-base-100 p-2 lg:flex-row lg:overflow-y-hidden">
 	<section class="flex flex-1 flex-col gap-2 lg:flex-3 lg:overflow-y-auto xl:flex-2">
-		{const hasImage = practiceSessionContext.category === "1"}
-		<AppEditor
-			class="flex-1"
-			title="Task"
-			{hasImage}
-			bind:image={practiceSessionContext.image}
+		<DocumentBar
+			{category}
 			timer={data.type === "timed" ? { endAt: data.endAt, onTimedUp: handleTimedUp } : undefined}
-			bind:content={practiceSessionContext.prompt}
-			bind:isDirty={isPromptDirty}
-			canUnlock={data.task.isOwner}
-			isUnlocked={data.task.isOwner && !practiceSessionContext.response && timedUpAction !== "stop"}
-			{linters}
-			onPostContentChanged={handleSaveTaskPrompt} />
+			bind:showTask
+			bind:showAssistant />
+
+		{const hasImage = category === "1"}
+		{#if showTask}
+			<AppEditor
+				class="flex-1"
+				title="Task"
+				{hasImage}
+				bind:image
+				bind:imageName
+				bind:content={prompt}
+				bind:isDirty={isPromptDirty}
+				canUnlock={data.task.isOwner}
+				isUnlocked={data.task.isOwner && !response && timedUpAction !== "stop"}
+				{linters}
+				onPostContentChanged={handleSaveTaskPrompt} />
+		{/if}
 
 		<AppEditor
 			class="flex-3"
 			title="Your response"
-			bind:content={practiceSessionContext.response}
+			bind:content={response}
 			bind:isDirty={isResponseDirty}
 			canUnlock={true}
 			isUnlocked={timedUpAction !== "stop"}
+			wordTarget={minWords}
+			placeholder={responsePlaceholder}
 			{linters}
 			onPostContentChanged={handleSaveTaskResponse} />
 	</section>
 
-	<aside class="top-0 basis-md overflow-y-auto lg:sticky lg:flex-1">
-		<Tabs
-			practiceSessionId={page.params.practiceSessionId!}
-			{practiceSessionContext}
-			{evaluation}
-			{messages}
-			{isChatBusy}
-			{isEvaluationBusy} />
-	</aside>
+	{#if showAssistant}
+		<aside class="top-0 basis-[75dvh] overflow-y-auto lg:sticky lg:flex-1">
+			<Tabs
+				practiceSessionId={page.params.practiceSessionId!}
+				practiceSessionContext={{
+					category,
+					prompt,
+					response,
+					image,
+					imageName
+				}}
+				bind:evaluation
+				bind:messages
+				bind:isChatBusy
+				bind:isEvaluationBusy />
+		</aside>
+	{/if}
 </main>

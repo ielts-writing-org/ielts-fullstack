@@ -1,7 +1,7 @@
-import { getSessionApi } from "#lib/server/auth.ts";
+import { getApiSession } from "#lib/server/auth/index.ts";
 import { tasks } from "#lib/server/db/app.schema.ts";
 import { getDb } from "#lib/server/db/index.ts";
-import { ImagesClient } from "#lib/server/infrastructure/images-client.ts";
+import { CfImagesClient } from "#lib/server/infrastructure/images-client/images-client.cf.ts";
 import { form, getRequestEvent } from "$app/server";
 import { error } from "@sveltejs/kit";
 import { env } from "cloudflare:workers";
@@ -18,7 +18,7 @@ export const saveTaskImage = form(
 	}),
 	async ({ taskId, image }) => {
 		const { locals } = getRequestEvent();
-		const { user } = getSessionApi(locals);
+		const { user } = getApiSession(locals);
 
 		const db = getDb(env.IELTS_WRITING_DB);
 		const task = await db.query.tasks.findFirst({
@@ -32,7 +32,8 @@ export const saveTaskImage = form(
 		const oldImageName = task.image;
 
 		const newImageName = `${uuidv7()}.webp`;
-		const compressed = await ImagesClient.instance.compressAsBlob(image);
+		const imagesClient = new CfImagesClient(env.IELTS_WRITING_IMAGES);
+		const compressed = await imagesClient.compressAsBlob(image);
 		await env.IELTS_WRITING_BUCKET.put(newImageName, compressed);
 		await db.update(tasks).set({ image: newImageName }).where(eq(tasks.id, taskId));
 
@@ -40,6 +41,6 @@ export const saveTaskImage = form(
 			await env.IELTS_WRITING_BUCKET.delete(oldImageName);
 		}
 
-		return { success: true };
+		return { success: true, imageName: newImageName };
 	}
 );

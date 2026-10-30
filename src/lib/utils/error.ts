@@ -1,36 +1,42 @@
-import { type ZodError, flattenError } from "zod";
+import { type ZodError, treeifyError } from "zod";
 
-type GenericError = {
-	title: string;
+export type SerializedZodError = {
+	field: string;
 	message: string;
 };
 
-type FirstZodError = GenericError & {
-	field?: string;
-};
+export function getZodErrors(zodError: ZodError): SerializedZodError[] {
+	type ErrorTree = {
+		errors: string[];
+		properties?: Record<string, ErrorTree | undefined>;
+		items?: (ErrorTree | undefined)[];
+	};
 
-export function getGenericError(e: unknown, title: string) {
-	return { title: title, message: e instanceof Error ? e.message : String(e) };
-}
+	const tree: ErrorTree = treeifyError(zodError);
+	const errors: SerializedZodError[] = [];
 
-export function getFirstZodError(e: ZodError): FirstZodError {
-	const zodErrors = flattenError(e);
-	if (zodErrors.formErrors.length) {
-		return {
-			title: "Validation error",
-			message: zodErrors.formErrors[0]
-		};
-	} else if (Object.entries(zodErrors.fieldErrors).length) {
-		const firstFieldError = Object.entries(zodErrors.fieldErrors)[0];
-		return {
-			title: "Validation error",
-			field: firstFieldError[0],
-			message: `${firstFieldError[1]} (field: ${firstFieldError[0]})`
-		};
-	} else {
-		return {
-			title: "Validation error",
-			message: "Unknown validation error"
-		};
+	function traverse(node: ErrorTree, path: (string | number)[] = []): void {
+		for (const message of node.errors) {
+			errors.push({
+				field: path.length > 0 ? path.join(".") : "formError",
+				message
+			});
+		}
+
+		for (const [key, child] of Object.entries(node.properties ?? {})) {
+			if (child) {
+				traverse(child, [...path, key]);
+			}
+		}
+
+		for (const [index, child] of (node.items ?? []).entries()) {
+			if (child) {
+				traverse(child, [...path, index]);
+			}
+		}
 	}
+
+	traverse(tree);
+
+	return errors;
 }

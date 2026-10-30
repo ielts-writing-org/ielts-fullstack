@@ -53,7 +53,7 @@
 
 <div
 	class={[
-		"textxs badge rounded-field font-mono",
+		"badge rounded-field font-mono text-xs",
 		timeRemaining <= 60 ? "badge-error" : "badge-dash badge-primary",
 		timeRemaining <= 60 && timeRemaining > 0 && "animate-pulse"
 	]}>

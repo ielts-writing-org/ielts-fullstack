@@ -1,8 +1,10 @@
 import type { Evaluation } from "#lib/schemas/evaluation.ts";
+import type { AllTaskSubcategory } from "#lib/schemas/task-subcategory.ts";
 import { relations } from "drizzle-orm";
 import { integer, real, sqliteTable, text } from "drizzle-orm/sqlite-core";
 import { users } from "./auth.schema";
 import { now, withBaseColumns } from "./common";
+import type { TaskCategory } from "#lib/schemas/task-category.ts";
 
 /******************************************************************************
  *                                                                            *
@@ -14,7 +16,7 @@ export const profiles = sqliteTable(
 	withBaseColumns({
 		userId: text("user_id").references(() => users.id, { onDelete: "cascade" }),
 
-		target: real("target").notNull().default(0),
+		bandTarget: real("band_target").notNull().default(0),
 		theme: text("theme").notNull().default("light")
 	})
 );
@@ -24,8 +26,10 @@ export const tasks = sqliteTable(
 	withBaseColumns({
 		userId: text("user_id").references(() => users.id, { onDelete: "set null" }),
 
-		category: text("category", { enum: ["1", "2"] }).notNull(), // task 1, task 2
-		subcategory: text("subcategory").notNull().default("uncategorized"), // uncategorized, bar chart, pie chart, map, ...
+		category: text("category", { enum: ["1", "2"] })
+			.$type<TaskCategory>()
+			.notNull(),
+		subcategory: text("subcategory").$type<AllTaskSubcategory>(),
 		prompt: text("prompt").notNull(),
 		image: text("image")
 	})
@@ -64,7 +68,10 @@ export const chatMessages = sqliteTable(
 export const evaluations = sqliteTable(
 	"evaluations",
 	withBaseColumns({
-		practiceSessionId: text("practice_session_id").notNull().unique(),
+		practiceSessionId: text("practice_session_id")
+			.notNull()
+			.unique()
+			.references(() => practiceSessions.id, { onDelete: "cascade" }),
 
 		result: text("result", { mode: "json" }).$type<Evaluation>().notNull()
 	})

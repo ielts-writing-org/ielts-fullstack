@@ -1,28 +1,25 @@
 <script lang="ts">
 	import type { Lint, Linter } from "harper.js";
 	import type Quill from "quill";
-	import {
-		type EditorFontFamily,
-		type EditorFontSize,
-		fontStackFor,
-		normalizeFontFamily,
-		normalizeFontSize
-	} from "./editor-display";
+	import { type EditorFontFamily, fontStackFor, normalizeFontFamily } from "./editor-display";
 	import LintFramework from "./lint-framework/lint/lint-framework";
 	import type { UnpackedLintGroups } from "./lint-framework/lint/unpack-lint";
 	import unpackLint from "./lint-framework/lint/unpack-lint";
 	import StatusBar from "./StatusBar.svelte";
 	import type { IgnorableLintBox } from "./lint-framework/lint/box";
-	import { onDestroy, onMount, tick } from "svelte";
+	import { onDestroy, onMount, tick, untrack } from "svelte";
 
 	interface Props {
 		content?: string;
 		linters: Linter[];
 		onReady?: () => void;
 		defaultFontFamily?: EditorFontFamily;
-		defaultFontSize?: EditorFontSize;
 		onChange?: (text: string) => void;
 		isEditable?: boolean;
+		/** Minimum acceptable word count, surfaced in the status bar. */
+		wordTarget?: number;
+		/** Quill placeholder shown while the document is empty. */
+		placeholder?: string;
 	}
 
 	let {
@@ -30,9 +27,10 @@
 		linters,
 		onReady = () => null,
 		defaultFontFamily = "serif",
-		defaultFontSize = "default",
 		onChange = () => {},
-		isEditable = true
+		isEditable = true,
+		wordTarget = 0,
+		placeholder = "Start writing..."
 	}: Props = $props();
 
 	let editor = $state<HTMLDivElement>();
@@ -40,8 +38,7 @@
 	let lintBoxes: IgnorableLintBox[] = $state([]);
 	let activeLintId = $state<string | null>(null);
 	let documentText = $derived(content);
-	let fontFamily = $derived(normalizeFontFamily(defaultFontFamily));
-	let fontSize = $derived(normalizeFontSize(defaultFontSize));
+	let fontFamily = $state<EditorFontFamily>(untrack(() => normalizeFontFamily(defaultFontFamily)));
 	let readySent = $state(false);
 
 	let lfw = $state<LintFramework>();
@@ -158,7 +155,7 @@
 
 		if (quill == null) {
 			let { default: Quill } = await import("quill");
-			quill = new Quill(editor, { placeholder: "Start writing..." });
+			quill = new Quill(editor, { placeholder });
 			const container = quill.container ?? quill.root?.parentElement;
 			container?.classList.add("harper-editor-quill-container");
 
@@ -249,10 +246,7 @@
 	});
 
 	let fontStack = $derived(fontStackFor(fontFamily));
-	let editorStyle = $derived(
-		`--harper-editor-font-family: ${fontStack};` +
-			(fontSize === "default" ? "" : ` --harper-editor-font-size: ${fontSize}px;`)
-	);
+	let editorStyle = $derived(`--harper-editor-font-family: ${fontStack};`);
 </script>
 
 <div
@@ -276,7 +270,6 @@
 		text={documentText}
 		problemCount={lintBoxes.length}
 		{fontFamily}
-		{fontSize}
-		onFontFamilyChange={(next) => (fontFamily = next)}
-		onFontSizeChange={(next) => (fontSize = normalizeFontSize(next))} />
+		{wordTarget}
+		onFontFamilyChange={(next) => (fontFamily = next)} />
 </div>
