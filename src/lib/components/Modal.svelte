@@ -34,6 +34,8 @@
 				onclick?: () => unknown | Promise<unknown>;
 				color?: "default" | "primary" | "success" | "warning" | "error";
 				style?: "default" | "outline" | "ghost";
+				/** Pass a getter (`get disabled() { ... }`) to keep the value reactive. */
+				disabled?: boolean;
 				explicitClose?: boolean;
 		  };
 
@@ -149,7 +151,7 @@
 				source.style === "ghost" && "btn-ghost",
 				source.style === "outline" && "btn-outline"
 			]}
-			disabled={isBusy}
+			disabled={isBusy || (source.disabled ?? false)}
 			onclick={async () => {
 				isBusy = true;
 				try {
