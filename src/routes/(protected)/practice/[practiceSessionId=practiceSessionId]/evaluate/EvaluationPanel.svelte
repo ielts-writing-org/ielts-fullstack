@@ -10,7 +10,7 @@
 	import { bandToProgressValue, bandTone, minWordsFor } from "#lib/utils/ielts.ts";
 	import { countWords } from "#lib/utils/stats.ts";
 	import type { Criteria } from "#lib/schemas/criteria.ts";
-	import { CRITERIA_MAP } from "#lib/mappings/criteria.ts";
+	import { CRITERIA_MAP, CRITERION_CHECK_STATUS_MAP } from "#lib/mappings/criteria.ts";
 	import { getZodErrors } from "#lib/utils/error.ts";
 	import ValidationErrors from "#lib/components/ValidationErrors.svelte";
 	import type { ApiResult } from "#lib/schemas/api-result.ts";
@@ -76,18 +76,15 @@
 
 	function createEmptyEvaluation(category: "1" | "2"): Evaluation {
 		const common = {
-			estimatedBand: 0,
-			nextSteps: [],
-			strengths: [],
 			summary: "",
-			weaknesses: []
+			estimatedBand: 0
 		};
 
 		const emptyCriterion = {
 			band: 0,
 			checks: [],
-			strength: [],
-			weakness: [],
+			strengths: [],
+			weaknesses: [],
 			why: "",
 			nextBandGap: ""
 		} satisfies EvaluationCriterion;
@@ -163,7 +160,7 @@
 				const apiResult = await response.json<ApiResult>();
 				if (!apiResult.success && apiResult.error.type === "validation") {
 					return openModal({
-						title: "Unable to chat",
+						title: "Unable to evaluate",
 						content: {
 							component: ValidationErrors,
 							props: { errors: apiResult.error.fields }
@@ -176,7 +173,7 @@
 			const stream = response.body;
 			if (!stream) {
 				return openModal({
-					title: "Unable to chat",
+					title: "Unable to evaluate",
 					content: "Cannot read response body",
 					primaryButton: "Close"
 				});
@@ -225,7 +222,6 @@
 			while (true) {
 				const { done, value } = await reader.read();
 				if (done) {
-					console.log(evaluation);
 					break;
 				}
 				parser.write(value);
@@ -396,7 +392,7 @@
 																check.status === "partially_met" && "badge-warning",
 																check.status === "not_met" && "badge-error"
 															]}>
-															{check.status}
+															{CRITERION_CHECK_STATUS_MAP[check.status]}
 														</span>
 													</summary>
 													<div class="collapse-content p-0 text-base-content/75">
@@ -408,7 +404,7 @@
 									</ul>
 								{/if}
 
-								{const strengths = $state(criterion.strength)}
+								{const strengths = $state(criterion.strengths)}
 								{#if strengths}
 									<div class="mt-2 text-base-content/75">
 										<p class="font-semibold">Strengths:</p>
@@ -430,7 +426,7 @@
 									</div>
 								{/if}
 
-								{const weaknesses = $state(criterion.weakness)}
+								{const weaknesses = $state(criterion.weaknesses)}
 								{#if weaknesses.length}
 									<div class="mt-2 text-base-content/75">
 										<p class="font-semibold">Weaknesses:</p>

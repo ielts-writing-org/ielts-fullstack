@@ -29,8 +29,8 @@ const criterionSchema = z
 	.object({
 		band: bandSchema,
 		checks: z.array(criterionCheckSchema).min(1),
-		strength: z.array(strengthDetailsSchema),
-		weakness: z.array(weaknessDetailsSchema),
+		strengths: z.array(strengthDetailsSchema),
+		weaknesses: z.array(weaknessDetailsSchema),
 		why: z.string(),
 		nextBandGap: z.string().nullable()
 	})

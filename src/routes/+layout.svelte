@@ -43,9 +43,6 @@
 					aria-label="Back to dashboard">
 					<ArrowLeft class="size-5" />
 				</a>
-				<a class="contents" href={resolve("/(protected)")} aria-label="Dashboard">
-					<AppLogo />
-				</a>
 				<div class="min-w-0 flex-1 overflow-hidden">
 					<h1 class="block truncate text-lg font-bold text-primary">
 						{page.data.title}

@@ -42,8 +42,7 @@
 
 		const half = Math.floor(bands.length / 2);
 		const older = bands.slice(0, half).reduce((sum, band) => sum + band, 0) / half;
-		const recent =
-			bands.slice(half).reduce((sum, band) => sum + band, 0) / (bands.length - half);
+		const recent = bands.slice(half).reduce((sum, band) => sum + band, 0) / (bands.length - half);
 		const difference = recent - older;
 
 		if (difference >= 0.25) {
@@ -77,8 +76,10 @@
 	class="flex flex-col gap-3 overflow-hidden rounded-box border border-base-content/20 bg-base-100 p-4 hover:border-primary"
 	aria-label="Progress">
 	<div>
-		<h2 class="font-bold">Progress</h2>
-		<p class="text-xs whitespace-nowrap text-base-content/75">Average band across evaluated sessions</p>
+		<h2 class="font-semibold">Progress</h2>
+		<p class="text-xs whitespace-nowrap text-base-content/75">
+			Average band across evaluated sessions
+		</p>
 	</div>
 
 	{#if !hasEvaluations}
@@ -120,13 +121,17 @@
 						</button>
 					</div>
 					{#if overall >= props.bandTarget}
-						<span class="badge badge-sm self-start font-semibold badge-success">Target reached</span>
+						<span class="badge self-start badge-sm font-semibold badge-success">
+							Target reached
+						</span>
 					{:else}
-						<p class="text-xs text-base-content/75">{targetGap.toFixed(1)} band away from your target</p>
+						<p class="text-xs text-base-content/75">
+							{targetGap.toFixed(1)} band away from your target
+						</p>
 					{/if}
 				{:else}
 					<p class="text-xs text-base-content/75">No target set yet</p>
-					<button class="btn btn-outline btn-primary btn-xs self-start" onclick={openTargetModal}>
+					<button class="btn self-start btn-outline btn-primary btn-xs" onclick={openTargetModal}>
 						<Target class="size-3.5" />
 						Set target band
 					</button>
@@ -144,7 +149,8 @@
 							viewBox="0 0 100 28"
 							preserveAspectRatio="none"
 							role="img"
-							aria-label="Band scores of your last {props.trend.length} evaluations, oldest to newest">
+							aria-label="Band scores of your last {props.trend
+								.length} evaluations, oldest to newest">
 							<path
 								d={trendPath}
 								fill="none"

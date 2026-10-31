@@ -64,8 +64,8 @@
 
 <div class="grid grid-cols-1 gap-3.5 md:grid-cols-2">
 	{#each practiceOptions as option (option)}
-		<article
-			class="flex min-h-60 flex-col overflow-hidden rounded-box border border-base-content/20 bg-base-100 p-4 hover:border-primary">
+	<article
+		class="flex min-h-60 flex-col overflow-hidden rounded-box border border-base-content/20 bg-base-100 p-4 transition-shadow hover:border-primary hover:shadow-sm">
 			<div class="flex justify-between gap-1.5 text-xs">
 				<span class="badge rounded-box badge-soft badge-sm font-semibold badge-primary">
 					TASK {option.taskCategory}
@@ -76,7 +76,7 @@
 				</span>
 			</div>
 			<h3 class="mt-3 font-semibold">{option.name}</h3>
-			<p class="mb-3 truncate text-xs text-base-content/75">
+			<p class="mb-3 line-clamp-2 text-xs text-base-content/75">
 				{option.description}
 			</p>
 			<span class="mb-1 text-xs font-semibold text-base-content/75">{option.supportLabel}</span>
@@ -86,7 +86,7 @@
 				{/each}
 			</div>
 			<button
-				class="btn mt-auto btn-outline btn-primary"
+				class="btn btn-primary mt-auto"
 				onclick={() => handleCreateCustomTaskPractice(option.taskCategory)}>
 				Start Task {option.taskCategory} Practice
 				<ArrowRight size="1em" />

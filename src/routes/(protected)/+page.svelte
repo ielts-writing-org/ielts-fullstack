@@ -1,14 +1,17 @@
 <script lang="ts">
 	import { resolve } from "$app/paths";
+	import { page } from "$app/state";
 	import { LibraryBig, PenLine } from "@lucide/svelte";
 	import About from "./About.svelte";
 	import PracticeOptions from "./PracticeOptions.svelte";
 	import Statistics from "./Statistics.svelte";
 	import RecentPracticeSessions from "./RecentPracticeSessions.svelte";
-	import PreviousPracticeSession from "./PreviousPracticeSession.svelte";
 	import ActivityStats from "./ActivityStats.svelte";
 
 	const { data } = $props();
+
+	const firstName = $derived((page.data.user?.name ?? "there").split(" ")[0]);
+	const isNewUser = $derived(data.activity.totalSessions === 0);
 </script>
 
 <svelte:head>
@@ -17,29 +20,15 @@
 </svelte:head>
 
 <main id="main-content" class="w-full flex-1 px-3 py-3 sm:px-4 sm:py-4 lg:px-9">
-	{#if data.recentPracticeSession}
-		<PreviousPracticeSession
-			practiceSession={data.recentPracticeSession.practiceSession}
-			task={data.recentPracticeSession.task} />
-	{:else}
-		<section
-			class="rounded-box border border-dashed border-base-content/20 bg-base-100 px-4 py-6 text-center"
-			aria-label="Welcome">
-			<PenLine class="mx-auto size-8 text-primary" />
-			<h2 class="mt-2 font-bold">Welcome to your writing practice</h2>
-			<p class="mx-auto mt-1 max-w-xl text-xs text-base-content/75">
-				Pick a task format below, write your response with the built-in editor and AI tutor, and get
-				an estimated band score with detailed feedback.
-			</p>
-		</section>
-	{/if}
-
-	<div class="my-4 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+	<div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
 		<div class="min-w-0">
-			<h1 class="font-semibold">What do you want to practice?</h1>
-			<p class="text-xs text-base-content/75">
-				Select an IELTS Writing format to begin, or reopen a task you saved earlier.
+			<p class="text-xs font-semibold text-base-content/75">
+				{isNewUser ? `Welcome, ${firstName}.` : `Welcome back, ${firstName}.`}
 			</p>
+			<h1 class="mt-0.5 flex items-center gap-2 font-semibold sm:text-lg">
+				<PenLine class="size-5 shrink-0 text-primary" />
+				What do you want to practice?
+			</h1>
 		</div>
 		<a class="btn btn-outline btn-primary btn-sm sm:shrink-0" href={resolve("/(protected)/tasks")}>
 			<LibraryBig size="1em" />
@@ -47,7 +36,7 @@
 		</a>
 	</div>
 
-	<section class="grid w-full grid-cols-1 gap-4 xl:grid-cols-[minmax(0,1.55fr)_minmax(320px,1fr)]">
+	<section class="mt-4 grid w-full grid-cols-1 gap-4 xl:grid-cols-[minmax(0,1.55fr)_minmax(320px,1fr)]">
 		<PracticeOptions practiceOptions={data.practiceOptions} />
 		<Statistics
 			statistics={data.statistics}

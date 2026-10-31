@@ -8,8 +8,8 @@ export const CRITERIA_MAP = {
 	grammaticalRangeAndAccuracy: "Grammar Range & Accuracy"
 } as const satisfies Record<Criteria, string>;
 
-export const CRITERION_CHECK_STATUS_MAP = [
-	{ key: "met", label: "Met" },
-	{ key: "partially_met", label: "Partially met" },
-	{ key: "not_met", label: "Not met" }
-] as const satisfies { key: CriterionCheckStatus; label: string }[];
+export const CRITERION_CHECK_STATUS_MAP = {
+	met: "Met",
+	partially_met: "Partially met",
+	not_met: "Not met"
+} as const satisfies Record<CriterionCheckStatus, string>;

@@ -83,8 +83,6 @@ export const load = (async () => {
 		}
 	});
 
-	const latest = practices[0];
-
 	// Statistics
 	// prettier-ignore
 	const [stats] = await db
@@ -153,22 +151,6 @@ export const load = (async () => {
 			meta: formatRelativeTime(p.updatedAt),
 			name: p.name
 		})),
-		recentPracticeSession: latest
-			? {
-					practiceSession: {
-						id: latest.id,
-						name: latest.name,
-						type: latest.type,
-						updatedAt: latest.updatedAt,
-						band: latest.evaluation?.result.estimatedBand
-					},
-					task: {
-						category: latest.task.category,
-						subcategory: latest.task.subcategory,
-						prompt: latest.task.prompt
-					}
-				}
-			: null,
 		activity: {
 			totalWords: activity?.totalWords ?? 0,
 			sessionsThisWeek: activity?.sessionsThisWeek ?? 0,
