@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { resolve } from "$app/paths";
 	import { ChevronRight, RotateCcwClock } from "@lucide/svelte";
+	import { bandTone } from "#lib/utils/ielts.js";
 
 	type Props = {
 		practiceSessions: {
@@ -41,7 +42,8 @@
 				</span>
 				<span class="truncate font-semibold">{practiceSession.name}</span>
 				<small class="hidden text-xs sm:block">{practiceSession.meta}</small>
-				<span class="text-right text-xs">
+				<span
+					class={["text-right text-xs", practiceSession.band ? bandTone(practiceSession.band) : "text-base-content/60"]}>
 					{practiceSession.band
 						? `Overall band ${practiceSession.band.toFixed(1)}`
 						: "No evaluation"}

@@ -2,7 +2,7 @@ import { evaluations, practiceSessions, tasks } from "#lib/server/db/app.schema.
 import { getDb } from "#lib/server/db/index.ts";
 import { getRequestEvent } from "$app/server";
 import { env } from "cloudflare:workers";
-import { eq, sql } from "drizzle-orm";
+import { desc, eq, sql } from "drizzle-orm";
 import type { PageServerLoad } from "./$types";
 import { roundToNearestHalf } from "#lib/utils/math.ts";
 import { formatRelativeTime } from "#lib/utils/time.ts";
@@ -40,6 +40,33 @@ const PRACTICE_OPTIONS = [
 		]
 	}
 ];
+
+const WEEK_MS = 7 * 24 * 60 * 60 * 1000;
+
+/** Counts consecutive practice days ending today or yesterday, from ISO day strings. */
+function computeStreak(days: string[]): number {
+	if (days.length === 0) {
+		return 0;
+	}
+
+	const daySet = new Set(days);
+	const dayKey = (date: Date) => date.toISOString().slice(0, 10);
+	const cursor = new Date();
+
+	if (!daySet.has(dayKey(cursor))) {
+		cursor.setUTCDate(cursor.getUTCDate() - 1);
+		if (!daySet.has(dayKey(cursor))) {
+			return 0;
+		}
+	}
+
+	let streak = 0;
+	while (daySet.has(dayKey(cursor))) {
+		streak++;
+		cursor.setUTCDate(cursor.getUTCDate() - 1);
+	}
+	return streak;
+}
 
 export const load = (async () => {
 	const { locals } = getRequestEvent();
@@ -84,6 +111,39 @@ export const load = (async () => {
 
 	const rawOverallBand = (stats.task1.estimatedBand * 1) / 3 + (stats.task2.estimatedBand * 2) / 3;
 
+	// Activity aggregates: totals across all sessions, plus evaluations count
+	// for the progress card's empty state.
+	const weekStart = Date.now() - WEEK_MS;
+	const [activity] = await db
+		.select({
+			totalSessions: sql<number>`count(*)`,
+			sessionsThisWeek: sql<number>`count(case when "practice_sessions"."started_at" >= ${weekStart} then 1 end)`,
+			evaluated: sql<number>`count("evaluations"."id")`,
+			totalWords: sql<number>`coalesce(sum(case when trim("practice_sessions"."response") = '' then 0 else length(trim(replace(replace(replace("practice_sessions"."response", char(13), ' '), char(10), ' '), char(9), ' '))) - length(replace(trim(replace(replace(replace("practice_sessions"."response", char(13), ' '), char(10), ' '), char(9), ' ')), ' ', '')) + 1 end), 0)`
+		})
+		.from(practiceSessions)
+		.leftJoin(evaluations, eq(evaluations.practiceSessionId, practiceSessions.id))
+		.where(eq(practiceSessions.userId, user.id));
+
+	// Distinct practice days (UTC) for the streak, newest first, capped at 90.
+	const dayRows = await db
+		.selectDistinct({
+			day: sql<string>`date("practice_sessions"."started_at" / 1000, 'unixepoch')`
+		})
+		.from(practiceSessions)
+		.where(eq(practiceSessions.userId, user.id))
+		.orderBy(desc(sql`date("practice_sessions"."started_at" / 1000, 'unixepoch')`))
+		.limit(90);
+
+	// Overall bands of the most recent evaluated sessions, chronological order.
+	const bandRows = await db
+		.select({ band: sql<number>`json_extract("evaluations"."result", '$.estimatedBand')` })
+		.from(practiceSessions)
+		.innerJoin(evaluations, eq(evaluations.practiceSessionId, practiceSessions.id))
+		.where(eq(practiceSessions.userId, user.id))
+		.orderBy(desc(practiceSessions.startedAt))
+		.limit(8);
+
 	return {
 		practiceOptions: PRACTICE_OPTIONS,
 		practices: practices.map((p) => ({
@@ -99,7 +159,8 @@ export const load = (async () => {
 						id: latest.id,
 						name: latest.name,
 						type: latest.type,
-						updatedAt: latest.updatedAt
+						updatedAt: latest.updatedAt,
+						band: latest.evaluation?.result.estimatedBand
 					},
 					task: {
 						category: latest.task.category,
@@ -108,6 +169,14 @@ export const load = (async () => {
 					}
 				}
 			: null,
+		activity: {
+			totalWords: activity?.totalWords ?? 0,
+			sessionsThisWeek: activity?.sessionsThisWeek ?? 0,
+			totalSessions: activity?.totalSessions ?? 0,
+			evaluated: activity?.evaluated ?? 0
+		},
+		streakDays: computeStreak(dayRows.map((row) => row.day)),
+		bandTrend: bandRows.map((row) => row.band).reverse(),
 		statistics: {
 			criteria: [
 				{

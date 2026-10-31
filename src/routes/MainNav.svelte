@@ -3,7 +3,7 @@
 	import { page } from "$app/state";
 
 	const items = [
-		{ href: "/(protected)", label: "Practice" },
+		{ href: "/(protected)", label: "Dashboard" },
 		{ href: "/(protected)/tasks", label: "Tasks" },
 		{ href: "/(protected)/history", label: "History" }
 	] satisfies {
