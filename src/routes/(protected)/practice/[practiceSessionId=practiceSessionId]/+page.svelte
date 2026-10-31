@@ -33,6 +33,17 @@
 	let showTask = $state<boolean>(true);
 	let showAssistant = $state<boolean>(true);
 
+	type EditorHandle = { saveNow: () => Promise<void> };
+	let taskEditor = $state<EditorHandle>();
+	let responseEditor = $state<EditorHandle>();
+
+	const canSave = $derived(isPromptDirty || isResponseDirty);
+
+	/** Explicit save of everything that is dirty (toolbar button / Ctrl+S). */
+	async function handleSaveAll() {
+		await Promise.all([taskEditor?.saveNow(), responseEditor?.saveNow()]);
+	}
+
 	let timedUpAction = $derived(data.timedUpAction);
 
 	const minWords = $derived(minWordsFor(category));
@@ -104,6 +115,8 @@
 		<DocumentBar
 			{category}
 			timer={data.type === "timed" ? { endAt: data.endAt, onTimedUp: handleTimedUp } : undefined}
+			onSave={handleSaveAll}
+			{canSave}
 			bind:showTask
 			bind:showAssistant />
 
@@ -113,6 +126,7 @@
 				class="flex-1"
 				title="Task"
 				{hasImage}
+				bind:this={taskEditor}
 				bind:image
 				bind:imageName
 				bind:content={prompt}
@@ -126,6 +140,7 @@
 		<AppEditor
 			class="flex-3"
 			title="Your response"
+			bind:this={responseEditor}
 			bind:content={response}
 			bind:isDirty={isResponseDirty}
 			canUnlock={true}

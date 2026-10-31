@@ -3,6 +3,7 @@
 	import { page } from "$app/state";
 	import { ArrowLeft, Clock, FileText, InfinityIcon } from "@lucide/svelte";
 	import { minWordsFor, timeLimitMinutesFor } from "#lib/utils/ielts.js";
+	import { taskSubcategoryLabel } from "#lib/mappings/task-subcategory.ts";
 	import AppLogo from "#lib/components/AppLogo.svelte";
 	import Modal from "#lib/components/Modal.svelte";
 	import MainNav from "./MainNav.svelte";
@@ -11,6 +12,10 @@
 	import "./layout.css";
 
 	let { children, data } = $props();
+
+	// Measured so mobile sticky elements (e.g. the practice toolbar) can sit
+	// directly under the header, whose height varies with wrapped rows.
+	let headerHeight = $state(0);
 
 	// The mobile tab bar mirrors the desktop nav and stays out of practice
 	// sessions, which are focus mode.
@@ -31,8 +36,10 @@
 	class={[
 		"flex h-dvh w-full flex-col overflow-y-auto bg-base-100 text-base-content",
 		showTabBar && "not-lg:pb-16"
-	]}>
+	]}
+	style:--app-header-height={`${headerHeight}px`}>
 	<header
+		bind:clientHeight={headerHeight}
 		class="navbar sticky top-0 z-10 flex shrink-0 gap-2 border-b border-base-content/10 bg-base-100 not-lg:flex-wrap">
 		{#if page.data.practiceSession}
 			{const session = page.data.practiceSession}
@@ -52,7 +59,7 @@
 							Task {session.taskCategory}
 						</span>
 						<span class="badge badge-ghost badge-sm font-medium">
-							{session.taskSubcategory ? session.taskSubcategory : "Uncategorized"}
+							{session.taskSubcategory ? taskSubcategoryLabel(session.taskSubcategory) : "Uncategorized"}
 						</span>
 						<span class="badge badge-ghost badge-sm font-medium">
 							{#if session.type === "timed"}

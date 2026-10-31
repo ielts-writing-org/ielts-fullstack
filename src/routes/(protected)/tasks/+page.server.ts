@@ -1,5 +1,5 @@
 import { env } from "cloudflare:workers";
-import { and, asc, desc, eq, like, or, sql } from "drizzle-orm";
+import { and, asc, desc, eq, isNull, like, or, sql } from "drizzle-orm";
 import { TASK_SUBCATEGORIES_BY_CATEGORY } from "#lib/mappings/task-subcategory.ts";
 import type { AllTaskSubcategory } from "#lib/schemas/task-subcategory.ts";
 import { tasks } from "#lib/server/db/app.schema.ts";
@@ -10,6 +10,7 @@ import type { PageServerLoad } from "./$types";
 const PER_PAGE = 9;
 const SORTS = ["recent", "oldest", "name", "practiced"] as const;
 const TASK_CATEGORIES = ["1", "2"] as const;
+const SOURCES = ["mine", "example"] as const;
 const ALL_SUBCATEGORIES = Object.values(TASK_SUBCATEGORIES_BY_CATEGORY).flat() as string[];
 
 type Sort = (typeof SORTS)[number];
@@ -29,7 +30,16 @@ export const load = (async ({ locals, url }) => {
 	const requestedPage = Number.parseInt(searchParams.get("page") ?? "1", 10);
 	const page = Number.isFinite(requestedPage) && requestedPage > 0 ? requestedPage : 1;
 
-	const conditions = [eq(tasks.userId, user.id)];
+	// Own tasks plus ownerless example tasks added by the admin (user_id IS NULL).
+	// The `source` filter narrows the library to one of the two.
+	const source = SOURCES.find((value) => value === searchParams.get("source"));
+	const visibility =
+		source === "mine"
+			? eq(tasks.userId, user.id)
+			: source === "example"
+				? isNull(tasks.userId)
+				: or(eq(tasks.userId, user.id), isNull(tasks.userId));
+	const conditions = [visibility];
 	if (task) conditions.push(eq(tasks.category, task));
 	if (subcategory) conditions.push(eq(tasks.subcategory, subcategory));
 	if (q) {
@@ -66,6 +76,7 @@ export const load = (async ({ locals, url }) => {
 			subcategory: tasks.subcategory,
 			prompt: tasks.prompt,
 			hasImage: sql<boolean>`"tasks"."image" is not null`,
+			isExample: sql<boolean>`"tasks"."user_id" is null`,
 			createdAt: tasks.createdAt,
 			updatedAt: tasks.updatedAt,
 			sessionCount,
@@ -86,7 +97,7 @@ export const load = (async ({ locals, url }) => {
 			unused: sql<number>`count(case when not exists (select 1 from "practice_sessions" where "practice_sessions"."task_id" = "tasks"."id") then 1 end)`
 		})
 		.from(tasks)
-		.where(eq(tasks.userId, user.id));
+		.where(or(eq(tasks.userId, user.id), isNull(tasks.userId)));
 
 	return {
 		tasks: rows.map((row) => ({
@@ -95,6 +106,7 @@ export const load = (async ({ locals, url }) => {
 			subcategory: row.subcategory,
 			prompt: row.prompt,
 			hasImage: row.hasImage,
+			isExample: row.isExample,
 			createdAt: row.createdAt,
 			updatedAt: row.updatedAt,
 			sessionCount: row.sessionCount,
@@ -112,6 +124,7 @@ export const load = (async ({ locals, url }) => {
 			q,
 			task: task ?? null,
 			subcategory: subcategory ?? null,
+			source: source ?? null,
 			sort
 		}
 	};

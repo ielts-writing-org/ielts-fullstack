@@ -36,20 +36,37 @@
 	}: Props = $props();
 
 	let isReady = $state<boolean>(false);
-	let currentState = $state<"Not saved" | "Saved" | "Saving">("Saved");
+	let currentState = $state<"Not saved" | "Saved" | "Saving" | "Failed">("Saved");
 
 	const imagePreview = $derived(props.hasImage && image ? URL.createObjectURL(image) : undefined);
 
-	/** Force an immediate save, bypassing the autosave debounce (Ctrl/Cmd + S). */
-	async function saveNow() {
+	/** Save state surfaced in the editor status bar. */
+	const saveState = $derived(
+		currentState === "Not saved"
+			? ("unsaved" as const)
+			: currentState === "Saving"
+				? ("saving" as const)
+				: currentState === "Saved"
+					? ("saved" as const)
+					: ("failed" as const)
+	);
+
+	/** Force an immediate save, bypassing the autosave debounce (Ctrl/Cmd + S or the toolbar button). */
+	export async function saveNow() {
 		if (!isDirty) {
 			return;
 		}
 
 		currentState = "Saving";
-		await props.onPostContentChanged();
-		currentState = "Saved";
-		isDirty = false;
+		try {
+			await props.onPostContentChanged();
+			currentState = "Saved";
+			isDirty = false;
+		} catch {
+			// Keep the content dirty so it is retried by the next autosave or the
+			// explicit Retry button in the status bar.
+			currentState = "Failed";
+		}
 	}
 
 	function handleKeydown(event: KeyboardEvent) {
@@ -88,18 +105,24 @@
 
 	const handlePostContentChangedDebounced = debounce(async () => {
 		currentState = "Saving";
-		await props.onPostContentChanged();
-		currentState = "Saved";
-		isDirty = false;
+		try {
+			await props.onPostContentChanged();
+			currentState = "Saved";
+			isDirty = false;
+		} catch {
+			currentState = "Failed";
+		}
 	}, 2000);
 
 	async function handleContentChanged(newContent: string) {
 		content = newContent;
-		if (!isDirty) {
-			isDirty = true;
+		isDirty = true;
+		if (currentState !== "Saving") {
 			currentState = "Not saved";
-			await handlePostContentChangedDebounced();
 		}
+		// Rescheduling on every keystroke keeps the autosave 2s behind the last
+		// keystroke, even after a failed save.
+		handlePostContentChangedDebounced();
 	}
 
 	function handleReady() {
@@ -179,27 +202,6 @@
 					{/if}
 				</div>
 			{/if}
-
-			<!-- Working indicator -->
-			<div class="flex min-w-17 items-center justify-end gap-1 text-xs">
-				<div
-					class={[
-						"status",
-						currentState === "Not saved" && "status-error",
-						currentState === "Saving" && "animate-bounce status-warning",
-						currentState === "Saved" && "status-success"
-					]}>
-				</div>
-				<span
-					class={[
-						"font-semibold",
-						currentState === "Not saved" && "text-error",
-						currentState === "Saving" && "text-warning",
-						currentState === "Saved" && "text-success"
-					]}>
-					{currentState}
-				</span>
-			</div>
 		</div>
 	</div>
 	{#if props.linters.length}
@@ -217,6 +219,8 @@
 					isEditable={isUnlocked}
 					wordTarget={props.wordTarget ?? 0}
 					placeholder={props.placeholder}
+					{saveState}
+					onRetrySave={saveNow}
 					onReady={handleReady}
 					onChange={handleContentChanged} />
 

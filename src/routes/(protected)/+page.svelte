@@ -2,16 +2,38 @@
 	import { resolve } from "$app/paths";
 	import { page } from "$app/state";
 	import { LibraryBig, PenLine } from "@lucide/svelte";
+	import { openModal } from "#lib/components/Modal.svelte";
 	import About from "./About.svelte";
 	import PracticeOptions from "./PracticeOptions.svelte";
 	import Statistics from "./Statistics.svelte";
 	import RecentPracticeSessions from "./RecentPracticeSessions.svelte";
 	import ActivityStats from "./ActivityStats.svelte";
+	import ChangeBandTarget from "../ChangeBandTarget.svelte";
 
 	const { data } = $props();
 
 	const firstName = $derived((page.data.user?.name ?? "there").split(" ")[0]);
 	const isNewUser = $derived(data.activity.totalSessions === 0);
+
+	const ONBOARDING_TARGET_KEY = "onboarding-target-band-dismissed";
+
+	// First-visit nudge: without a target band the Progress card has nothing to
+	// compare against. Shown once per browser, then never again.
+	$effect(() => {
+		if (data.profile?.bandTarget !== 0) {
+			return;
+		}
+
+		if (localStorage.getItem(ONBOARDING_TARGET_KEY)) {
+			return;
+		}
+
+		localStorage.setItem(ONBOARDING_TARGET_KEY, "1");
+		openModal({
+			title: "Set your target band",
+			content: { component: ChangeBandTarget, props: { bandTarget: 0 } }
+		});
+	});
 </script>
 
 <svelte:head>

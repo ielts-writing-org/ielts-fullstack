@@ -17,8 +17,7 @@
 	const isNewUser = $derived(activity.totalSessions === 0);
 </script>
 
-<!-- Quiet stat band: borderless tiles so the bordered practice/progress cards
-	stay the visual anchors of the page. -->
+<!-- Compact stat band: slimmer than the primary cards but part of the same bordered card language. -->
 <section class="grid grid-cols-2 gap-3 xl:grid-cols-4" aria-label="Practice activity">
 	{@render statTile({
 		icon: PenLine,
@@ -58,7 +57,7 @@
 	hint?: string;
 	highlight?: boolean;
 })}
-	<div class="flex flex-col rounded-box bg-base-200/40 p-3.5">
+	<div class="flex flex-col rounded-box border border-base-content/20 bg-base-100 p-3.5 hover:border-primary">
 		<div class="flex flex-1 items-center justify-between gap-2">
 			<span class="text-xs font-semibold text-base-content/75">{props.label}</span>
 			<props.icon class={["size-4 shrink-0", props.highlight ? "text-warning" : "opacity-60"]} />

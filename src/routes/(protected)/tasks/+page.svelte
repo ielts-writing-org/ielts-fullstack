@@ -4,7 +4,6 @@
 	import { resolve } from "$app/paths";
 	import {
 		AlarmClock,
-		AlarmClockOff,
 		ArrowRight,
 		CalendarDays,
 		CircleDashed,
@@ -20,6 +19,7 @@
 		X
 	} from "@lucide/svelte";
 	import { closeModal, openModal } from "#lib/components/Modal.svelte";
+	import TaskCreateForm from "#lib/components/TaskCreateForm.svelte";
 	import {
 		TASK_SUBCATEGORIES_BY_CATEGORY,
 		taskSubcategoryLabel
@@ -28,7 +28,7 @@
 	import { formatRelativeTime } from "#lib/utils/time.js";
 	import { createPractice } from "../create-practice.remote";
 	import { clearTaskImage } from "../practice/[practiceSessionId=practiceSessionId]/clear-task-image.remote";
-	import { createTask } from "./create-task.remote";
+	import PracticeTypePicker from "../PracticeTypePicker.svelte";
 	import { deleteTask } from "./delete-task.remote";
 	import { getTaskDependants } from "./get-task-dependants.remote";
 	import { updateTask } from "./update-task.remote";
@@ -44,7 +44,7 @@
 
 	const CONFIRM_PHRASE = "DELETE";
 
-	type FilterKey = "q" | "task" | "subcategory" | "sort" | "page";
+	type FilterKey = "q" | "task" | "subcategory" | "source" | "sort" | "page";
 
 	/** Builds a query string for the current filter state with optional overrides. */
 	function href(overrides: Partial<Record<FilterKey, string>>) {
@@ -52,6 +52,7 @@
 			q: filters.q,
 			task: filters.task ?? "all",
 			subcategory: filters.subcategory ?? "all",
+			source: filters.source ?? "all",
 			sort: filters.sort,
 			page: String(currentPage),
 			...overrides
@@ -61,6 +62,7 @@
 		if (state.q) params.set("q", state.q);
 		if (state.task !== "all") params.set("task", state.task);
 		if (state.subcategory !== "all") params.set("subcategory", state.subcategory);
+		if (state.source !== "all") params.set("source", state.source);
 		if (state.sort !== "recent") params.set("sort", state.sort);
 		if (state.page !== "1") params.set("page", state.page);
 
@@ -97,10 +99,17 @@
 	}
 
 	const currentTask = $derived(filters.task ?? "all");
+	const currentSource = $derived(filters.source ?? "all");
 	const currentSubcategory = $derived(filters.subcategory ?? "all");
 
 	const activeFilters = $derived.by(() => {
-		const chips: { key: "task" | "subcategory" | "search"; label: string }[] = [];
+		const chips: {
+			key: "task" | "subcategory" | "source" | "search";
+			label: string;
+		}[] = [];
+		if (filters.source) {
+			chips.push({ key: "source", label: filters.source === "mine" ? "My tasks" : "Examples" });
+		}
 		if (filters.task) chips.push({ key: "task", label: `Task ${filters.task}` });
 		if (filters.subcategory) {
 			chips.push({ key: "subcategory", label: taskSubcategoryLabel(filters.subcategory) });
@@ -111,10 +120,11 @@
 
 	const hasFilters = $derived(activeFilters.length > 0);
 
-	function removeFilter(key: "task" | "subcategory" | "search") {
+	function removeFilter(key: "task" | "subcategory" | "source" | "search") {
 		if (key === "search") update({ q: "" });
 		else if (key === "task") update({ task: "all", subcategory: "all" });
 		else if (key === "subcategory") update({ subcategory: "all" });
+		else if (key === "source") update({ source: "all" });
 	}
 
 	function clearFilters() {
@@ -125,7 +135,9 @@
 		resolve("/(protected)/tasks/[taskId=taskId]/image", { taskId });
 
 	const practiceHref = (id: string) =>
-		resolve("/(protected)/practice/[practiceSessionId=practiceSessionId]", { practiceSessionId: id });
+		resolve("/(protected)/practice/[practiceSessionId=practiceSessionId]", {
+			practiceSessionId: id
+		});
 
 	/******************************************************************************
 	 *                                  Practice                                  *
@@ -136,7 +148,7 @@
 		selectedPracticeSessionType = "timed";
 		openModal({
 			title: "Start a practice session",
-			content: { snippet: practiceModeSnippet, args: { task } },
+			content: { snippet: practiceSetupSnippet, args: { task } },
 			primaryButton: {
 				text: "Start practice",
 				color: "primary",
@@ -175,56 +187,38 @@
 					openPracticeModal(task);
 				}
 			},
-			secondaryButton: {
-				text: "Edit",
-				style: "outline",
-				explicitClose: true,
-				onclick: async () => {
-					await closeModal();
-					openEditModal(task);
-				}
-			}
+			// Example tasks are read-only: they can be practiced but not edited.
+			secondaryButton: task.isExample
+				? { text: "Close" }
+				: {
+						text: "Edit",
+						style: "outline",
+						explicitClose: true,
+						onclick: async () => {
+							await closeModal();
+							openEditModal(task);
+						}
+					},
+			closeButton: true,
+			closeByBackdrop: true
 		});
 	}
 
 	/******************************************************************************
 	 *                                   Create                                   *
 	 ******************************************************************************/
-	let createCategory = $state<"1" | "2">("1");
-	let createSubcategory = $state("");
-	let createPrompt = $state("");
-	let createFiles = $state<FileList | null>(null);
-	let createPreviewUrl = $state<string | undefined>(undefined);
-	let createError = $state<string | null>(null);
-	let createKey = $state(0);
-
-	const createForm = createTask.enhance(async (form) => {
-		if (await form.submit()) {
-			await closeModal();
-			await refreshAll();
-		} else {
-			createError =
-				form.fields.allIssues()?.[0]?.message ?? "Please review the highlighted fields.";
-		}
-	});
-
-	const createSubcategoryOptions = $derived(TASK_SUBCATEGORIES_BY_CATEGORY[createCategory]);
-
-	function handleCreateImageChange(event: Event) {
-		replacePreviewUrl(event.currentTarget as HTMLInputElement, (url) => (createPreviewUrl = url));
-	}
-
 	function openCreateModal() {
-		createCategory = "1";
-		createSubcategory = "";
-		createPrompt = "";
-		createFiles = null;
-		createError = null;
-		replacePreviewUrl(null, (url) => (createPreviewUrl = url));
-		createKey++;
 		openModal({
 			title: "New task",
-			content: { snippet: createFormSnippet }
+			content: {
+				component: TaskCreateForm,
+				props: {
+					submitLabel: "Save task",
+					onSaved: async () => {
+						await refreshAll();
+					}
+				}
+			}
 		});
 	}
 
@@ -290,10 +284,6 @@
 	}
 
 	function revokePreviewUrls() {
-		if (createPreviewUrl) {
-			URL.revokeObjectURL(createPreviewUrl);
-			createPreviewUrl = undefined;
-		}
 		if (editPreviewUrl) {
 			URL.revokeObjectURL(editPreviewUrl);
 			editPreviewUrl = undefined;
@@ -348,8 +338,8 @@
 				<h1 class="font-bold sm:text-lg">Task Library</h1>
 			</div>
 			<p class="mt-0.5 text-xs text-base-content/75">
-				Your saved prompts. Practice them again, organize them, or clean up the ones you no longer
-				need.
+				Your saved prompts and built-in example tasks. Practice them again, organize them, or clean
+				up the ones you no longer need.
 			</p>
 		</div>
 		<button class="btn btn-primary btn-sm sm:shrink-0" onclick={openCreateModal}>
@@ -403,6 +393,19 @@
 			</label>
 
 			<div class="flex flex-1 flex-wrap items-center gap-2">
+				<!-- Task source -->
+				<div class="join" role="group" aria-label="Filter by source">
+					{#each [{ v: "all", l: "All" }, { v: "mine", l: "My tasks" }, { v: "example", l: "Examples" }] as option (option.v)}
+						<button
+							class="btn join-item btn-sm"
+							class:btn-active={currentSource === option.v}
+							aria-pressed={currentSource === option.v}
+							onclick={() => update({ source: option.v })}>
+							{option.l}
+						</button>
+					{/each}
+				</div>
+
 				<!-- Task Category -->
 				<div class="join" role="group" aria-label="Filter by task">
 					{#each [{ v: "all", l: "All tasks" }, { v: "1", l: "Task 1" }, { v: "2", l: "Task 2" }] as option (option.v)}
@@ -481,7 +484,9 @@
 		</div>
 	</section>
 
-	<section class="mt-4 grid w-full grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3" aria-label="Tasks">
+	<section
+		class="mt-4 grid w-full grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3"
+		aria-label="Tasks">
 		{#if data.pagination.total === 0 && hasFilters}
 			<div
 				class="col-span-full flex flex-col items-center justify-center gap-2 rounded-box border border-dashed border-base-content/20 py-16 text-base-content/75">
@@ -540,8 +545,13 @@
 							<span class="badge rounded-box badge-soft badge-xs font-semibold badge-primary">
 								Task {task.category}
 							</span>
+							{#if task.isExample}
+								<span class="badge badge-soft badge-xs badge-info">Example</span>
+							{/if}
 							{#if task.subcategory}
-								<span class="badge badge-soft badge-xs">{taskSubcategoryLabel(task.subcategory)}</span>
+								<span class="badge badge-soft badge-xs">
+									{taskSubcategoryLabel(task.subcategory)}
+								</span>
 							{/if}
 							{#if task.bestBand !== null}
 								<span class={["badge badge-soft badge-xs", bandBadgeTone(task.bestBand)]}>
@@ -591,35 +601,37 @@
 
 						<div class="mt-auto flex items-center gap-2 pt-3">
 							<button
-								class="btn btn-outline btn-primary btn-sm flex-1"
+								class="btn flex-1 btn-outline btn-primary btn-sm"
 								onclick={() => openPracticeModal(task)}>
 								Practice
 								<ArrowRight size="1em" />
 							</button>
 
-							<div class="dropdown dropdown-end">
-								<button
-									class="btn btn-circle btn-ghost btn-sm"
-									aria-label="Task actions"
-									aria-haspopup="menu">
-									<EllipsisVertical class="size-4" />
-								</button>
-								<ul
-									class="menu dropdown-content z-1 w-36 rounded-box bg-base-100 p-1.5 shadow-sm">
-									<li>
-										<button onclick={() => openEditModal(task)}>
-											Edit
-											<PenLine size="1em" />
-										</button>
-									</li>
-									<li>
-										<button class="text-error" onclick={() => handleDelete(task)}>
-											Delete
-											<Trash size="1em" />
-										</button>
-									</li>
-								</ul>
-							</div>
+							{#if !task.isExample}
+								<div class="dropdown dropdown-end">
+									<button
+										class="btn btn-circle btn-ghost btn-sm"
+										aria-label="Task actions"
+										aria-haspopup="menu">
+										<EllipsisVertical class="size-4" />
+									</button>
+									<ul
+										class="menu dropdown-content z-1 w-36 rounded-box bg-base-100 p-1.5 shadow-sm">
+										<li>
+											<button onclick={() => openEditModal(task)}>
+												Edit
+												<PenLine size="1em" />
+											</button>
+										</li>
+										<li>
+											<button class="text-error" onclick={() => handleDelete(task)}>
+												Delete
+												<Trash size="1em" />
+											</button>
+										</li>
+									</ul>
+								</div>
+							{/if}
 						</div>
 					</div>
 				</article>
@@ -678,31 +690,12 @@
 	</div>
 {/snippet}
 
-{#snippet practiceModeSnippet(props: { task: TaskItem })}
+{#snippet practiceSetupSnippet(props: { task: TaskItem })}
 	<p class="mb-3 line-clamp-2 rounded-box bg-base-200/50 p-2.5 text-xs text-base-content/75">
 		{props.task.prompt || "No prompt yet — you can add one while practicing."}
 	</p>
-	<p class="mb-2">Choose your preferred practice style:</p>
-	<div class="flex max-h-48 justify-center gap-4">
-		{#each [{ icon: AlarmClock, time: props.task.category === "1" ? 20 : 40, value: "timed" }, { icon: AlarmClockOff, value: "free" }] as option (option.value)}
-			<label
-				class={[
-					"flex aspect-square flex-1 flex-col items-center gap-2 rounded-box border p-2 sm:gap-4",
-					"transition-colors hover:border-primary hover:text-primary",
-					"not-has-checked:shadow-md has-checked:bg-primary has-checked:text-primary-content"
-				]}>
-				<input
-					class="appearance-none"
-					type="radio"
-					bind:group={selectedPracticeSessionType}
-					value={option.value} />
-				<option.icon class="w-full flex-1" />
-				<span class="text-center">
-					{option.value === "timed" ? `${option.time}-Min-Limit Practice` : "Unlimited Time Practice"}
-				</span>
-			</label>
-		{/each}
-	</div>
+	<p class="mb-2 text-sm font-semibold">How do you want to practice?</p>
+	<PracticeTypePicker bind:value={selectedPracticeSessionType} category={props.task.category} />
 {/snippet}
 
 {#snippet detailsSnippet(props: { task: TaskItem })}
@@ -728,92 +721,6 @@
 			{/if}
 		</dd>
 	</dl>
-{/snippet}
-
-{#snippet createFormSnippet()}
-	{#key createKey}
-		<form
-			{...createForm}
-			class="flex flex-col gap-3"
-			enctype="multipart/form-data"
-			oninput={() => (createError = null)}>
-			<fieldset class="flex flex-col gap-1.5">
-				<legend class="text-xs font-semibold text-base-content/75">Task category</legend>
-				<div class="join w-full" role="group" aria-label="Task category">
-					{#each [{ v: "1", l: "Task 1 · Visual report" }, { v: "2", l: "Task 2 · Essay" }] as option (option.v)}
-						<label
-							class={["btn join-item flex-1", createCategory === option.v ? "btn-primary" : ""]}>
-							<input
-								class="appearance-none"
-								type="radio"
-								name="category"
-								value={option.v}
-								bind:group={createCategory} />
-							{option.l}
-						</label>
-					{/each}
-				</div>
-			</fieldset>
-
-			<label class="flex flex-col gap-1.5">
-				<span class="text-xs font-semibold text-base-content/75">
-					Subcategory <span class="font-normal">(optional)</span>
-				</span>
-				<select
-					class="select w-full"
-					name="subcategory"
-					bind:value={createSubcategory}
-					onchange={() => createError = null}>
-					<option value="">None</option>
-					{#each createSubcategoryOptions as subcategory (subcategory)}
-						<option value={subcategory}>{taskSubcategoryLabel(subcategory)}</option>
-					{/each}
-				</select>
-			</label>
-
-			<label class="flex flex-col gap-1.5">
-				<span class="text-xs font-semibold text-base-content/75">Prompt</span>
-				<textarea
-					class="textarea w-full"
-					name="prompt"
-					rows="5"
-					required
-					maxlength={20000}
-					placeholder="Paste or type the task prompt..."
-					bind:value={createPrompt}></textarea>
-			</label>
-
-			<fieldset class="flex flex-col gap-1.5">
-				<legend class="text-xs font-semibold text-base-content/75">
-					Image <span class="font-normal">(optional, for Task 1 visuals)</span>
-				</legend>
-				<input
-					class="file-input file-input-sm file-input-bordered w-full"
-					type="file"
-					name="image"
-					accept="image/jpeg,image/png,image/webp,image/avif"
-					bind:files={createFiles}
-					onchange={handleCreateImageChange} />
-				{#if createPreviewUrl}
-					<img
-						src={createPreviewUrl}
-						alt="Selected visual preview"
-						class="max-h-40 w-full rounded-box border border-base-content/10 object-contain" />
-				{/if}
-			</fieldset>
-
-			{#if createError}
-				<p class="text-xs text-error" role="alert">{createError}</p>
-			{/if}
-
-			<div class="modal-action">
-				<button type="button" class="btn" onclick={() => closeModal()}>Cancel</button>
-				<button type="submit" class="btn btn-primary" disabled={createTask.pending > 0}>
-					{createTask.pending > 0 ? "Saving..." : "Save task"}
-				</button>
-			</div>
-		</form>
-	{/key}
 {/snippet}
 
 {#snippet editFormSnippet()}
@@ -853,13 +760,14 @@
 					required
 					maxlength={20000}
 					placeholder="Paste or type the task prompt..."
-					bind:value={editPrompt}></textarea>
+					bind:value={editPrompt}>
+				</textarea>
 			</label>
 
 			<fieldset class="flex flex-col gap-1.5">
 				<legend class="text-xs font-semibold text-base-content/75">Image</legend>
 				<input
-					class="file-input file-input-sm file-input-bordered w-full"
+					class="file-input-bordered file-input w-full file-input-sm"
 					type="file"
 					name="image"
 					accept="image/jpeg,image/png,image/webp,image/avif"
@@ -877,7 +785,7 @@
 						class="max-h-40 w-full rounded-box border border-base-content/10 bg-base-200/40 object-contain" />
 					<button
 						type="button"
-						class="btn btn-ghost btn-xs self-start text-error"
+						class="btn self-start btn-ghost text-error btn-xs"
 						disabled={clearTaskImage.pending > 0}
 						onclick={handleEditRemoveImage}>
 						<Trash size="1em" />
@@ -925,7 +833,7 @@
 							{session.type === "timed" ? "Timed" : "Free"}
 						</span>
 						<span class="truncate font-semibold">{session.name}</span>
-						<span class="whitespace-nowrap text-right">
+						<span class="text-right whitespace-nowrap">
 							{#if session.estimatedBand}
 								Band {session.estimatedBand.toFixed(1)}
 							{:else}
@@ -949,7 +857,7 @@
 					placeholder={CONFIRM_PHRASE}
 					autocomplete="off"
 					spellcheck="false"
-					aria-label='Type "{CONFIRM_PHRASE}" to confirm deletion'
+					aria-label="Type '{CONFIRM_PHRASE}' to confirm deletion"
 					bind:value={confirmPhrase} />
 			</label>
 		</div>

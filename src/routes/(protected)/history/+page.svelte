@@ -2,29 +2,34 @@
 	import { onDestroy, type Component } from "svelte";
 	import { goto, refreshAll } from "$app/navigation";
 	import { resolve } from "$app/paths";
+	import { page } from "$app/state";
 	import {
 		ArrowRight,
 		CalendarDays,
 		Check,
 		CircleCheck,
 		Clock3,
+		Copy,
+		Download,
 		EllipsisVertical,
 		FileText,
 		MessageSquare,
 		PenLine,
+		PieChart,
 		RotateCcwClock,
 		Search,
-		Target,
 		Trash,
+		TrendingUp,
 		TriangleAlert,
-		Trophy,
 		X
 	} from "@lucide/svelte";
 	import { openModal } from "#lib/components/Modal.svelte";
 	import { roundToNearestHalf } from "#lib/utils/math.ts";
 	import { timeLimitMinutesFor } from "#lib/utils/ielts.js";
 	import { CRITERIA_MAP } from "#lib/mappings/criteria.js";
+	import { taskSubcategoryLabel } from "#lib/mappings/task-subcategory.ts";
 	import { deletePracticeSession } from "../../delete-practice-session.remote";
+	import { changeSessionName } from "../../change-session-name.remote";
 	import { formatRelativeTime } from "#lib/utils/time.js";
 
 	const { data } = $props();
@@ -34,8 +39,9 @@
 	const totalPages = $derived(data.pagination.totalPages);
 	const availableSubcategories = $derived(data.availableSubcategories);
 	const stats = $derived(data.stats);
+	const bandTarget = $derived(page.data.profile?.bandTarget ?? 0);
 
-	type FilterKey = "q" | "task" | "subcategory" | "type" | "status" | "sort" | "page";
+	type FilterKey = "q" | "task" | "subcategory" | "type" | "status" | "body" | "sort" | "page";
 
 	/** Builds a query string for the current filter state with optional overrides. */
 	function href(overrides: Partial<Record<FilterKey, string>>) {
@@ -45,6 +51,7 @@
 			subcategory: filters.subcategory ?? "all",
 			type: filters.type ?? "all",
 			status: filters.status ?? "all",
+			body: filters.body ? "1" : "0",
 			sort: filters.sort,
 			page: String(currentPage),
 			...overrides
@@ -56,6 +63,7 @@
 		if (state.subcategory !== "all") params.set("subcategory", state.subcategory);
 		if (state.type !== "all") params.set("type", state.type);
 		if (state.status !== "all") params.set("status", state.status);
+		if (state.body === "1") params.set("body", "1");
 		if (state.sort !== "recent") params.set("sort", state.sort);
 		if (state.page !== "1") params.set("page", state.page);
 
@@ -107,7 +115,9 @@
 		const chips: { key: "task" | "subcategory" | "type" | "status" | "search"; label: string }[] =
 			[];
 		if (filters.task) chips.push({ key: "task", label: `Task ${filters.task}` });
-		if (filters.subcategory) chips.push({ key: "subcategory", label: filters.subcategory });
+		if (filters.subcategory) {
+			chips.push({ key: "subcategory", label: taskSubcategoryLabel(filters.subcategory) });
+		}
 		if (filters.type) {
 			chips.push({ key: "type", label: filters.type === "timed" ? "Timed" : "Unlimited time" });
 		}
@@ -132,7 +142,7 @@
 	}
 
 	function clearFilters() {
-		goto(resolve(""), { reset: false });
+		goto(resolve("/(protected)/history"), { reset: false });
 	}
 
 	const bandTone = (band: number) =>
@@ -144,6 +154,58 @@
 		});
 
 	const minWords = (category: "1" | "2") => (category === "1" ? 150 : 250);
+
+	/**
+	 * Page numbers to render, `null` marking an ellipsis gap. Keeps long page
+	 * lists to the edges plus a window around the current page.
+	 */
+	function pageWindow(current: number, total: number): (number | null)[] {
+		if (total <= 7) {
+			return Array.from({ length: total }, (_, i) => i + 1);
+		}
+
+		const wanted = new Set([1, total, current - 1, current, current + 1]);
+		const ordered = [...wanted].filter((p) => p >= 1 && p <= total).sort((a, b) => a - b);
+
+		const window: (number | null)[] = [];
+		let previous = 0;
+		for (const pageNumber of ordered) {
+			if (pageNumber - previous > 1) {
+				window.push(null);
+			}
+			window.push(pageNumber);
+			previous = pageNumber;
+		}
+		return window;
+	}
+
+	/** Percent positions (0-100) for the trend chart dots and line. */
+	const trendPoints = $derived.by(() => {
+		const trend = data.trend;
+		if (trend.length === 0) {
+			return [];
+		}
+
+		const stepX = trend.length > 1 ? 94 / (trend.length - 1) : 0;
+		return trend.map((point, i) => ({
+			x: 3 + i * stepX,
+			y: 94 - (Math.max(0, Math.min(9, point.band)) / 9) * 88,
+			band: point.band,
+			date: point.date
+		}));
+	});
+
+	const trendLinePath = $derived(
+		trendPoints
+			.map((point, i) => `${i === 0 ? "M" : "L"}${point.x.toFixed(2)} ${point.y.toFixed(2)}`)
+			.join(" ")
+	);
+
+	const trendAreaPath = $derived(
+		trendPoints.length > 1
+			? `${trendLinePath} L${trendPoints[trendPoints.length - 1].x.toFixed(2)} 94 L${trendPoints[0].x.toFixed(2)} 94 Z`
+			: ""
+	);
 
 	let renameSessionId = $state<string | null>(null);
 	let renameValue = $state("");
@@ -157,10 +219,14 @@
 			primaryButton: {
 				text: "Save",
 				color: "primary",
-				onclick: () => {
-					const target = data.practiceSessions.find((item) => item.id === renameSessionId);
+				onclick: async () => {
 					const name = renameValue.trim();
-					if (target && name) target.name = name;
+					if (!name || !renameSessionId) {
+						return;
+					}
+
+					await changeSessionName({ practiceSessionId: renameSessionId, newName: name });
+					await refreshAll();
 				}
 			},
 			secondaryButton: { text: "Cancel", color: "error", style: "ghost" }
@@ -182,6 +248,45 @@
 			},
 			secondaryButton: { text: "Cancel", color: "primary" }
 		});
+	}
+
+	let copiedSessionId = $state<string | null>(null);
+
+	/** Turns a session name into a safe download filename. */
+	function sanitizeFilename(name: string): string {
+		const cleaned = name
+			.replace(/[^\w\s-]/g, "")
+			.trim()
+			.replace(/\s+/g, "-");
+		return cleaned || "practice-session";
+	}
+
+	async function handleCopyEssay(session: (typeof data.practiceSessions)[number]) {
+		try {
+			await navigator.clipboard.writeText(session.response);
+			copiedSessionId = session.id;
+			setTimeout(() => {
+				if (copiedSessionId === session.id) {
+					copiedSessionId = null;
+				}
+			}, 1500);
+		} catch {
+			openModal({
+				title: "Copy failed",
+				content: "Your browser blocked clipboard access. Use Download .txt instead.",
+				primaryButton: "Close"
+			});
+		}
+	}
+
+	function handleDownloadEssay(session: (typeof data.practiceSessions)[number]) {
+		const blob = new Blob([session.response], { type: "text/plain;charset=utf-8" });
+		const url = URL.createObjectURL(blob);
+		const anchor = document.createElement("a");
+		anchor.href = url;
+		anchor.download = `${sanitizeFilename(session.name)}.txt`;
+		anchor.click();
+		URL.revokeObjectURL(url);
 	}
 </script>
 
@@ -207,46 +312,97 @@
 		</a>
 	</div>
 
-	<section class="mt-4 grid grid-cols-3 gap-3 xl:grid-cols-6" aria-label="Practice summary">
-		{@render statCard({
+	{#if trendPoints.length > 1}
+		<section
+			class="mt-4 rounded-box border border-base-content/20 bg-base-100 p-3.5"
+			aria-label="Progress over time">
+			<div class="flex flex-wrap items-center justify-between gap-2">
+				<div class="flex items-center gap-2">
+					<TrendingUp class="size-4 shrink-0 text-primary" />
+					<h2 class="text-sm font-semibold">Progress over time</h2>
+				</div>
+				<span class="text-xs text-base-content/75">
+					Estimated band of your last {data.trend.length} evaluated sessions
+				</span>
+			</div>
+
+			<div class="relative mt-3 h-40">
+				<span class="absolute top-0 right-0 text-[10px] text-base-content/50 tabular-nums">
+					9
+				</span>
+				<span
+					class="absolute right-0 bottom-0 text-[10px] text-base-content/50 tabular-nums">
+					0
+				</span>
+
+				{#if bandTarget > 0}
+					<div
+						class="absolute inset-x-0 flex items-center"
+						style:top={`${(94 - (Math.min(9, bandTarget) / 9) * 88).toFixed(2)}%`}>
+						<span class="h-px flex-1 border-t border-dashed border-warning"></span>
+						<span class="ms-1 text-[10px] font-semibold whitespace-nowrap text-warning">
+							Target {bandTarget}
+						</span>
+					</div>
+				{/if}
+
+				<svg
+					class="absolute inset-0 h-full w-full text-primary"
+					viewBox="0 0 100 100"
+					preserveAspectRatio="none"
+					role="img"
+					aria-label="Line chart of estimated band scores across your last {data.trend.length} evaluated sessions">
+					{#if trendAreaPath}
+						<path d={trendAreaPath} class="fill-primary/10" stroke="none" />
+					{/if}
+					<path
+						d={trendLinePath}
+						fill="none"
+						stroke="currentColor"
+						stroke-width="2"
+						stroke-linecap="round"
+						stroke-linejoin="round"
+						vector-effect="non-scaling-stroke" />
+				</svg>
+
+				{#each trendPoints as point, i (i)}
+					<span
+						class="tooltip tooltip-top absolute size-2.5 -translate-x-1/2 -translate-y-1/2 rounded-full border-2 border-base-100 bg-primary"
+						data-tip={`Band ${point.band.toFixed(1)} · ${point.date.toLocaleDateString()}`}
+						style:left={`${point.x.toFixed(2)}%`}
+						style:top={`${point.y.toFixed(2)}%`}>
+					</span>
+				{/each}
+			</div>
+		</section>
+	{/if}
+
+	<section class="mt-4 grid grid-cols-2 gap-3 xl:grid-cols-4" aria-label="Practice summary">
+		{@render statTile({
 			icon: FileText,
 			label: "Total sessions",
 			value: String(stats.total),
 			hint: "All time"
 		})}
-		{@render statCard({
+		{@render statTile({
 			icon: CircleCheck,
 			label: "Evaluated",
 			value: String(stats.evaluated),
 			hint: `${stats.total - stats.evaluated} awaiting evaluation`
 		})}
-		{@render statCard({
-			icon: Target,
-			label: "Average band task 1",
-			value: roundToNearestHalf(stats.task1.average).toFixed(1),
-			hint: "Across all task 1 sessions",
-			tone: bandTone(stats.task1.average)
+		{@render bandStatTile({
+			icon: PieChart,
+			label: "Task 1 bands",
+			evaluated: stats.task1.evaluated,
+			average: stats.task1.average,
+			best: stats.task1.best
 		})}
-		{@render statCard({
-			icon: Trophy,
-			label: "Best band task 1",
-			value: stats.task1.best.toFixed(1),
-			hint: "Personal record",
-			tone: bandTone(stats.task1.best)
-		})}
-		{@render statCard({
-			icon: Target,
-			label: "Average band task 2",
-			value: roundToNearestHalf(stats.task2.average).toFixed(1),
-			hint: "Across all task 2 sessions",
-			tone: bandTone(stats.task2.average)
-		})}
-		{@render statCard({
-			icon: Trophy,
-			label: "Best band task 2",
-			value: stats.task2.best.toFixed(1),
-			hint: "Personal record",
-			tone: bandTone(stats.task2.best)
+		{@render bandStatTile({
+			icon: PenLine,
+			label: "Task 2 bands",
+			evaluated: stats.task2.evaluated,
+			average: stats.task2.average,
+			best: stats.task2.best
 		})}
 	</section>
 
@@ -272,6 +428,18 @@
 				{/if}
 			</label>
 
+			<label
+				class="flex shrink-0 cursor-pointer items-center gap-2 text-xs text-base-content/75"
+				title="Also search inside your essay text">
+				<input
+					type="checkbox"
+					class="toggle toggle-primary toggle-sm"
+					checked={filters.body}
+					onchange={(event) =>
+						update({ body: event.currentTarget.checked ? "1" : "0" })} />
+				<span>Search in essays</span>
+			</label>
+
 			<div class="flex flex-1 flex-wrap items-center gap-2">
 				<!-- Task Category -->
 				<div class="join" role="group" aria-label="Filter by task">
@@ -288,13 +456,13 @@
 
 				<!-- Task Subcategory -->
 				<select
-					class="select max-w-45 select-sm"
+					class="select max-w-52 select-sm"
 					aria-label="Filter by subcategory"
 					value={currentSubcategory}
 					onchange={(event) => update({ subcategory: event.currentTarget.value })}>
 					<option value="all">All subcategories</option>
 					{#each availableSubcategories as subcategory (subcategory)}
-						<option value={subcategory}>{subcategory}</option>
+						<option value={subcategory}>{taskSubcategoryLabel(subcategory)}</option>
 					{/each}
 				</select>
 
@@ -399,7 +567,9 @@
 									Task {session.taskCategory}
 								</span>
 								{#if session.taskSubcategory}
-									<span class="badge badge-soft badge-xs">{session.taskSubcategory}</span>
+									<span class="badge badge-soft badge-xs">
+										{taskSubcategoryLabel(session.taskSubcategory)}
+									</span>
 								{/if}
 								{#if session.estimatedBand}
 									<span class="badge badge-soft badge-xs badge-success">Evaluated</span>
@@ -508,20 +678,32 @@
 									aria-haspopup="menu">
 									<EllipsisVertical class="size-4" />
 								</button>
-								<ul class="menu dropdown-content z-1 w-44 rounded-box bg-base-100 p-1.5 shadow-sm">
-									<li>
-										<button onclick={() => handleRename(session)}>
-											Rename
-											<PenLine size="1em" />
-										</button>
-									</li>
-									<li>
-										<button class="text-error" onclick={() => handleDelete(session)}>
-											Delete
-											<Trash size="1em" />
-										</button>
-									</li>
-								</ul>
+							<ul class="menu dropdown-content z-1 w-44 rounded-box bg-base-100 p-1.5 shadow-sm">
+								<li>
+									<button onclick={() => handleCopyEssay(session)}>
+										{copiedSessionId === session.id ? "Copied!" : "Copy essay"}
+										<Copy size="1em" />
+									</button>
+								</li>
+								<li>
+									<button onclick={() => handleDownloadEssay(session)}>
+										Download .txt
+										<Download size="1em" />
+									</button>
+								</li>
+								<li class="mt-1 border-t border-base-content/10 pt-1">
+									<button onclick={() => handleRename(session)}>
+										Rename
+										<PenLine size="1em" />
+									</button>
+								</li>
+								<li>
+									<button class="text-error" onclick={() => handleDelete(session)}>
+										Delete
+										<Trash size="1em" />
+									</button>
+								</li>
+							</ul>
 							</div>
 						</div>
 					</div>
@@ -546,14 +728,20 @@
 					onclick={() => goToPage(currentPage - 1)}>
 					Prev
 				</button>
-				{#each Array.from({ length: totalPages }, (_, i) => i + 1) as pageNumber (pageNumber)}
-					<button
-						class="btn join-item btn-sm"
-						class:btn-active={currentPage === pageNumber}
-						aria-current={currentPage === pageNumber ? "page" : undefined}
-						onclick={() => goToPage(pageNumber)}>
-						{pageNumber}
-					</button>
+				{#each pageWindow(currentPage, totalPages) as pageNumber, i (i)}
+					{#if pageNumber === null}
+						<span class="join-item btn btn-sm btn-disabled border-base-content/20 bg-base-100"
+							>…</span
+						>
+					{:else}
+						<button
+							class="btn join-item btn-sm"
+							class:btn-active={currentPage === pageNumber}
+							aria-current={currentPage === pageNumber ? "page" : undefined}
+							onclick={() => goToPage(pageNumber)}>
+							{pageNumber}
+						</button>
+					{/if}
 				{/each}
 				<button
 					class="btn join-item btn-sm"
@@ -567,27 +755,60 @@
 	{/if}
 </main>
 
-{#snippet statCard(props: {
+{#snippet statTile(props: {
 	icon: Component;
 	label: string;
 	value: string;
 	hint?: string;
-	tone?: string;
 })}
-	<div
-		class="flex flex-col rounded-box border border-base-content/20 bg-base-100 p-3.5 hover:border-primary">
+	<div class="flex flex-col rounded-box border border-base-content/20 bg-base-100 p-3.5 hover:border-primary">
 		<div class="flex flex-1 items-center justify-between gap-2">
 			<span class="text-xs font-semibold text-base-content/75">{props.label}</span>
-			<props.icon class="size-4 shrink-0 opacity-70" />
+			<props.icon class="size-4 shrink-0 opacity-60" />
 		</div>
-		<div class={["mt-1.5 text-2xl font-bold", props.tone]}>{props.value}</div>
+		<div class="mt-1.5 text-2xl font-bold">{props.value}</div>
 		{#if props.hint}
 			<p class="text-xs text-base-content/75">{props.hint}</p>
 		{/if}
 	</div>
 {/snippet}
 
+{#snippet bandStatTile(props: {
+	icon: Component;
+	label: string;
+	evaluated: number;
+	average: number;
+	best: number;
+})}
+	<div class="flex flex-col rounded-box border border-base-content/20 bg-base-100 p-3.5 hover:border-primary">
+		<div class="flex flex-1 items-center justify-between gap-2">
+			<span class="text-xs font-semibold text-base-content/75">{props.label}</span>
+			<props.icon class="size-4 shrink-0 opacity-60" />
+		</div>
+		<div class="mt-1.5 text-2xl font-bold">
+			{#if props.evaluated > 0}
+				<span class={bandTone(props.best)}>{props.best.toFixed(1)}</span>
+			{:else}
+				–
+			{/if}
+		</div>
+		<p class="text-xs text-base-content/75">
+			{#if props.evaluated > 0}
+				Average {roundToNearestHalf(props.average).toFixed(1)} · {props.evaluated}
+				{props.evaluated === 1 ? "session" : "sessions"}
+			{:else}
+				No evaluated sessions yet
+			{/if}
+		</p>
+	</div>
+{/snippet}
+
 {#snippet renameSnippet()}
 	<p class="mb-3 text-xs text-base-content/75">Enter a new name for this practice session.</p>
-	<input class="input w-full" bind:value={renameValue} placeholder="Practice session name" />
+	<input
+		class="input w-full"
+		bind:value={renameValue}
+		maxlength={64}
+		placeholder="Practice session name"
+		aria-label="New session name" />
 {/snippet}

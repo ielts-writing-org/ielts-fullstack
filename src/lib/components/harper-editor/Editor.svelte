@@ -20,6 +20,10 @@
 		wordTarget?: number;
 		/** Quill placeholder shown while the document is empty. */
 		placeholder?: string;
+		/** Document save state, surfaced in the status bar when provided. */
+		saveState?: "unsaved" | "saving" | "saved" | "failed";
+		/** Retries the save after a failure. */
+		onRetrySave?: () => void;
 	}
 
 	let {
@@ -30,7 +34,9 @@
 		onChange = () => {},
 		isEditable = true,
 		wordTarget = 0,
-		placeholder = "Start writing..."
+		placeholder = "Start writing...",
+		saveState,
+		onRetrySave = () => {}
 	}: Props = $props();
 
 	let editor = $state<HTMLDivElement>();
@@ -271,5 +277,7 @@
 		problemCount={lintBoxes.length}
 		{fontFamily}
 		{wordTarget}
+		{saveState}
+		{onRetrySave}
 		onFontFamilyChange={(next) => (fontFamily = next)} />
 </div>

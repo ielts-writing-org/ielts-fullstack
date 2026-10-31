@@ -26,12 +26,25 @@
 	const estimatedBand = $derived(evaluation?.estimatedBand);
 	// Open the panel the learner most likely needs: the evaluation if one
 	// exists, otherwise the tutor chat if they have already been asking.
-	const startOnChat = $derived(!evaluation && messages.length > 0);
+	let activeTab = $state<"chat" | "evaluate">(!evaluation && messages.length > 0 ? "chat" : "evaluate");
+	let chatDraft = $state("");
+
+	/** Switches to the tutor chat with a prefilled question (evaluation bridge). */
+	function askTutor(question: string) {
+		chatDraft = question;
+		activeTab = "chat";
+	}
 </script>
 
 <div class="tabs tabs-lift h-full" role="tablist">
 	<label class="tab [--tab-border-color:var(--color-base-content)]/20">
-		<input type="radio" name="tab" aria-label="Tab Chat" role="tab" checked={startOnChat} />
+		<input
+			type="radio"
+			name="tab"
+			aria-label="Tab Chat"
+			role="tab"
+			checked={activeTab === "chat"}
+			onchange={() => (activeTab = "chat")} />
 		<MessagesSquare class="me-2 size-4" />
 		Chat
 		{#if messages.length > 0}
@@ -46,11 +59,18 @@
 			practiceSessionContext={props.practiceSessionContext}
 			{evaluation}
 			bind:messages
-			bind:isBusy={isChatBusy} />
+			bind:isBusy={isChatBusy}
+			bind:input={chatDraft} />
 	</div>
 
 	<label class="tab [--tab-border-color:var(--color-base-content)]/20">
-		<input type="radio" name="tab" aria-label="Tab Evaluation" role="tab" checked={!startOnChat} />
+		<input
+			type="radio"
+			name="tab"
+			aria-label="Tab Evaluation"
+			role="tab"
+			checked={activeTab === "evaluate"}
+			onchange={() => (activeTab = "evaluate")} />
 		<ListCheck class="me-2 size-4" />
 		Evaluation
 		{#if estimatedBand}
@@ -70,6 +90,7 @@
 			practiceSessionId={props.practiceSessionId}
 			practiceSessionContext={props.practiceSessionContext}
 			bind:evaluation
-			bind:isBusy={isEvaluationBusy} />
+			bind:isBusy={isEvaluationBusy}
+			onAskTutor={askTutor} />
 	</div>
 </div>

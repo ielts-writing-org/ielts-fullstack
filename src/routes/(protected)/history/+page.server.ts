@@ -2,6 +2,7 @@ import { getDb } from "#lib/server/db/index.ts";
 import { env } from "cloudflare:workers";
 import type { PageServerLoad } from "./$types";
 import type { Evaluation } from "#lib/schemas/evaluation.ts";
+import { TASK_SUBCATEGORIES_BY_CATEGORY } from "#lib/mappings/task-subcategory.ts";
 import type { AllTaskSubcategory } from "#lib/schemas/task-subcategory.ts";
 import { countWords } from "#lib/utils/stats.ts";
 import { chatMessages, evaluations, practiceSessions, tasks } from "#lib/server/db/app.schema.ts";
@@ -14,6 +15,7 @@ const SORTS = ["recent", "oldest", "band", "words"] as const;
 const TASK_CATEGORIES = ["1", "2"] as const;
 const PRACTICE_TYPES = ["free", "timed"] as const;
 const STATUSES = ["evaluated", "unevaluated"] as const;
+const ALL_SUBCATEGORIES = Object.values(TASK_SUBCATEGORIES_BY_CATEGORY).flat() as string[];
 
 type Sort = (typeof SORTS)[number];
 
@@ -54,7 +56,11 @@ export const load = (async ({ locals, url }) => {
 	const task = TASK_CATEGORIES.find((value) => value === searchParams.get("task"));
 	const type = PRACTICE_TYPES.find((value) => value === searchParams.get("type"));
 	const status = STATUSES.find((value) => value === searchParams.get("status"));
-	const subcategory = searchParams.get("subcategory") ?? undefined;
+	const includeBody = searchParams.get("body") === "1";
+	const subcategoryParam = searchParams.get("subcategory");
+	const subcategory = ALL_SUBCATEGORIES.includes(subcategoryParam ?? "")
+		? (subcategoryParam as AllTaskSubcategory)
+		: undefined;
 	const sort: Sort = SORTS.find((value) => value === searchParams.get("sort")) ?? "recent";
 	const requestedPage = Number.parseInt(searchParams.get("page") ?? "1", 10);
 	const page = Number.isFinite(requestedPage) && requestedPage > 0 ? requestedPage : 1;
@@ -67,13 +73,15 @@ export const load = (async ({ locals, url }) => {
 	if (status === "unevaluated") conditions.push(isNull(evaluations.id));
 	if (q) {
 		const pattern = `%${q}%`;
-		conditions.push(
-			or(
-				like(practiceSessions.name, pattern),
-				like(practiceSessions.type, pattern),
-				like(tasks.prompt, pattern)
-			)!
-		);
+		const textMatches = [
+			like(practiceSessions.name, pattern),
+			like(practiceSessions.type, pattern),
+			like(tasks.prompt, pattern)
+		];
+		if (includeBody) {
+			textMatches.push(like(practiceSessions.response, pattern));
+		}
+		conditions.push(or(...textMatches)!);
 	}
 	const where = and(...conditions);
 
@@ -130,6 +138,19 @@ export const load = (async ({ locals, url }) => {
 
 	const totalSessions = await db.$count(practiceSessions, eq(practiceSessions.userId, user.id));
 
+	// Overall bands of the most recent evaluated sessions (oldest first) for
+	// the progress-over-time chart.
+	const trendRows = await db
+		.select({
+			band: sql<number>`json_extract("evaluations"."result", '$.estimatedBand')`,
+			startedAt: practiceSessions.startedAt
+		})
+		.from(practiceSessions)
+		.innerJoin(evaluations, eq(evaluations.practiceSessionId, practiceSessions.id))
+		.where(eq(practiceSessions.userId, user.id))
+		.orderBy(desc(practiceSessions.startedAt))
+		.limit(15);
+
 	const categoryRows = await db
 		.select({
 			category: tasks.category,
@@ -167,6 +188,7 @@ export const load = (async ({ locals, url }) => {
 				taskPrompt: row.taskPrompt,
 				type: row.type,
 				updatedAt: row.updatedAt,
+				response: row.response,
 				words: countWords(row.response),
 				messages: row.messages,
 				estimatedBand: result?.estimatedBand,
@@ -184,12 +206,16 @@ export const load = (async ({ locals, url }) => {
 			task2
 		},
 		pagination: { page: safePage, perPage: PER_PAGE, total, totalPages },
+		trend: trendRows
+			.map((row) => ({ band: row.band, date: row.startedAt }))
+			.reverse(),
 		filters: {
 			q,
 			task: task ?? null,
 			subcategory: subcategory ?? null,
 			type: type ?? null,
 			status: status ?? null,
+			body: includeBody,
 			sort
 		}
 	};

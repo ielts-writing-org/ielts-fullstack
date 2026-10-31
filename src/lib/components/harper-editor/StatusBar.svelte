@@ -1,7 +1,9 @@
 <script lang="ts">
 	import { countCharacters, countWords } from "#lib/utils/stats.ts";
-	import { Check, TriangleAlert } from "@lucide/svelte";
+	import { Check, RotateCcw, TriangleAlert } from "@lucide/svelte";
 	import { type EditorFontFamily, FONT_OPTIONS } from "./editor-display.ts";
+
+	type SaveState = "unsaved" | "saving" | "saved" | "failed";
 
 	interface Props {
 		text?: string;
@@ -9,6 +11,10 @@
 		fontFamily?: EditorFontFamily;
 		/** Minimum acceptable word count (IELTS task requirement). */
 		wordTarget?: number;
+		/** Document save state; rendered with a Retry action when it failed. */
+		saveState?: SaveState;
+		/** Retries the save after a failure. */
+		onRetrySave?: () => void;
 		onFontFamilyChange?: (fontFamily: EditorFontFamily) => void;
 	}
 
@@ -17,6 +23,8 @@
 		problemCount = 0,
 		fontFamily = "sans",
 		wordTarget = 0,
+		saveState,
+		onRetrySave = () => {},
 		onFontFamilyChange = () => {}
 	}: Props = $props();
 
@@ -27,6 +35,13 @@
 	const goalProgress = $derived(
 		hasTarget ? Math.min(100, Math.round((words / wordTarget) * 100)) : 0
 	);
+
+	const saveLabels: Record<SaveState, string> = {
+		unsaved: "Not saved",
+		saving: "Saving",
+		saved: "Saved",
+		failed: "Save failed"
+	};
 </script>
 
 <footer
@@ -43,6 +58,36 @@
 			{/if}
 		</span>
 	</div>
+
+	{#if saveState}
+		<span class="inline-flex items-center gap-1.5">
+			<span
+				class={[
+					"status",
+					saveState === "saved" && "status-success",
+					saveState === "saving" && "animate-bounce status-warning",
+					(saveState === "unsaved" || saveState === "failed") && "status-error"
+				]}></span>
+			<span
+				class={[
+					saveState === "saved" && "text-success",
+					saveState === "saving" && "text-warning",
+					(saveState === "unsaved" || saveState === "failed") && "text-error"
+				]}>
+				{saveLabels[saveState]}
+			</span>
+			{#if saveState === "failed"}
+				<button
+					type="button"
+					class="btn btn-ghost btn-xs gap-1 px-1 text-error"
+					title="Try saving again"
+					onclick={onRetrySave}>
+					<RotateCcw class="size-3" />
+					Retry
+				</button>
+			{/if}
+		</span>
+	{/if}
 
 	<span class="hidden h-2.5 w-px bg-base-content/20 @md:inline"></span>
 

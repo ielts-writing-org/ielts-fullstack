@@ -2,7 +2,7 @@
 	import { page } from "$app/state";
 	import { type EventSourceMessage, EventSourceParserStream } from "eventsource-parser/stream";
 	import JSONParser from "@streamparser/json/jsonparser.js";
-	import { Info, ListChecks } from "@lucide/svelte";
+	import { Info, ListChecks, MessagesSquare } from "@lucide/svelte";
 	import type { Evaluation, EvaluationCriterion } from "#lib/schemas/evaluation.ts";
 	import type { PracticeSessionContext } from "#lib/schemas/task-context.ts";
 	import { openModal } from "#lib/components/Modal.svelte";
@@ -22,11 +22,16 @@
 		practiceSessionContext: PracticeSessionContext;
 		evaluation: Evaluation | undefined;
 		isBusy: boolean;
+		/** Asks the tutor panel to open with a prefilled question. */
+		onAskTutor: (question: string) => void;
 	};
 
-	let { evaluation = $bindable(), isBusy = $bindable(false), ...props }: Props = $props();
+	let { evaluation = $bindable(), isBusy = $bindable(), ...props }: Props = $props();
 
 	let abortController = $state<AbortController>(new AbortController());
+
+	/** Key of the criterion detail that should start out expanded. */
+	let openCriterionKey = $state<Criteria | null>(null);
 
 	const estimatedBand = $derived(evaluation?.estimatedBand);
 	const criteriaList = $derived<{ key: Criteria; criterion: EvaluationCriterion }[]>(
@@ -120,6 +125,21 @@
 		} else if (target.taskCategory === "2" && key !== "taskAchievement") {
 			target.criteria[key] = criterion;
 		}
+	}
+
+	/** The criterion with the lowest band, used to pre-open its details. */
+	function weakestCriterionKey(current: Evaluation): Criteria | null {
+		let weakest: { key: Criteria; band: number } | null = null;
+		for (const [key, criterion] of Object.entries(current.criteria)) {
+			if (!isCriteriaKey(key)) {
+				continue;
+			}
+
+			if (weakest === null || criterion.band < weakest.band) {
+				weakest = { key, band: criterion.band };
+			}
+		}
+		return weakest?.key ?? null;
 	}
 
 	async function handleEvaluate() {
@@ -222,6 +242,7 @@
 			while (true) {
 				const { done, value } = await reader.read();
 				if (done) {
+					openCriterionKey = weakestCriterionKey(evaluation);
 					break;
 				}
 				parser.write(value);
@@ -331,8 +352,8 @@
 					{/if}
 				</div>
 
-				{#each criteriaList as { key, criterion } (key)}
-					<details class="collapse-arrow collapse bg-base-100">
+			{#each criteriaList as { key, criterion } (key)}
+				<details class="collapse-arrow collapse bg-base-100" open={openCriterionKey === key}>
 						<summary class="collapse-title cursor-pointer p-0">
 							<span class="font-semibold">
 								{CRITERIA_MAP[key]}
@@ -374,6 +395,16 @@
 									<span class="font-semibold">Advice:</span>
 									{criterion.nextBandGap}
 								</p>
+								<button
+									type="button"
+									class="btn btn-ghost btn-xs mt-1 self-start text-primary"
+									onclick={() =>
+										props.onAskTutor(
+											`How can I improve my ${CRITERIA_MAP[key]} band? The evaluation says: "${criterion.nextBandGap}"`
+										)}>
+									<MessagesSquare class="size-3.5" />
+									Ask the tutor how to get there
+								</button>
 
 								{const checks = $state(criterion.checks)}
 								{#if checks && checks.length > 0}
@@ -447,6 +478,16 @@
 																<span class="font-semibold">Advice:</span>
 																{weakness.advice}
 															</div>
+															<button
+																type="button"
+																class="btn btn-ghost btn-xs mt-1 text-primary"
+																onclick={() =>
+																	props.onAskTutor(
+																		`How can I fix this weakness in ${CRITERIA_MAP[key]}? The weakness is "${weakness.title}" — evidence in my writing: ${weakness.evidence}`
+																	)}>
+																<MessagesSquare class="size-3.5" />
+																Ask the tutor about this
+															</button>
 														</div>
 													</details>
 												</li>

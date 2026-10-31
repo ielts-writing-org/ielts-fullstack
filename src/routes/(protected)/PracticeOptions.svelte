@@ -1,10 +1,11 @@
 <script lang="ts">
-	import type { Component } from "svelte";
 	import { goto } from "$app/navigation";
-	import { AlarmClock, AlarmClockOff, ArrowRight, Clock3 } from "@lucide/svelte";
+	import { ArrowRight, Clock3 } from "@lucide/svelte";
 	import type { TaskCategory } from "#lib/schemas/task-category.ts";
 	import { openModal } from "#lib/components/Modal.svelte";
 	import { createPractice } from "./create-practice.remote";
+	import PracticeTypePicker from "./PracticeTypePicker.svelte";
+	import TaskCreateForm from "#lib/components/TaskCreateForm.svelte";
 
 	type Props = {
 		practiceOptions: {
@@ -21,45 +22,33 @@
 
 	let selectedPracticeSessionType = $state<"timed" | "free">("timed");
 
+	/** Opens the combined "new task + practice style" flow for a fixed category. */
 	const handleCreateCustomTaskPractice = (taskCategory: TaskCategory) => {
+		selectedPracticeSessionType = "timed";
 		openModal({
-			title: "Start a custom task practice",
-			content: {
-				snippet: practiceOptionsSnippet,
-				args: {
-					options: [
-						{
-							icon: AlarmClock,
-							time: taskCategory === "1" ? 20 : 40,
-							value: "timed"
-						},
-						{
-							icon: AlarmClockOff,
-							value: "free"
-						}
-					]
-				}
-			},
-			primaryButton: {
-				onclick: async () => {
-					const result = await createPractice({
-						taskCategory,
-						practiceSessionType: selectedPracticeSessionType
-					});
-					if (result.success) {
-						goto(result.location);
-					}
-				},
-				color: "primary",
-				text: "Create"
-			},
-			secondaryButton: {
-				color: "error",
-				style: "ghost",
-				text: "Cancel"
-			}
+			title: `Start Task ${taskCategory} practice`,
+			content: { snippet: startPracticeSnippet, args: { category: taskCategory } }
 		});
 	};
+
+	async function startPractice(taskCategory: TaskCategory, taskId: string) {
+		try {
+			const result = await createPractice({
+				taskCategory,
+				taskId,
+				practiceSessionType: selectedPracticeSessionType
+			});
+			if (result.success) {
+				goto(result.location);
+			}
+		} catch (error) {
+			openModal({
+				title: "Unable to start practice",
+				content: String(error),
+				primaryButton: "Close"
+			});
+		}
+	}
 </script>
 
 <div class="grid grid-cols-1 gap-3.5 md:grid-cols-2">
@@ -95,33 +84,17 @@
 	{/each}
 </div>
 
-{#snippet practiceOptionsSnippet(props: {
-	options: ({
-		icon: Component;
-	} & ({ time: number; value: "timed" } | { value: "free" }))[];
-})}
-	<p class="mb-4">Choose your preferred practice style:</p>
-	<div class="flex max-h-48 justify-center gap-4">
-		{#each props.options as option, i (option.value)}
-			<label
-				class={[
-					"flex aspect-square flex-1 flex-col items-center gap-2 rounded-box border p-2 sm:gap-4",
-					"transition-colors hover:border-primary hover:text-primary",
-					"not-has-checked:shadow-md has-checked:bg-primary has-checked:text-primary-content"
-				]}>
-				<input
-					class="appearance-none"
-					type="radio"
-					bind:group={selectedPracticeSessionType}
-					value={option.value}
-					defaultChecked={i === 0} />
-				<option.icon class="w-full flex-1" />
-				<span class="text-center">
-					{option.value === "timed"
-						? `${option.time}-Min-Limit Practice`
-						: "Unlimited Time Practice"}
-				</span>
-			</label>
-		{/each}
-	</div>
+{#snippet startPracticeSnippet(props: { category: TaskCategory })}
+	<p class="mb-3 text-xs text-base-content/75">
+		Set up the task you want to write about, pick a practice style, and start.
+	</p>
+	<TaskCreateForm
+		category={props.category}
+		submitLabel="Start practice"
+		onSaved={(taskId) => startPractice(props.category, taskId)}>
+		<fieldset class="flex flex-col gap-1.5">
+			<legend class="text-xs font-semibold text-base-content/75">Practice style</legend>
+			<PracticeTypePicker bind:value={selectedPracticeSessionType} category={props.category} />
+		</fieldset>
+	</TaskCreateForm>
 {/snippet}

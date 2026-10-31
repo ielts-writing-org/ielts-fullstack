@@ -19,11 +19,16 @@
 		evaluation: Evaluation | undefined;
 		messages: ChatMessage[];
 		isBusy: boolean;
+		/** Current draft of the chat input box, bindable so other panels can prefill it. */
+		input?: string;
 	};
 
-	let { messages = $bindable(), isBusy = $bindable(), ...props }: Props = $props();
-
-	let chatInput = $state<string>("");
+	let {
+		messages = $bindable(),
+		isBusy = $bindable(),
+		input = $bindable(""),
+		...props
+	}: Props = $props();
 	let abortController = $state<AbortController>(new AbortController());
 
 	const CHAT_SUGGESTIONS = [
@@ -34,7 +39,7 @@
 	];
 
 	async function sendSuggestion(suggestion: string) {
-		chatInput = suggestion;
+		input = suggestion;
 		await handleChat();
 	}
 
@@ -66,7 +71,7 @@
 				return;
 			}
 
-			const message = chatInput.trim();
+			const message = input.trim();
 			if (!message) {
 				return;
 			}
@@ -128,7 +133,7 @@
 			}
 
 			messages.push({ from: "user", message: message }, { from: "assistant", message: "" });
-			chatInput = "";
+			input = "";
 
 			const reader = stream
 				.pipeThrough(new TextDecoderStream())
@@ -242,6 +247,7 @@
 							chat.from === "user" && "chat-end"
 						]}>
 						<div class="chat-header">{chat.from === "user" ? "You" : "AI Tutor"}</div>
+						<!-- Message content is sanitized with sanitize-html before rendering. -->
 						<div
 							class={[
 								"chat-bubble wrap-break-word",
@@ -261,7 +267,7 @@
 					placeholder="Ask a question..."
 					required={!isBusy}
 					disabled={isBusy}
-					bind:value={chatInput} />
+					bind:value={input} />
 			</label>
 			<button class="btn join-item btn-primary" disabled={isBusy} onclick={handleChat}>
 				<span class="loading loading-sm loading-dots" hidden={!isBusy}></span>

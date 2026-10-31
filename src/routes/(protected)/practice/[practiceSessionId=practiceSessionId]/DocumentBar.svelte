@@ -13,6 +13,7 @@
 		Maximize2,
 		Minimize2,
 		PenLine,
+		Save,
 		Trash,
 		Undo2
 	} from "@lucide/svelte";
@@ -28,13 +29,19 @@
 		};
 		showTask?: boolean;
 		showAssistant?: boolean;
+		/** Saves all dirty editor content; shown when provided. */
+		onSave?: () => void | Promise<void>;
+		/** Whether there is unsaved content to save. */
+		canSave?: boolean;
 	};
 
 	let {
 		category,
 		timer,
 		showTask = $bindable(true),
-		showAssistant = $bindable(true)
+		showAssistant = $bindable(true),
+		onSave,
+		canSave = true
 	}: Props = $props();
 
 	let megamenu = $state<HTMLElement>();
@@ -117,7 +124,7 @@
 </script>
 
 <div
-	class="z-5 flex flex-wrap items-center gap-2 rounded-box border border-base-content/20 bg-base-100 px-2 py-1.5 lg:sticky lg:top-0"
+	class="z-5 flex flex-wrap items-center gap-2 rounded-box border border-base-content/20 bg-base-100 px-2 py-1.5 not-lg:sticky not-lg:top-(--app-header-height) lg:sticky lg:top-0"
 	aria-label="Practice toolbar">
 	<nav class="megamenu megamenu-sm" aria-label="Practice menu" bind:this={megamenu}>
 		<span class="megamenu-active"></span>
@@ -204,6 +211,18 @@
 		</div>
 	</nav>
 
+	{#if onSave}
+		<button
+			class="btn btn-ghost btn-sm gap-1.5"
+			disabled={!canSave}
+			title="Save now (Ctrl+S)"
+			onclick={onSave}>
+			<Save class="size-4" />
+			Save
+			<kbd class="kbd kbd-sm hidden lg:inline">Ctrl S</kbd>
+		</button>
+	{/if}
+
 	<span class="flex-1"></span>
 
 	{#if timer}
@@ -249,9 +268,13 @@
 				<kbd class="kbd kbd-sm">Cmd</kbd>
 				+
 				<kbd class="kbd kbd-sm">S</kbd>
+				or the
+				<span class="font-semibold">Save</span>
+				button in the toolbar
 			</p>
 			<p class="text-xs text-base-content/75">
-				Your answer also saves automatically a moment after you stop typing.
+				This saves your task prompt and your answer. Your answer also saves automatically a moment
+				after you stop typing.
 			</p>
 		</div>
 

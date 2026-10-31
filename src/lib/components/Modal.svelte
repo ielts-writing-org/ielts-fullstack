@@ -24,7 +24,14 @@
 					: { component: CContent; props: ComponentProps<CContent> });
 		primaryButton?: ModalButtonConfig;
 		secondaryButton?: ModalButtonConfig;
+		closeByBackdrop?: true | ModalCloseConfig;
+		closeButton?: true | ModalCloseConfig;
 		bypassBusy?: boolean;
+	};
+
+	type ModalCloseConfig = {
+		onclick?: () => unknown | Promise<unknown>;
+		disabled?: boolean;
 	};
 
 	type ModalButtonConfig =
@@ -34,7 +41,6 @@
 				onclick?: () => unknown | Promise<unknown>;
 				color?: "default" | "primary" | "success" | "warning" | "error";
 				style?: "default" | "outline" | "ghost";
-				/** Pass a getter (`get disabled() { ... }`) to keep the value reactive. */
 				disabled?: boolean;
 				explicitClose?: boolean;
 		  };
@@ -95,6 +101,10 @@
 <dialog class="modal" bind:this={modal}>
 	{#if current}
 		<div class="modal-box">
+			{#if current.closeButton}
+				{@render closeButton(current.closeButton)}
+			{/if}
+
 			<!-- Title -->
 			{#if typeof current.title === "string"}
 				<h3 class="text-lg font-semibold">{current.title}</h3>
@@ -127,13 +137,17 @@
 			<!-- Actions -->
 			{#if current.primaryButton}
 				<div class="modal-action">
-					{@render modalButton(current.primaryButton)}
 					{#if current.secondaryButton}
 						{@render modalButton(current.secondaryButton)}
 					{/if}
+					{@render modalButton(current.primaryButton)}
 				</div>
 			{/if}
 		</div>
+
+		{#if current.closeByBackdrop}
+			{@render backdropClose(current.closeByBackdrop)}
+		{/if}
 	{/if}
 </dialog>
 
@@ -165,4 +179,37 @@
 			{source.text}
 		</button>
 	{/if}
+{/snippet}
+
+{#snippet closeButton(closeButton: true | ModalCloseConfig)}
+	{#if closeButton === true}
+		<button class="btn absolute top-2 right-2 btn-circle btn-ghost btn-sm" onclick={closeModal}>
+			✕
+		</button>
+	{:else}
+		<button
+			class="btn absolute top-2 right-2 btn-circle btn-ghost btn-sm"
+			onclick={async () => {
+				await closeButton.onclick?.();
+				await closeModal();
+			}}>
+			✕
+		</button>
+	{/if}
+{/snippet}
+
+{#snippet backdropClose(closeByBackdrop: true | ModalCloseConfig)}
+	<div class="modal-backdrop">
+		{#if closeByBackdrop === true}
+			<button onclick={closeModal}>close</button>
+		{:else}
+			<button
+				onclick={async () => {
+					await closeByBackdrop.onclick?.();
+					await closeModal();
+				}}>
+				close
+			</button>
+		{/if}
+	</div>
 {/snippet}
