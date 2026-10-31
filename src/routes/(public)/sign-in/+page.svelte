@@ -92,6 +92,7 @@
 {/snippet}
 
 <main
+	id="main-content"
 	class="relative flex w-full items-center justify-center p-6 [--glass-blur:4px] lg:h-full lg:p-16"
 	data-theme="light">
 	<!-- Watermark background -->

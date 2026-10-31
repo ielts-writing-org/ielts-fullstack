@@ -99,7 +99,7 @@
 
 <PreventLeaving by={isPromptDirty || isResponseDirty || isEvaluationBusy || isChatBusy} />
 
-<main class="flex flex-1 flex-col gap-2 bg-base-100 p-2 lg:flex-row lg:overflow-y-hidden">
+<main id="main-content" class="flex flex-1 flex-col gap-2 bg-base-100 p-2 lg:flex-row lg:overflow-y-hidden">
 	<section class="flex flex-1 flex-col gap-2 lg:flex-3 lg:overflow-y-auto xl:flex-2">
 		<DocumentBar
 			{category}

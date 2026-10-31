@@ -25,6 +25,7 @@
 </svelte:head>
 
 <main
+	id="main-content"
 	class="flex w-full max-w-xl flex-1 flex-col items-center justify-center gap-6 self-center bg-base-100 px-4 py-12 text-center font-mono">
 	<div class="flex flex-col items-center gap-2 sm:flex-row" aria-hidden="true">
 		<h2 class="text-7xl font-extrabold text-primary">

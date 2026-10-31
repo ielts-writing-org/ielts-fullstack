@@ -1,25 +1,48 @@
 <script lang="ts">
 	import { resolve } from "$app/paths";
 	import { page } from "$app/state";
-	import { Clock, FileText, InfinityIcon } from "@lucide/svelte";
+	import { ArrowLeft, Clock, FileText, InfinityIcon } from "@lucide/svelte";
 	import { minWordsFor, timeLimitMinutesFor } from "#lib/utils/ielts.js";
 	import AppLogo from "#lib/components/AppLogo.svelte";
 	import Modal from "#lib/components/Modal.svelte";
 	import MainNav from "./MainNav.svelte";
+	import TabNav from "./TabNav.svelte";
 	import UserMenu from "./UserMenu.svelte";
 	import "./layout.css";
 
 	let { children, data } = $props();
+
+	// The mobile tab bar mirrors the desktop nav and stays out of practice
+	// sessions, which are focus mode.
+	const showTabBar = $derived(
+		Boolean(data.session && data.user && data.profile) && !page.data.practiceSession
+	);
 </script>
 
 <Modal />
 
-<div class="flex h-dvh w-full flex-col overflow-y-auto bg-base-100 text-base-content">
+<a
+	class="btn sr-only btn-primary btn-sm focus:not-sr-only focus:absolute focus:top-2 focus:left-2 focus:z-50"
+	href="#main-content">
+	Skip to main content
+</a>
+
+<div
+	class={[
+		"flex h-dvh w-full flex-col overflow-y-auto bg-base-100 text-base-content",
+		showTabBar && "not-lg:pb-16"
+	]}>
 	<header
 		class="navbar sticky top-0 z-10 flex shrink-0 gap-2 border-b border-base-content/10 bg-base-100 not-lg:flex-wrap">
 		{#if page.data.practiceSession}
 			{const session = page.data.practiceSession}
 			<div class="navbar-start min-w-0 gap-2">
+				<a
+					class="btn btn-circle shrink-0 btn-ghost btn-sm"
+					href={resolve("/(protected)")}
+					aria-label="Back to dashboard">
+					<ArrowLeft class="size-5" />
+				</a>
 				<a class="contents" href={resolve("/(protected)")} aria-label="Dashboard">
 					<AppLogo />
 				</a>
@@ -82,3 +105,7 @@
 
 	{@render children()}
 </div>
+
+{#if showTabBar}
+	<TabNav />
+{/if}

@@ -340,7 +340,7 @@
 	<meta name="description" content="Manage the IELTS Writing tasks you practice with." />
 </svelte:head>
 
-<main class="w-full flex-1 overflow-y-auto px-3 py-3 sm:px-4 sm:py-4 lg:px-9">
+<main id="main-content" class="w-full flex-1 overflow-y-auto px-3 py-3 sm:px-4 sm:py-4 lg:px-9">
 	<div class="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
 		<div class="min-w-0">
 			<div class="flex items-center gap-2">

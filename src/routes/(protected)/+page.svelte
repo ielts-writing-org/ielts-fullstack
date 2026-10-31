@@ -16,7 +16,7 @@
 	<meta name="description" content="IELTS Writing Practice Platform Dashboard" />
 </svelte:head>
 
-<main class="w-full flex-1 px-3 py-3 sm:px-4 sm:py-4 lg:px-9">
+<main id="main-content" class="w-full flex-1 px-3 py-3 sm:px-4 sm:py-4 lg:px-9">
 	{#if data.recentPracticeSession}
 		<PreviousPracticeSession
 			practiceSession={data.recentPracticeSession.practiceSession}
