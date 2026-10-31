@@ -1,0 +1,19 @@
+{
+	"$schema": "https://app.kilo.ai/config.json",
+	"mcp": {
+		"servers": {
+			"daisyui-github": {
+				"type": "remote",
+				"url": "https://gitmcp.io/saadeghi/daisyui"
+			},
+			"sveltekit": {
+				"type": "remote",
+				"url": "https://mcp.svelte.dev/mcp"
+			},
+			"better-auth": {
+				"type": "remote",
+				"url": "https://mcp.better-auth.com/mcp"
+    		}
+		}
+	}
+}

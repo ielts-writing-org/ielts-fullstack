@@ -1,0 +1,9 @@
+# sveltekit generated files
+.svelte-kit/
+drizzle/
+.localflare/
+.kilo/
+worker-configuration.d.ts
+coverage/
+test-results/
+package-lock.json

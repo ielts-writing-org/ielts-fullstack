@@ -1,0 +1,30 @@
+@startuml Đăng xuất
+
+skinparam DefaultFontName Segoe UI
+
+|Tác nhân chính|
+start
+:1. Chọn vào hình đại diện người dùng;
+
+|Hệ thống|
+:2. Hiển thị hộp thoại bật lên có lựa chọn “Sign out”;
+
+|Tác nhân chính|
+:3. Chọn “Sign out”;
+
+|Hệ thống|
+:4. Hiện thị hộp thoại xác nhận đăng xuất;
+
+|Tác nhân chính|
+if (5. Chọn “Sign out”?) then (Có)
+    |Hệ thống|
+    :6. Xóa session khỏi cơ sở dữ liệu;
+    :7. Xóa các cookie liên quan đến người dùng\nkhỏi trình duyệt;
+    :8. Làm mới giao diện người dùng;
+    stop
+else (Không - A1)
+    :5.2. Tắt hộp thoại xác nhận;
+    stop
+endif
+
+@enduml

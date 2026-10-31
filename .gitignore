@@ -55,5 +55,7 @@ coverage/
 # Cloudflare wrangler generated files
 worker-configuration.d.ts
 
-# dependency-cruise
-depcruise-*.html
+# Localflare generated files
+.localflare/
+
+out/

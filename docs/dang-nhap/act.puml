@@ -1,0 +1,60 @@
+@startuml Đăng nhập
+
+skinparam DefaultFontName Segoe UI
+
+|Tác nhân chính|
+start
+:1. Chọn “Continue with GitHub”;
+
+|Hệ thống|
+:2. Chuyển hướng người dùng đến\ntrang đăng nhập của GitHub;
+
+|OAuth Provider|
+if (Đã đăng nhập GitHub?) then (Có - A1)
+else (Không)
+    :3. Hiển thị trang đăng nhập;
+
+    |Tác nhân chính|
+    :4. Nhập thông tin đăng nhập GitHub;
+
+    |OAuth Provider|
+    :5. Xác thực thông tin đăng nhập;
+endif
+
+if (Đã cấp quyền trước đó?) then (Có - A2)
+else (Không)
+    :6. Hiển thị trang cấp quyền;
+    
+    |Tác nhân chính|
+    if (7. Cấp quyền cho phép hệ thống\ntruy cập thông tin tài khoản GitHub?) then (Có)
+    label 1
+    else (Không - A3)
+        |OAuth Provider|
+        :7.2. Chuyển hướng người dùng về hệ thống\nvới trạng thái từ chối cấp quyền;
+
+        |Hệ thống|
+        :7.3. Thông báo cấp quyền thất bại;
+        goto failed
+        stop
+    endif
+endif
+
+|OAuth Provider|
+:8. Chuyển hướng người dùng về hệ thống\nvới mã ủy quyền (code) và tham số state;
+
+|Hệ thống|
+if (Dữ liệu hợp lệ?) then (Có)
+    :9. Lấy thông tin người dùng từ GitHub;
+    if (Đã có tài khoản?) then (Có - A4)
+    else (Không)
+        :10. Tạo liên kết tài khoản\nvà người dùng;
+    endif
+    :11. Tạo phiên đăng nhập;
+    :12. Chuyển hướng người dùng\nvề trang chủ;
+    stop
+else (Không - E1)
+    :8.2. Thông báo dữ liệu không hợp lệ;
+    stop
+endif
+
+@enduml
