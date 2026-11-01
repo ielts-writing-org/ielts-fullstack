@@ -28,8 +28,8 @@
 	import { timeLimitMinutesFor } from "#lib/utils/ielts.js";
 	import { CRITERIA_MAP } from "#lib/mappings/criteria.js";
 	import { taskSubcategoryLabel } from "#lib/mappings/task-subcategory.ts";
-	import { deletePracticeSession } from "../../delete-practice-session.remote";
-	import { changeSessionName } from "../../change-session-name.remote";
+	import { deletePracticeSession } from "#lib/remotes/command/delete-practice-session.remote.js";
+	import { changeSessionName } from "#lib/remotes/command/change-session-name.remote.js";
 	import { formatRelativeTime } from "#lib/utils/time.js";
 
 	const { data } = $props();
@@ -327,11 +327,8 @@
 			</div>
 
 			<div class="relative mt-3 h-40">
-				<span class="absolute top-0 right-0 text-[10px] text-base-content/50 tabular-nums">
-					9
-				</span>
-				<span
-					class="absolute right-0 bottom-0 text-[10px] text-base-content/50 tabular-nums">
+				<span class="absolute top-0 right-0 text-[10px] text-base-content/50 tabular-nums">9</span>
+				<span class="absolute right-0 bottom-0 text-[10px] text-base-content/50 tabular-nums">
 					0
 				</span>
 
@@ -351,7 +348,8 @@
 					viewBox="0 0 100 100"
 					preserveAspectRatio="none"
 					role="img"
-					aria-label="Line chart of estimated band scores across your last {data.trend.length} evaluated sessions">
+					aria-label="Line chart of estimated band scores across your last {data.trend
+						.length} evaluated sessions">
 					{#if trendAreaPath}
 						<path d={trendAreaPath} class="fill-primary/10" stroke="none" />
 					{/if}
@@ -367,7 +365,7 @@
 
 				{#each trendPoints as point, i (i)}
 					<span
-						class="tooltip tooltip-top absolute size-2.5 -translate-x-1/2 -translate-y-1/2 rounded-full border-2 border-base-100 bg-primary"
+						class="tooltip absolute tooltip-top size-2.5 -translate-x-1/2 -translate-y-1/2 rounded-full border-2 border-base-100 bg-primary"
 						data-tip={`Band ${point.band.toFixed(1)} · ${point.date.toLocaleDateString()}`}
 						style:left={`${point.x.toFixed(2)}%`}
 						style:top={`${point.y.toFixed(2)}%`}>
@@ -435,8 +433,7 @@
 					type="checkbox"
 					class="toggle toggle-primary toggle-sm"
 					checked={filters.body}
-					onchange={(event) =>
-						update({ body: event.currentTarget.checked ? "1" : "0" })} />
+					onchange={(event) => update({ body: event.currentTarget.checked ? "1" : "0" })} />
 				<span>Search in essays</span>
 			</label>
 
@@ -678,32 +675,32 @@
 									aria-haspopup="menu">
 									<EllipsisVertical class="size-4" />
 								</button>
-							<ul class="menu dropdown-content z-1 w-44 rounded-box bg-base-100 p-1.5 shadow-sm">
-								<li>
-									<button onclick={() => handleCopyEssay(session)}>
-										{copiedSessionId === session.id ? "Copied!" : "Copy essay"}
-										<Copy size="1em" />
-									</button>
-								</li>
-								<li>
-									<button onclick={() => handleDownloadEssay(session)}>
-										Download .txt
-										<Download size="1em" />
-									</button>
-								</li>
-								<li class="mt-1 border-t border-base-content/10 pt-1">
-									<button onclick={() => handleRename(session)}>
-										Rename
-										<PenLine size="1em" />
-									</button>
-								</li>
-								<li>
-									<button class="text-error" onclick={() => handleDelete(session)}>
-										Delete
-										<Trash size="1em" />
-									</button>
-								</li>
-							</ul>
+								<ul class="menu dropdown-content z-1 w-44 rounded-box bg-base-100 p-1.5 shadow-sm">
+									<li>
+										<button onclick={() => handleCopyEssay(session)}>
+											{copiedSessionId === session.id ? "Copied!" : "Copy essay"}
+											<Copy size="1em" />
+										</button>
+									</li>
+									<li>
+										<button onclick={() => handleDownloadEssay(session)}>
+											Download .txt
+											<Download size="1em" />
+										</button>
+									</li>
+									<li class="mt-1 border-t border-base-content/10 pt-1">
+										<button onclick={() => handleRename(session)}>
+											Rename
+											<PenLine size="1em" />
+										</button>
+									</li>
+									<li>
+										<button class="text-error" onclick={() => handleDelete(session)}>
+											Delete
+											<Trash size="1em" />
+										</button>
+									</li>
+								</ul>
 							</div>
 						</div>
 					</div>
@@ -730,9 +727,9 @@
 				</button>
 				{#each pageWindow(currentPage, totalPages) as pageNumber, i (i)}
 					{#if pageNumber === null}
-						<span class="join-item btn btn-sm btn-disabled border-base-content/20 bg-base-100"
-							>…</span
-						>
+						<span class="btn btn-disabled join-item border-base-content/20 bg-base-100 btn-sm">
+							…
+						</span>
 					{:else}
 						<button
 							class="btn join-item btn-sm"
@@ -755,13 +752,9 @@
 	{/if}
 </main>
 
-{#snippet statTile(props: {
-	icon: Component;
-	label: string;
-	value: string;
-	hint?: string;
-})}
-	<div class="flex flex-col rounded-box border border-base-content/20 bg-base-100 p-3.5 hover:border-primary">
+{#snippet statTile(props: { icon: Component; label: string; value: string; hint?: string })}
+	<div
+		class="flex flex-col rounded-box border border-base-content/20 bg-base-100 p-3.5 hover:border-primary">
 		<div class="flex flex-1 items-center justify-between gap-2">
 			<span class="text-xs font-semibold text-base-content/75">{props.label}</span>
 			<props.icon class="size-4 shrink-0 opacity-60" />
@@ -780,7 +773,8 @@
 	average: number;
 	best: number;
 })}
-	<div class="flex flex-col rounded-box border border-base-content/20 bg-base-100 p-3.5 hover:border-primary">
+	<div
+		class="flex flex-col rounded-box border border-base-content/20 bg-base-100 p-3.5 hover:border-primary">
 		<div class="flex flex-1 items-center justify-between gap-2">
 			<span class="text-xs font-semibold text-base-content/75">{props.label}</span>
 			<props.icon class="size-4 shrink-0 opacity-60" />

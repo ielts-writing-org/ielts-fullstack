@@ -1,17 +1,15 @@
 <script lang="ts">
 	import { closeModal } from "#lib/components/Modal.svelte";
-	import { invalidate } from "$app/navigation";
-	import { saveBandTarget } from "./save-band-target.remote";
+	import { saveBandTarget } from "#lib/remotes/command/save-band-target.remote.ts";
 
 	type Props = {
-		bandTarget: number;
+		bandTarget: number | undefined;
 	};
 
-	let { bandTarget = $bindable(0) }: Props = $props();
+	let { bandTarget = 0 }: Props = $props();
 
 	async function handleSave() {
 		await saveBandTarget({ bandTarget });
-		await invalidate("data:profile");
 		await closeModal();
 	}
 

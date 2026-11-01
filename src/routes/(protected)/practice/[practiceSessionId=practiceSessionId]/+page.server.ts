@@ -15,7 +15,8 @@ export const load = (async ({ locals, params, depends }) => {
 
 	const db = getDb(env.IELTS_WRITING_DB);
 	const practiceSession = await db.query.practiceSessions.findFirst({
-		where: (practices, { eq }) => eq(practices.id, practiceSessionId),
+		where: (practices, { and, eq }) =>
+			and(eq(practices.id, practiceSessionId), eq(practices.userId, user.id)),
 		with: { task: true, evaluation: true, chatMessages: true }
 	});
 

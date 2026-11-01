@@ -1,27 +1,78 @@
 <script lang="ts">
+	import type { LayoutProps } from "./$types";
 	import { resolve } from "$app/paths";
 	import { page } from "$app/state";
-	import { ArrowLeft, Clock, FileText, InfinityIcon } from "@lucide/svelte";
+	import { ArrowLeft, Clock, FileText, InfinityIcon, LogOut, Palette } from "@lucide/svelte";
 	import { minWordsFor, timeLimitMinutesFor } from "#lib/utils/ielts.js";
 	import { taskSubcategoryLabel } from "#lib/mappings/task-subcategory.ts";
+	import { authClient } from "#lib/auth/auth-client.ts";
 	import AppLogo from "#lib/components/AppLogo.svelte";
-	import Modal from "#lib/components/Modal.svelte";
+	import Modal, { openModal } from "#lib/components/Modal.svelte";
 	import MainNav from "./MainNav.svelte";
 	import TabNav from "./TabNav.svelte";
-	import UserMenu from "./UserMenu.svelte";
 	import "./layout.css";
+	import { resetTheme } from "#lib/components/ThemeController.svelte";
+	import { refreshAll } from "$app/navigation";
+	import ChangeBandTarget from "./ChangeBandTarget.svelte";
+	import ChangeTheme from "./ChangeTheme.svelte";
+	import { getProfile } from "#lib/remotes/query/get-profile.remote.ts";
 
-	let { children, data } = $props();
+	let { data, children }: LayoutProps = $props();
 
-	// Measured so mobile sticky elements (e.g. the practice toolbar) can sit
-	// directly under the header, whose height varies with wrapped rows.
-	let headerHeight = $state(0);
-
-	// The mobile tab bar mirrors the desktop nav and stays out of practice
-	// sessions, which are focus mode.
 	const showTabBar = $derived(
-		Boolean(data.session && data.user && data.profile) && !page.data.practiceSession
+		data.session && data.user && data.profile && !page.data.practiceSession
 	);
+
+	async function handleSignOut() {
+		openModal({
+			title: {
+				text: "Sign out confirmation",
+				color: "error"
+			},
+			content: "You are about to sign out!",
+			primaryButton: {
+				text: "Sign out",
+				color: "error",
+				style: "ghost",
+				onclick: async () => {
+					const result = await authClient.signOut();
+					if (result.error) {
+						return openModal({
+							title: "Sign out error",
+							content: `Cannot sign out: ${result.error.message}`,
+							primaryButton: "Close"
+						});
+					}
+
+					await resetTheme();
+					await refreshAll();
+				}
+			},
+			secondaryButton: {
+				text: "Cancel",
+				color: "primary",
+				style: "default"
+			},
+			bypassBusy: true
+		});
+	}
+
+	async function handleChangeTarget() {
+		openModal({
+			title: "Change target band",
+			content: {
+				component: ChangeBandTarget,
+				props: { bandTarget: (await getProfile()).bandTarget }
+			}
+		});
+	}
+
+	function handleChangeTheme() {
+		openModal({
+			title: "Change theme",
+			content: { component: ChangeTheme, props: {} }
+		});
+	}
 </script>
 
 <Modal />
@@ -36,19 +87,17 @@
 	class={[
 		"flex h-dvh w-full flex-col overflow-y-auto bg-base-100 text-base-content",
 		showTabBar && "not-lg:pb-16"
-	]}
-	style:--app-header-height={`${headerHeight}px`}>
+	]}>
 	<header
-		bind:clientHeight={headerHeight}
 		class="navbar sticky top-0 z-10 flex shrink-0 gap-2 border-b border-base-content/10 bg-base-100 not-lg:flex-wrap">
-		{#if page.data.practiceSession}
-			{const session = page.data.practiceSession}
+		{const session = page.data.practiceSession}
+		{#if session}
 			<div class="navbar-start min-w-0 gap-2">
 				<a
 					class="btn btn-circle shrink-0 btn-ghost btn-sm"
 					href={resolve("/(protected)")}
 					aria-label="Back to dashboard">
-					<ArrowLeft class="size-5" />
+					<ArrowLeft class="size-[1em]" />
 				</a>
 				<div class="min-w-0 flex-1 overflow-hidden">
 					<h1 class="block truncate text-lg font-bold text-primary">
@@ -59,14 +108,16 @@
 							Task {session.taskCategory}
 						</span>
 						<span class="badge badge-ghost badge-sm font-medium">
-							{session.taskSubcategory ? taskSubcategoryLabel(session.taskSubcategory) : "Uncategorized"}
+							{session.taskSubcategory
+								? taskSubcategoryLabel(session.taskSubcategory)
+								: "Uncategorized"}
 						</span>
 						<span class="badge badge-ghost badge-sm font-medium">
 							{#if session.type === "timed"}
-								<Clock class="size-4" />
+								<Clock class="size-[1em]" />
 								{timeLimitMinutesFor(session.taskCategory)} min limit
 							{:else}
-								<InfinityIcon class="size-4" />
+								<InfinityIcon class="size-[1em]" />
 								Unlimited time
 							{/if}
 						</span>
@@ -74,7 +125,7 @@
 						<span
 							class="badge gap-1 badge-ghost badge-sm font-medium"
 							title={`A strong answer for this task is at least ${minWords} words`}>
-							<FileText class="size-4" />
+							<FileText class="size-[1em]" />
 							Min {minWords} words
 						</span>
 					</h2>
@@ -102,7 +153,57 @@
 
 		{#if data.session && data.user && data.profile}
 			<div class="navbar-end flex-1 gap-2 overflow-hidden">
-				<UserMenu user={data.user} profile={data.profile} />
+				<div class="flex flex-col items-end gap-1 overflow-hidden">
+					<div dir="rtl" class="w-full truncate text-left font-semibold">
+						{data.user.name}
+					</div>
+
+					<button
+						class="badge cursor-pointer badge-soft badge-xs font-semibold hover:bg-primary hover:text-primary-content"
+						onclick={handleChangeTarget}
+						title="Change target">
+						Target: Band {(await getProfile()).bandTarget}
+					</button>
+				</div>
+
+				<div class="avatar shrink-0">
+					<button
+						class="cursor-pointer"
+						style="anchor-name: --avatar"
+						popovertarget="avatar-popover"
+						title="Open Menu">
+						<img
+							class="w-10 rounded-full ring ring-base-content/20"
+							src={data.user.image}
+							alt={data.user.name} />
+					</button>
+
+					<ul
+						class="menu dropdown rounded-box bg-base-100 text-nowrap shadow-sm"
+						style="position-anchor: --avatar"
+						id="avatar-popover"
+						popover="auto">
+						<li>
+							<button
+								class="justify-end active:bg-primary active:text-primary-content"
+								onclick={handleChangeTheme}>
+								Change theme
+								<Palette class="size-[1em]" />
+							</button>
+						</li>
+
+						<div class="divider mt-2 mb-0 divider-error"></div>
+
+						<li>
+							<button
+								class="w-full justify-end text-error hover:bg-error hover:text-error-content active:bg-error active:text-error-content"
+								onclick={handleSignOut}>
+								Sign Out
+								<LogOut class="size-[1em]" />
+							</button>
+						</li>
+					</ul>
+				</div>
 			</div>
 		{/if}
 	</header>

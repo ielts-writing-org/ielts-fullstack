@@ -75,7 +75,7 @@ export const load = (async ({ locals, url }) => {
 		const pattern = `%${q}%`;
 		const textMatches = [
 			like(practiceSessions.name, pattern),
-			like(practiceSessions.type, pattern),
+			like(practiceSessions.type, pattern), // TODO: Remove
 			like(tasks.prompt, pattern)
 		];
 		if (includeBody) {
@@ -206,9 +206,7 @@ export const load = (async ({ locals, url }) => {
 			task2
 		},
 		pagination: { page: safePage, perPage: PER_PAGE, total, totalPages },
-		trend: trendRows
-			.map((row) => ({ band: row.band, date: row.startedAt }))
-			.reverse(),
+		trend: trendRows.map((row) => ({ band: row.band, date: row.startedAt })).reverse(),
 		filters: {
 			q,
 			task: task ?? null,

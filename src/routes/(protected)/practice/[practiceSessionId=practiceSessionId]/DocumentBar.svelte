@@ -18,7 +18,7 @@
 		Undo2
 	} from "@lucide/svelte";
 	import ChangeSessionName from "../../../ChangeSessionName.svelte";
-	import { deletePracticeSession } from "../../../delete-practice-session.remote";
+	import { deletePracticeSession } from "#lib/remotes/command/delete-practice-session.remote.ts";
 	import Timer from "./Timer.svelte";
 
 	type Props = {
@@ -213,13 +213,13 @@
 
 	{#if onSave}
 		<button
-			class="btn btn-ghost btn-sm gap-1.5"
+			class="btn gap-1.5 btn-ghost btn-sm"
 			disabled={!canSave}
 			title="Save now (Ctrl+S)"
 			onclick={onSave}>
 			<Save class="size-4" />
 			Save
-			<kbd class="kbd kbd-sm hidden lg:inline">Ctrl S</kbd>
+			<kbd class="kbd hidden kbd-sm lg:inline">Ctrl S</kbd>
 		</button>
 	{/if}
 
