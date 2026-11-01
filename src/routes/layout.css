@@ -3,12 +3,9 @@
 @plugin "daisyui" {
 	themes:
 		light --default,
-		forest --prefersdark,
-		abyss,
-		dark,
-		emerald,
+		dark --prefersdark,
+		forest,
 		night,
-		nord,
 		winter;
 	logs: false;
 }

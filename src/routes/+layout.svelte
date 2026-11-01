@@ -1,21 +1,19 @@
 <script lang="ts">
 	import type { LayoutProps } from "./$types";
-	import { resolve } from "$app/paths";
 	import { page } from "$app/state";
+	import { resolve } from "$app/paths";
+	import { refreshAll } from "$app/navigation";
 	import { ArrowLeft, Clock, FileText, InfinityIcon, LogOut, Palette } from "@lucide/svelte";
 	import { minWordsFor, timeLimitMinutesFor } from "#lib/utils/ielts.js";
 	import { taskSubcategoryLabel } from "#lib/mappings/task-subcategory.ts";
 	import { authClient } from "#lib/auth/auth-client.ts";
 	import AppLogo from "#lib/components/AppLogo.svelte";
 	import Modal, { openModal } from "#lib/components/Modal.svelte";
-	import MainNav from "./MainNav.svelte";
-	import TabNav from "./TabNav.svelte";
-	import "./layout.css";
 	import { resetTheme } from "#lib/components/ThemeController.svelte";
-	import { refreshAll } from "$app/navigation";
+	import { getProfile } from "#lib/remotes/query/get-profile.remote.ts";
 	import ChangeBandTarget from "./ChangeBandTarget.svelte";
 	import ChangeTheme from "./ChangeTheme.svelte";
-	import { getProfile } from "#lib/remotes/query/get-profile.remote.ts";
+	import "./layout.css";
 
 	let { data, children }: LayoutProps = $props();
 
@@ -146,11 +144,31 @@
 				</a>
 			</div>
 
+			<!-- Desktop nav -->
 			{#if data.session}
-				<MainNav />
+				<nav
+					class="navbar-center justify-center gap-4 text-sm not-lg:hidden lg:flex-1"
+					aria-label="Main navigation">
+					{#each data.navItems as item (item.label)}
+						{const isActive = item.href === page.route.id}
+						<a
+							class={[
+								"rounded-box px-3 py-1.5 font-semibold",
+								isActive
+									? "bg-primary text-primary-content"
+									: "text-base-content hover:bg-base-200 hover:text-primary"
+							]}
+							href={resolve(item.href)}
+							aria-current={isActive ? "page" : undefined}>
+							<item.icon class="mr-1 inline size-4 align-[-0.2em]" />
+							{item.label}
+						</a>
+					{/each}
+				</nav>
 			{/if}
 		{/if}
 
+		<!-- User menu -->
 		{#if data.session && data.user && data.profile}
 			<div class="navbar-end flex-1 gap-2 overflow-hidden">
 				<div class="flex flex-col items-end gap-1 overflow-hidden">
@@ -211,6 +229,18 @@
 	{@render children()}
 </div>
 
+<!-- Mobile nav -->
 {#if showTabBar}
-	<TabNav />
+	<nav class="dock text-primary lg:hidden" aria-label="Main navigation">
+		{#each data.navItems as item (item.label)}
+			{@const isActive = item.href === page.route.id}
+			<a
+				class={[isActive && "dock-active"]}
+				href={resolve(item.href)}
+				aria-current={isActive ? "page" : undefined}>
+				<item.icon class="size-5" />
+				<span class="dock-label">{item.label}</span>
+			</a>
+		{/each}
+	</nav>
 {/if}
