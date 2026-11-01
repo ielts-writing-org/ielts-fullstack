@@ -32,7 +32,14 @@ export const createAuth = (d1: D1Database) => {
 		},
 		plugins: [
 			admin(),
-			dash({ apiKey: BETTER_AUTH_API_KEY }),
+			dash({
+				apiKey: BETTER_AUTH_API_KEY,
+				// https://better-auth.com/docs/infrastructure/plugins/dashboard#activity-tracking
+				activityTracking: {
+					enabled: true,
+					updateInterval: 5 * 60 * 1000
+				}
+			}),
 			sentinel({ apiKey: BETTER_AUTH_API_KEY }),
 			sveltekitCookies(getRequestEvent) // make sure this is the last plugin in the array
 		],
