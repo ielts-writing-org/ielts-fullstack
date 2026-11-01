@@ -4,6 +4,12 @@
 
 	function getErrorDetail(statusNumber: number) {
 		switch (statusNumber) {
+			case 400:
+				return {
+					message: "Bad Request",
+					subMessage: "You sent a bad request."
+				};
+
 			case 404:
 				return {
 					message: "Page Not Found",
