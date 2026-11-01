@@ -10,8 +10,8 @@
 	import type { Evaluation } from "#lib/schemas/evaluation.ts";
 	import type { PracticeSessionContext } from "#lib/schemas/task-context.ts";
 	import { getZodErrors, type SerializedZodError } from "#lib/utils/error.ts";
-	import { saveChatMessages } from "./save-chat-message.remote";
-	import { clearChatMessages } from "./clear-chat-messages.remote";
+	import { saveChatMessages } from "#lib/remotes/command/save-chat-message.remote.ts";
+	import { clearChatMessages } from "#lib/remotes/command/clear-chat-messages.remote.ts";
 
 	type Props = {
 		practiceSessionId: string;

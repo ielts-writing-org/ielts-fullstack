@@ -11,9 +11,9 @@
 	import AppEditor from "./AppEditor.svelte";
 	import DocumentBar from "./DocumentBar.svelte";
 	import Tabs from "./Tabs.svelte";
-	import { saveTaskPrompt } from "./save-task-prompt.remote.js";
-	import { savePracticeResponse } from "./save-practice-response.remote.js";
-	import { setTimedUpAction } from "./set-timed-up-action.remote.js";
+	import { saveTaskPrompt } from "#lib/remotes/command/save-task-prompt.remote.js";
+	import { savePracticeResponse } from "#lib/remotes/command/save-practice-response.remote.js";
+	import { setTimedUpAction } from "#lib/remotes/command/set-timed-up-action.remote.js";
 
 	const { data } = $props();
 
@@ -110,7 +110,9 @@
 
 <PreventLeaving by={isPromptDirty || isResponseDirty || isEvaluationBusy || isChatBusy} />
 
-<main id="main-content" class="flex flex-1 flex-col gap-2 bg-base-100 p-2 lg:flex-row lg:overflow-y-hidden">
+<main
+	id="main-content"
+	class="flex flex-1 flex-col gap-2 bg-base-100 p-2 lg:flex-row lg:overflow-y-hidden">
 	<section class="flex flex-1 flex-col gap-2 lg:flex-3 lg:overflow-y-auto xl:flex-2">
 		<DocumentBar
 			{category}

@@ -14,8 +14,8 @@
 	import { getZodErrors } from "#lib/utils/error.ts";
 	import ValidationErrors from "#lib/components/ValidationErrors.svelte";
 	import type { ApiResult } from "#lib/schemas/api-result.ts";
+	import { saveEvaluation } from "#lib/remotes/command/save-evaluation.remote.ts";
 	import { isCriteriaKey } from "./utils";
-	import { saveEvaluation } from "./save-evaluation.remote";
 
 	type Props = {
 		practiceSessionId: string;
@@ -352,8 +352,8 @@
 					{/if}
 				</div>
 
-			{#each criteriaList as { key, criterion } (key)}
-				<details class="collapse-arrow collapse bg-base-100" open={openCriterionKey === key}>
+				{#each criteriaList as { key, criterion } (key)}
+					<details class="collapse-arrow collapse bg-base-100" open={openCriterionKey === key}>
 						<summary class="collapse-title cursor-pointer p-0">
 							<span class="font-semibold">
 								{CRITERIA_MAP[key]}
@@ -397,7 +397,7 @@
 								</p>
 								<button
 									type="button"
-									class="btn btn-ghost btn-xs mt-1 self-start text-primary"
+									class="btn mt-1 self-start btn-ghost text-primary btn-xs"
 									onclick={() =>
 										props.onAskTutor(
 											`How can I improve my ${CRITERIA_MAP[key]} band? The evaluation says: "${criterion.nextBandGap}"`
@@ -480,7 +480,7 @@
 															</div>
 															<button
 																type="button"
-																class="btn btn-ghost btn-xs mt-1 text-primary"
+																class="btn mt-1 btn-ghost text-primary btn-xs"
 																onclick={() =>
 																	props.onAskTutor(
 																		`How can I fix this weakness in ${CRITERIA_MAP[key]}? The weakness is "${weakness.title}" — evidence in my writing: ${weakness.evidence}`

@@ -3,9 +3,9 @@
 	import { ArrowRight, Clock3 } from "@lucide/svelte";
 	import type { TaskCategory } from "#lib/schemas/task-category.ts";
 	import { openModal } from "#lib/components/Modal.svelte";
-	import { createPractice } from "./create-practice.remote";
-	import PracticeTypePicker from "./PracticeTypePicker.svelte";
+	import { createPractice } from "#lib/remotes/command/create-practice.remote.ts";
 	import TaskCreateForm from "#lib/components/TaskCreateForm.svelte";
+	import PracticeTypePicker from "./PracticeTypePicker.svelte";
 
 	type Props = {
 		practiceOptions: {
@@ -53,8 +53,8 @@
 
 <div class="grid grid-cols-1 gap-3.5 md:grid-cols-2">
 	{#each practiceOptions as option (option)}
-	<article
-		class="flex min-h-60 flex-col overflow-hidden rounded-box border border-base-content/20 bg-base-100 p-4 transition-shadow hover:border-primary hover:shadow-sm">
+		<article
+			class="flex min-h-60 flex-col overflow-hidden rounded-box border border-base-content/20 bg-base-100 p-4 transition-shadow hover:border-primary hover:shadow-sm">
 			<div class="flex justify-between gap-1.5 text-xs">
 				<span class="badge rounded-box badge-soft badge-sm font-semibold badge-primary">
 					TASK {option.taskCategory}
@@ -75,7 +75,7 @@
 				{/each}
 			</div>
 			<button
-				class="btn btn-primary mt-auto"
+				class="btn mt-auto btn-primary"
 				onclick={() => handleCreateCustomTaskPractice(option.taskCategory)}>
 				Start Task {option.taskCategory} Practice
 				<ArrowRight size="1em" />

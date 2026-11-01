@@ -26,12 +26,12 @@
 	} from "#lib/mappings/task-subcategory.ts";
 	import { bandBadgeTone } from "#lib/utils/ielts.js";
 	import { formatRelativeTime } from "#lib/utils/time.js";
-	import { createPractice } from "../create-practice.remote";
-	import { clearTaskImage } from "../practice/[practiceSessionId=practiceSessionId]/clear-task-image.remote";
+	import { createPractice } from "#lib/remotes/command/create-practice.remote.js";
+	import { clearTaskImage } from "#lib/remotes/command/clear-task-image.remote.js";
 	import PracticeTypePicker from "../PracticeTypePicker.svelte";
-	import { deleteTask } from "./delete-task.remote";
-	import { getTaskDependants } from "./get-task-dependants.remote";
-	import { updateTask } from "./update-task.remote";
+	import { deleteTask } from "#lib/remotes/command/delete-task.remote.js";
+	import { getTaskDependants } from "#lib/remotes/query/get-task-dependants.remote.js";
+	import { updateTask } from "#lib/remotes/form/update-task.remote.js";
 
 	const { data } = $props();
 

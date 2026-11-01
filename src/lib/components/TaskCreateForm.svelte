@@ -6,7 +6,7 @@
 		TASK_SUBCATEGORIES_BY_CATEGORY,
 		taskSubcategoryLabel
 	} from "#lib/mappings/task-subcategory.ts";
-	import { createTask } from "../../routes/(protected)/tasks/create-task.remote.ts";
+	import { createTask } from "#lib/remotes/form/create-task.remote.ts";
 
 	type Props = {
 		/** Fixed task category; omit to let the user choose between Task 1 and Task 2. */
@@ -19,12 +19,7 @@
 		children?: Snippet;
 	};
 
-	let {
-		category,
-		submitLabel = "Save task",
-		onSaved,
-		children
-	}: Props = $props();
+	let { category, submitLabel = "Save task", onSaved, children }: Props = $props();
 
 	// The component remounts on every modal open, so capturing the fixed
 	// category prop once here is intentional.
@@ -85,7 +80,8 @@
 			<legend class="text-xs font-semibold text-base-content/75">Task category</legend>
 			<div class="join w-full" role="group" aria-label="Task category">
 				{#each [{ v: "1", l: "Task 1 · Visual report" }, { v: "2", l: "Task 2 · Essay" }] as option (option.v)}
-					<label class={["btn join-item flex-1", selectedCategory === option.v ? "btn-primary" : ""]}>
+					<label
+						class={["btn join-item flex-1", selectedCategory === option.v ? "btn-primary" : ""]}>
 						<input
 							class="appearance-none"
 							type="radio"
@@ -121,7 +117,8 @@
 			required
 			maxlength={20000}
 			placeholder="Paste or type the task prompt..."
-			bind:value={prompt}></textarea>
+			bind:value={prompt}>
+		</textarea>
 	</label>
 
 	{#if selectedCategory === "1"}
@@ -130,11 +127,11 @@
 				Image <span class="font-normal">(required for evaluation)</span>
 			</legend>
 			<input
-				class="file-input file-input-sm file-input-bordered w-full"
+				class="file-input-bordered file-input w-full file-input-sm"
 				type="file"
 				name="image"
 				accept="image/jpeg,image/png,image/webp,image/avif"
-				bind:files={files}
+				bind:files
 				onchange={handleImageChange} />
 			{#if previewUrl}
 				<img

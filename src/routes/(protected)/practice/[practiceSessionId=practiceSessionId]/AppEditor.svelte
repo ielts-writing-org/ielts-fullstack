@@ -3,8 +3,8 @@
 	import { Pen, PenOff, Trash } from "@lucide/svelte";
 	import type { WorkerLinter } from "harper.js";
 	import { onDestroy, untrack } from "svelte";
-	import { saveTaskImage } from "./save-task-image.remote";
-	import { clearTaskImage } from "./clear-task-image.remote";
+	import { saveTaskImage } from "#lib/remotes/form/save-task-image.remote.ts";
+	import { clearTaskImage } from "#lib/remotes/command/clear-task-image.remote.ts";
 	import { openModal } from "#lib/components/Modal.svelte";
 	import { page } from "$app/state";
 
