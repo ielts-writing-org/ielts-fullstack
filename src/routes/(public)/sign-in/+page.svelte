@@ -1,12 +1,12 @@
 <script lang="ts">
 	import { resolve } from "$app/paths";
 	import { page } from "$app/state";
-	import { Sparkles } from "@lucide/svelte";
 	import { onMount, untrack } from "svelte";
+	import { Sparkles } from "@lucide/svelte";
+	import { authClient } from "#lib/auth/auth-client.js";
 	import AppLogo from "#lib/components/AppLogo.svelte";
 	import GitHub from "#lib/components/icons/GitHub.svelte";
 	import { openModal } from "#lib/components/Modal.svelte";
-	import { authClient } from "#lib/auth/auth-client.js";
 
 	const { data } = $props();
 
@@ -57,6 +57,10 @@
 			title = "State Mismatch";
 			content =
 				"The state returned by your OAuth provider is not match any record saved in the system. Please try again.";
+		} else if (error === "BANNED_USER") {
+			title = "You have been banned";
+			content =
+				"You have been banned from this platform. Please contact support if you believe this is a mistake.";
 		} else {
 			title = "Unhandled Sign in error";
 			content = "Please try again.";
@@ -172,11 +176,15 @@
 			<p class="text-center text-xs text-neutral/60">
 				By signing in, you agree to our
 				<span class="mt-1 block">
-					<a class="link font-medium link-primary" href={resolve("/(public)/terms-of-service")}>
+					<a
+						class="link font-medium link-primary"
+						href={resolve("/(public)/(docs)/terms-of-service")}>
 						Terms of Service
 					</a>
 					and
-					<a class="link font-medium link-primary" href={resolve("/(public)/privacy-policy")}>
+					<a
+						class="link font-medium link-primary"
+						href={resolve("/(public)/(docs)/privacy-policy")}>
 						Privacy Policy
 					</a>
 				</span>
