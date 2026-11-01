@@ -101,8 +101,19 @@
 <dialog class="modal" bind:this={modal}>
 	{#if current}
 		<div class="modal-box">
-			{#if current.closeButton}
-				{@render closeButton(current.closeButton)}
+			<!-- Close Button -->
+			{const closeButton = current.closeButton}
+			{#if closeButton}
+				<button
+					class="btn absolute top-2 right-2 btn-circle btn-ghost btn-sm"
+					onclick={async () => {
+						if (closeButton !== true) {
+							await closeButton.onclick?.();
+						}
+						await closeModal();
+					}}>
+					✕
+				</button>
 			{/if}
 
 			<!-- Title -->
@@ -145,8 +156,20 @@
 			{/if}
 		</div>
 
-		{#if current.closeByBackdrop}
-			{@render backdropClose(current.closeByBackdrop)}
+		<!-- Close by backdrop -->
+		{const closeByBackdrop = current.closeByBackdrop}
+		{#if closeByBackdrop}
+			<div class="modal-backdrop">
+				<button
+					onclick={async () => {
+						if (closeByBackdrop !== true) {
+							await closeByBackdrop.onclick?.();
+						}
+						await closeModal();
+					}}>
+					close
+				</button>
+			</div>
 		{/if}
 	{/if}
 </dialog>
@@ -179,37 +202,4 @@
 			{source.text}
 		</button>
 	{/if}
-{/snippet}
-
-{#snippet closeButton(closeButton: true | ModalCloseConfig)}
-	{#if closeButton === true}
-		<button class="btn absolute top-2 right-2 btn-circle btn-ghost btn-sm" onclick={closeModal}>
-			✕
-		</button>
-	{:else}
-		<button
-			class="btn absolute top-2 right-2 btn-circle btn-ghost btn-sm"
-			onclick={async () => {
-				await closeButton.onclick?.();
-				await closeModal();
-			}}>
-			✕
-		</button>
-	{/if}
-{/snippet}
-
-{#snippet backdropClose(closeByBackdrop: true | ModalCloseConfig)}
-	<div class="modal-backdrop">
-		{#if closeByBackdrop === true}
-			<button onclick={closeModal}>close</button>
-		{:else}
-			<button
-				onclick={async () => {
-					await closeByBackdrop.onclick?.();
-					await closeModal();
-				}}>
-				close
-			</button>
-		{/if}
-	</div>
 {/snippet}
