@@ -7,6 +7,7 @@
 	import { clearTaskImage } from "#lib/remotes/command/clear-task-image.remote.ts";
 	import { openModal } from "#lib/components/Modal.svelte";
 	import { page } from "$app/state";
+	import Editor from "#lib/components/harper-editor/Editor.svelte";
 
 	type Props = {
 		class?: string;
@@ -211,26 +212,24 @@
 				<p class="text-sm">Loading editor...</p>
 			</div>
 		{/if}
-		{#await import("#lib/components/harper-editor/Editor.svelte") then { default: Editor }}
-			<div class="flex flex-1 flex-col gap-2 lg:flex-row">
-				<Editor
-					linters={props.linters}
-					{content}
-					isEditable={isUnlocked}
-					wordTarget={props.wordTarget ?? 0}
-					placeholder={props.placeholder}
-					{saveState}
-					onRetrySave={saveNow}
-					onReady={handleReady}
-					onChange={handleContentChanged} />
+		<div class="flex flex-1 flex-col gap-2 lg:flex-row">
+			<Editor
+				linters={props.linters}
+				{content}
+				isEditable={isUnlocked}
+				wordTarget={props.wordTarget ?? 0}
+				placeholder={props.placeholder}
+				{saveState}
+				onRetrySave={saveNow}
+				onReady={handleReady}
+				onChange={handleContentChanged} />
 
-				<!-- Image preview -->
-				{#if props.hasImage && isReady && imagePreview}
-					<div class="flex min-h-fit flex-1 flex-col items-center justify-center gap-2">
-						<img src={imagePreview} alt={imageName} class="placeholder max-w-full" />
-					</div>
-				{/if}
-			</div>
-		{/await}
+			<!-- Image preview -->
+			{#if props.hasImage && isReady && imagePreview}
+				<div class="flex min-h-fit flex-1 flex-col items-center justify-center gap-2">
+					<img src={imagePreview} alt={imageName} class="placeholder max-w-full" />
+				</div>
+			{/if}
+		</div>
 	{/if}
 </div>
