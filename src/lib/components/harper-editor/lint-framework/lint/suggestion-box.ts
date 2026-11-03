@@ -1,10 +1,36 @@
 import { SuggestionKind } from "harper.js";
-import type { VNode } from "virtual-dom";
-import h from "virtual-dom/h";
+import h from "./dom";
 import type { IgnorableLintBox, LintBox } from "./box";
 import { type LintKind, lintKindColor, lintKindTextColor } from "./lint-lind-color";
-import { BookDown, SlidersVertical, SquareOff } from "@lucide/svelte";
 import type { UnpackedLint, UnpackedSuggestion } from "./unpack-lint";
+
+/** Inline Lucide icon path data (https://lucide.dev), rendered as inline SVG. */
+const ICON_BOOK_DOWN = [
+	"M12 13V7",
+	"M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H19a1 1 0 0 1 1 1v18a1 1 0 0 1-1 1H6.5a1 1 0 0 1 0-5H20",
+	"m9 10 3 3 3-3"
+];
+const ICON_SLIDERS_VERTICAL = [
+	"M10 8h4",
+	"M12 21v-9",
+	"M12 8V3",
+	"M17 16h4",
+	"M19 12V3",
+	"M19 21v-5",
+	"M3 14h4",
+	"M5 10V3",
+	"M5 21v-7"
+];
+const ICON_SQUARE_OFF = [
+	"M20.4 20.4a2 2 0 01-1.4.6H5a2 2 0 01-2-2V5a2 2 0 01.59-1.41",
+	"M21 15.3V5a2 2 0 00-2-2H8.7",
+	"M22 22 2 2"
+];
+
+function iconSvg(paths: string[]): string {
+	const shapes = paths.map((d) => `<path d="${d}"></path>`).join("");
+	return `<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${shapes}</svg>`;
+}
 
 /** Saved cursor restore function, captured when the popup steals focus. */
 let savedRestore: (() => void) | null = null;
@@ -121,7 +147,7 @@ function header(
 					},
 					title: "Settings",
 					"aria-label": "Settings",
-					innerHTML: SlidersVertical
+					innerHTML: iconSvg(ICON_SLIDERS_VERTICAL)
 				},
 				[]
 			)
@@ -140,14 +166,14 @@ function header(
 						},
 						title: `Disable the ${rule} rule`,
 						"aria-label": "Disable this lint rule",
-						innerHTML: SquareOff
+						innerHTML: iconSvg(ICON_SQUARE_OFF)
 					},
 					[]
 				)
 			: undefined;
 
 	const controlsChildren = [disableRuleButton, settingsButton, closeButton].filter(
-		(node): node is VNode => node != null
+		(node): node is HTMLElement => node != null
 	);
 	const controls = h("div", { className: "harper-controls" }, controlsChildren);
 	const titleEl = h("span", { className: "harper-title" }, [title]);
@@ -190,7 +216,7 @@ function button(
 	);
 }
 
-function footer(leftChildren: VNode[], rightChildren: VNode[]) {
+function footer(leftChildren: HTMLElement[], rightChildren: HTMLElement[]) {
 	const left = h("div", { className: "harper-child-cont" }, leftChildren);
 	const right = h("div", { className: "harper-child-cont" }, rightChildren);
 	return h("div", { className: "harper-footer" }, [left, right]);
@@ -219,7 +245,7 @@ function addToDictionary(box: LintBox, addToUserDictionary?: (words: string[]) =
 			},
 			title: "Add word to user dictionary",
 			"aria-label": "Add word to user dictionary",
-			innerHTML: BookDown
+			innerHTML: iconSvg(ICON_BOOK_DOWN)
 		},
 		[]
 	);
@@ -507,7 +533,7 @@ export default function SuggestionBox(
 		close();
 	};
 
-	const footerChildren: Array<VNode> = [];
+	const footerChildren: Array<HTMLElement> = [];
 
 	if (box.lint.lint_kind === "Spelling" && actions.addToUserDictionary) {
 		footerChildren.push(addToDictionary(box, actions.addToUserDictionary));
@@ -517,7 +543,7 @@ export default function SuggestionBox(
 		footerChildren.push(ignoreLint(() => ignoreLintCallback().then(refocusClose)));
 	}
 
-	const children: Array<VNode> = [
+	const children: Array<HTMLElement> = [
 		styleTag(box.lint.lint_kind),
 		header(
 			box.lint.lint_kind_pretty,

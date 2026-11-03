@@ -1,13 +1,12 @@
-import type { VNode } from "virtual-dom";
-import h from "virtual-dom/h";
 import type { LintBox } from "./box";
 import { getQuillJsRoot } from "./editor-utils";
+import h from "./dom";
 import { type LintKind, lintKindColor } from "./lint-lind-color";
 import RenderBox from "./render-box";
 import type { SourceElement } from "./source-element";
 import type { UnpackedLint } from "./unpack-lint";
 
-/** A class that renders highlights to a page and nothing else. Uses a virtual DOM to minimize jitter. Require CSS Highlights API*/
+/** A class that renders highlights to a page and nothing else. Uses direct DOM updates to minimize jitter. Require CSS Highlights API*/
 export default class Highlights {
 	renderBoxes: Map<SourceElement, RenderBox>;
 	highlights: Map<LintKind, Highlight>;
@@ -172,7 +171,7 @@ export default class Highlights {
 		this.styleIds.clear();
 	}
 
-	private renderTree(boxes: LintBox[], offset: { x: number; y: number } | null): VNode {
+	private renderTree(boxes: LintBox[], offset: { x: number; y: number } | null): HTMLElement {
 		const elements = [];
 		const offsetX = offset?.x ?? 0;
 		const offsetY = offset?.y ?? 0;

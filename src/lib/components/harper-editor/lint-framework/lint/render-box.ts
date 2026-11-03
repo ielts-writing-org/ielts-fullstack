@@ -1,19 +1,14 @@
-import type { VNode } from "virtual-dom";
-import createElement from "virtual-dom/create-element";
-import diff from "virtual-dom/diff";
-import patch from "virtual-dom/patch";
+import { unhookTree } from "./dom";
 
 type ParentResolver = () => Node;
 
-/** Wraps `virtual-dom` to create a box that is unaffected by the style of the rest of the page. */
+/** Renders a DOM tree into an isolated shadow root that is unaffected by the style of the rest of the page. */
 export default class RenderBox {
 	/** The node we reattach into if a host is removed by editor-managed DOM updates. */
 	private parentResolver: ParentResolver;
-	/** The element our virtual DOM is attached to. */
-	private virtualRoot: Element | undefined;
-	/** The current state of the virtual DOM */
-	private virtualTree: VNode | undefined;
-	/** The shadow DOM the `virtualRoot` is attached to. */
+	/** The shadow root the rendered tree lives in. */
+	private shadowRoot: ShadowRoot | undefined;
+	/** The shadow DOM host the rendered tree is attached to. */
 	private shadowHost: HTMLElement;
 
 	constructor(parent: Node | ParentResolver) {
@@ -22,33 +17,36 @@ export default class RenderBox {
 		this.parentResolver().appendChild(this.shadowHost);
 	}
 
-	/** Render to the box. */
-	public render(node: VNode) {
+	/** Render to the box, replacing any previously rendered tree. */
+	public render(node: HTMLElement) {
 		if (!this.shadowHost.isConnected) {
 			this.parentResolver().appendChild(this.shadowHost);
 		}
 
-		if (!this.virtualRoot || !this.virtualTree) {
-			this.virtualRoot = createElement(node);
-			const shadow = this.shadowHost.attachShadow({ mode: "open" });
-			shadow.appendChild(this.virtualRoot);
-		} else {
-			const patches = diff(this.virtualTree, node);
-			this.virtualRoot = patch(this.virtualRoot, patches);
+		if (this.shadowRoot === undefined) {
+			this.shadowRoot = this.shadowHost.attachShadow({ mode: "open" });
 		}
-		this.virtualTree = node;
+
+		for (const child of Array.from(this.shadowRoot.childNodes)) {
+			unhookTree(child);
+		}
+		this.shadowRoot.replaceChildren(node);
 	}
 
 	/** Remove the box from the DOM. */
 	public remove() {
 		try {
-			// this.shadowHost.outerHTML = this.shadowHost.outerHTML;
-			this.shadowHost.remove(); // Migrated
+			this.shadowHost.remove();
 		} catch (e) {
 			console.error(e);
 		}
-		this.virtualRoot = undefined;
-		this.virtualTree = undefined;
+
+		if (this.shadowRoot !== undefined) {
+			for (const child of Array.from(this.shadowRoot.childNodes)) {
+				unhookTree(child);
+			}
+		}
+		this.shadowRoot = undefined;
 	}
 
 	public getShadowHost(): HTMLElement {

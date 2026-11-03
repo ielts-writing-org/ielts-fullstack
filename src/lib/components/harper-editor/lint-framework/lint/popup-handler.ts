@@ -1,4 +1,4 @@
-import h from "virtual-dom/h";
+import h from "./dom";
 import { closestBox, type IgnorableLintBox, isPointInBox } from "./box";
 import { getCaretPosition } from "./editor-utils";
 import type { UnpackedLint } from "./unpack-lint";
