@@ -150,7 +150,7 @@
 					class="navbar-center justify-center gap-4 text-sm not-lg:hidden lg:flex-1"
 					aria-label="Main navigation">
 					{#each data.navItems as item (item.label)}
-						{const isActive = item.href === page.route.id}
+						{const isActive = $derived(item.href === page.route.id)}
 						<a
 							class={[
 								"rounded-box px-3 py-1.5 font-semibold",
@@ -233,7 +233,7 @@
 {#if showTabBar}
 	<nav class="dock text-primary lg:hidden" aria-label="Main navigation">
 		{#each data.navItems as item (item.label)}
-			{@const isActive = item.href === page.route.id}
+			{const isActive = $derived(item.href === page.route.id)}
 			<a
 				class={[isActive && "dock-active"]}
 				href={resolve(item.href)}
