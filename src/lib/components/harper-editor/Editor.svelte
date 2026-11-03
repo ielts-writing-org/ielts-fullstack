@@ -116,28 +116,21 @@
 
 		lintBoxes = [];
 
-		try {
-			await tick();
-			await Promise.all(linters.map((l) => l.setup()));
-			await Promise.all(linters.map((l) => l.lint(content)));
-		} catch (error) {
-			console.error("Failed to initialize linter", error);
+		await tick();
+		await Promise.all(linters.map((l) => l.setup()));
+		await Promise.all(linters.map((l) => l.lint(content)));
+
+		if (!editor) {
+			throw new Error("Editor element not found");
 		}
 
-		if (editor != null) {
-			// lfw.update();
+		mutationObserver = new MutationObserver(updateLintFrameworkElements);
+		mutationObserver.observe(editor, { childList: true, subtree: true });
+		await updateLintFrameworkElements();
 
-			mutationObserver = new MutationObserver(updateLintFrameworkElements);
-			mutationObserver.observe(editor, { childList: true, subtree: true });
-			await updateLintFrameworkElements();
-		}
-
-		//
-		if (linters.every((l) => l != null) && quill != null) {
-			if (!readySent) {
-				readySent = true;
-				onReady();
-			}
+		if (quill != null && !readySent) {
+			readySent = true;
+			onReady();
 		}
 	});
 
