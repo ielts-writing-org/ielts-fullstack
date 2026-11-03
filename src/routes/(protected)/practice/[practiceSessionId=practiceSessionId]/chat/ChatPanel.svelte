@@ -112,13 +112,10 @@
 			});
 
 			if (!response.ok) {
-				const { zodErrors } = await response.json<{ zodErrors: SerializedZodError[] }>();
+				const error = await response.json<App.Error>();
 				return openModal({
 					title: "Unable to chat",
-					content: {
-						snippet: validationErrorSnippet,
-						args: { errors: zodErrors }
-					},
+					content: `${error.status} - ${error.message}.`,
 					primaryButton: "Close"
 				});
 			}
@@ -127,7 +124,7 @@
 			if (!stream) {
 				return openModal({
 					title: "Unable to chat",
-					content: "Cannot read response body",
+					content: "Could not read response body.",
 					primaryButton: "Close"
 				});
 			}

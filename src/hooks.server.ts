@@ -1,4 +1,4 @@
-import { type Handle, sequence, type ServerInit } from "@sveltejs/kit/hooks";
+import { type Handle, sequence } from "@sveltejs/kit/hooks";
 import { error } from "@sveltejs/kit";
 import { building } from "$app/env";
 import { eq } from "drizzle-orm";
@@ -7,13 +7,6 @@ import { env } from "cloudflare:workers";
 import { getDb } from "./lib/server/db";
 import { createAuth } from "./lib/server/auth";
 import { profiles } from "#lib/server/db/app.schema.ts";
-import { createRedisConnection } from "#lib/server/redis.ts";
-import { createRateLimiter } from "#lib/server/rate-limit.ts";
-
-export const init: ServerInit = async () => {
-	createRedisConnection();
-	createRateLimiter();
-};
 
 const handleBetterAuth: Handle = async ({ event, resolve }) => {
 	const auth = createAuth(env.IELTS_WRITING_DB);

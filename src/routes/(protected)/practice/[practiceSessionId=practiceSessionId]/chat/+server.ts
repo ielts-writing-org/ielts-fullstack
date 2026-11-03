@@ -4,12 +4,12 @@ import { AiClient } from "#lib/server/infrastructure/ai-client.ts";
 import { rateLimit } from "#lib/server/rate-limit.ts";
 import { computeDeterministicStats, type DeterministicStats } from "#lib/utils/stats.ts";
 import type { RequestHandler } from "./$types";
-import { getZodErrors } from "#lib/utils/error.ts";
 import { env } from "cloudflare:workers";
 import { CfImagesClient } from "#lib/server/infrastructure/images-client/images-client.cf.ts";
+import { error } from "@sveltejs/kit";
 
 export const POST: RequestHandler = async ({ locals, request, getClientAddress }) => {
-	await rateLimit(getClientAddress);
+	await rateLimit(getClientAddress());
 
 	getApiSession(locals);
 
@@ -17,13 +17,7 @@ export const POST: RequestHandler = async ({ locals, request, getClientAddress }
 	const result = await chatRequestSchema.safeParseAsync(json);
 
 	if (!result.success || !result.data) {
-		return Response.json(
-			{
-				success: false,
-				zodErrors: getZodErrors(result.error)
-			},
-			{ status: 400 }
-		);
+		error(400);
 	}
 
 	const validatedJson = {

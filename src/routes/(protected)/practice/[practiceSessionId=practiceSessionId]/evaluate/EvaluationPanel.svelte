@@ -13,7 +13,6 @@
 	import { CRITERIA_MAP, CRITERION_CHECK_STATUS_MAP } from "#lib/mappings/criteria.ts";
 	import { getZodErrors } from "#lib/utils/error.ts";
 	import ValidationErrors from "#lib/components/ValidationErrors.svelte";
-	import type { ApiResult } from "#lib/schemas/api-result.ts";
 	import { saveEvaluation } from "#lib/remotes/command/save-evaluation.remote.ts";
 	import { isCriteriaKey } from "./utils";
 
@@ -177,24 +176,19 @@
 			});
 
 			if (!response.ok) {
-				const apiResult = await response.json<ApiResult>();
-				if (!apiResult.success && apiResult.error.type === "validation") {
-					return openModal({
-						title: "Unable to evaluate",
-						content: {
-							component: ValidationErrors,
-							props: { errors: apiResult.error.fields }
-						},
-						primaryButton: "Close"
-					});
-				}
+				const error = await response.json<App.Error>();
+				return openModal({
+					title: "Unable to evaluate",
+					content: `${error.status} - ${error.message}.`,
+					primaryButton: "Close"
+				});
 			}
 
 			const stream = response.body;
 			if (!stream) {
 				return openModal({
 					title: "Unable to evaluate",
-					content: "Cannot read response body",
+					content: "Could not read response body",
 					primaryButton: "Close"
 				});
 			}
@@ -249,9 +243,9 @@
 			}
 		} catch (e) {
 			openModal({
+				title: "Unable to evaluate",
 				content: String(e),
-				primaryButton: "Close",
-				title: "Unable to evaluate"
+				primaryButton: "Close"
 			});
 			evaluation = undefined;
 		} finally {

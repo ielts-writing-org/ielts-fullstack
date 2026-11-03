@@ -1,6 +1,6 @@
 import { defineConfig } from "drizzle-kit";
-
-if (!process.env.CLOUDFLARE_D1_URL) throw new Error("CLOUDFLARE_D1_URL is not set");
+import { globSync } from "node:fs";
+import path from "node:path";
 
 /**
  * This config is used for local only.
@@ -9,7 +9,21 @@ if (!process.env.CLOUDFLARE_D1_URL) throw new Error("CLOUDFLARE_D1_URL is not se
 export default defineConfig({
 	dialect: "sqlite",
 	schema: "./src/lib/server/db/*.schema.ts",
+	dbCredentials: { url: resolveDbUrl() },
 	strict: true,
-	dbCredentials: { url: process.env.CLOUDFLARE_D1_URL },
 	verbose: true
 });
+
+function resolveDbUrl(): string {
+	const matches = globSync("./.wrangler/state/v3/d1/miniflare-D1DatabaseObject/*.sqlite");
+
+	for (const match of matches) {
+		const absolutePath = path.resolve(match);
+		console.log(`Resolved db path: ${absolutePath}`);
+		return absolutePath;
+	}
+
+	throw new Error(
+		"Cannot find the SQLite database file. Please make sure the database is initialized."
+	);
+}
