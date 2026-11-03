@@ -58,7 +58,8 @@
 		</a>
 	</div>
 
-	<section class="mt-4 grid w-full grid-cols-1 gap-4 xl:grid-cols-[minmax(0,1.55fr)_minmax(320px,1fr)]">
+	<section
+		class="mt-4 grid w-full grid-cols-1 gap-4 xl:grid-cols-[minmax(0,1.55fr)_minmax(320px,1fr)]">
 		<PracticeOptions practiceOptions={data.practiceOptions} />
 		<Statistics
 			statistics={data.statistics}

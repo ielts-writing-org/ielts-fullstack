@@ -27,10 +27,7 @@
 	]);
 </script>
 
-<div
-	class={["grid gap-2 sm:grid-cols-2", className]}
-	role="radiogroup"
-	aria-label="Practice type">
+<div class={["grid gap-2 sm:grid-cols-2", className]} role="radiogroup" aria-label="Practice type">
 	{#each options as option (option.value)}
 		<label
 			class={[
@@ -54,7 +51,12 @@
 				<span class="mt-0.5 block text-xs text-base-content/75">{option.description}</span>
 			</span>
 			<span
-				class={["grid size-5 shrink-0 place-items-center rounded-full border", value === option.value ? "border-primary bg-primary text-primary-content" : "border-base-content/20 text-transparent"]}>
+				class={[
+					"grid size-5 shrink-0 place-items-center rounded-full border",
+					value === option.value
+						? "border-primary bg-primary text-primary-content"
+						: "border-base-content/20 text-transparent"
+				]}>
 				<Check class="size-3.5" />
 			</span>
 		</label>

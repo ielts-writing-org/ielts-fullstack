@@ -38,10 +38,7 @@ const TASK_2_SUBCATEGORIES = [
 ] as const satisfies readonly TaskSubcategory<"2">[];
 
 /** Subcategories that are valid for each task category. */
-export const TASK_SUBCATEGORIES_BY_CATEGORY: Record<
-	TaskCategory,
-	readonly AllTaskSubcategory[]
-> = {
+export const TASK_SUBCATEGORIES_BY_CATEGORY: Record<TaskCategory, readonly AllTaskSubcategory[]> = {
 	"1": TASK_1_SUBCATEGORIES,
 	"2": TASK_2_SUBCATEGORIES
 };

@@ -26,7 +26,9 @@
 	const estimatedBand = $derived(evaluation?.estimatedBand);
 	// Open the panel the learner most likely needs: the evaluation if one
 	// exists, otherwise the tutor chat if they have already been asking.
-	let activeTab = $state<"chat" | "evaluate">(!evaluation && messages.length > 0 ? "chat" : "evaluate");
+	let activeTab = $state<"chat" | "evaluate">(
+		!evaluation && messages.length > 0 ? "chat" : "evaluate"
+	);
 	let chatDraft = $state("");
 
 	/** Switches to the tutor chat with a prefilled question (evaluation bridge). */

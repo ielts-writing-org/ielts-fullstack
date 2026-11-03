@@ -67,7 +67,8 @@
 					saveState === "saved" && "status-success",
 					saveState === "saving" && "animate-bounce status-warning",
 					(saveState === "unsaved" || saveState === "failed") && "status-error"
-				]}></span>
+				]}>
+			</span>
 			<span
 				class={[
 					saveState === "saved" && "text-success",
@@ -79,7 +80,7 @@
 			{#if saveState === "failed"}
 				<button
 					type="button"
-					class="btn btn-ghost btn-xs gap-1 px-1 text-error"
+					class="btn gap-1 btn-ghost px-1 text-error btn-xs"
 					title="Try saving again"
 					onclick={onRetrySave}>
 					<RotateCcw class="size-3" />

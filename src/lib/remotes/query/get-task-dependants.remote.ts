@@ -1,10 +1,10 @@
 import { getApiSession } from "#lib/server/auth/index.ts";
-import { evaluations, practiceSessions, tasks } from "#lib/server/db/app.schema.ts";
+import { evaluations, practiceSessions } from "#lib/server/db/app.schema.ts";
 import { getDb } from "#lib/server/db/index.ts";
 import { getRequestEvent, query } from "$app/server";
 import { error } from "@sveltejs/kit";
 import { env } from "cloudflare:workers";
-import { and, desc, eq } from "drizzle-orm";
+import { desc, eq } from "drizzle-orm";
 import z from "zod";
 
 export const getTaskDependants = query(z.uuidv7(), async (taskId) => {

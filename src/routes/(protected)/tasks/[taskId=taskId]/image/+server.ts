@@ -1,9 +1,7 @@
 import { getApiSession } from "#lib/server/auth/index.ts";
-import { tasks } from "#lib/server/db/app.schema.ts";
 import { getDb } from "#lib/server/db/index.ts";
 import { error } from "@sveltejs/kit";
 import { env } from "cloudflare:workers";
-import { and, eq } from "drizzle-orm";
 import type { RequestHandler } from "./$types";
 
 // Task images are always stored as compressed webp blobs (see CfImagesClient).

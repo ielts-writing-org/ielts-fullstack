@@ -56,7 +56,10 @@ export const load = (async ({ locals, url }) => {
 		number | null
 	>`(select max("practice_sessions"."started_at") from "practice_sessions" where "practice_sessions"."task_id" = "tasks"."id")`;
 
-	const [countRow] = await db.select({ total: sql<number>`count(*)` }).from(tasks).where(where);
+	const [countRow] = await db
+		.select({ total: sql<number>`count(*)` })
+		.from(tasks)
+		.where(where);
 
 	const total = countRow?.total ?? 0;
 	const totalPages = Math.max(1, Math.ceil(total / PER_PAGE));
