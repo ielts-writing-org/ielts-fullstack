@@ -42,13 +42,18 @@
 </svelte:head>
 
 <main id="main-content" class="w-full flex-1 px-3 py-3 sm:px-4 sm:py-4 lg:px-9">
+	<p class="text-xs font-semibold text-base-content/75">
+		{isNewUser ? `Welcome, ${firstName}.` : `Welcome back, ${firstName}.`}
+	</p>
+
+	<section class="my-4">
+		<ActivityStats activity={data.activity} streakDays={data.streakDays} />
+	</section>
+
 	<div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
 		<div class="min-w-0">
-			<p class="text-xs font-semibold text-base-content/75">
-				{isNewUser ? `Welcome, ${firstName}.` : `Welcome back, ${firstName}.`}
-			</p>
-			<h1 class="mt-0.5 flex items-center gap-2 font-semibold sm:text-lg">
-				<PenLine class="size-5 shrink-0 text-primary" />
+			<h1 class="mt-0.5 flex items-center gap-2 font-semibold">
+				<PenLine class="shrink-0 text-primary" size="1em" />
 				What do you want to practice?
 			</h1>
 		</div>
@@ -66,10 +71,6 @@
 			bandTarget={data.profile?.bandTarget ?? 0}
 			trend={data.bandTrend}
 			evaluatedCount={data.activity.evaluated} />
-	</section>
-
-	<section class="mt-4">
-		<ActivityStats activity={data.activity} streakDays={data.streakDays} />
 	</section>
 
 	<section class="mt-4 grid w-full grid-cols-1 gap-4 lg:grid-cols-[1.55fr_1fr]">
