@@ -1,0 +1,22 @@
+@startuml Xem Dashboard tổng quan SEQ
+
+skinparam DefaultFontName Segoe UI
+
+hide footbox
+autonumber
+
+actor "Người dùng" as User
+boundary "Trình duyệt" as Browser
+control "Hệ thống" as App
+database "Cơ sở dữ liệu" as DB
+
+User -> Browser++: Truy cập trang trang chủ
+Browser -> App++: GET /
+App -> App: Lấy session (yêu cầu phiên đăng nhập hợp lệ)
+App -> DB++: Truy vấn thống kê: số từ đã viết, số bài luyện tập\ntrong tuần, số ngày luyện tập liên tiếp, tổng số phiên\nluyện tập, tiến trình luyện tập và lịch sử luyện tập gần đây
+DB --> App--: Dữ liệu thống kê
+App --> Browser--: Trả về trang dashboard (200)
+Browser --> User: Hiển thị dashboard
+deactivate Browser
+
+@enduml

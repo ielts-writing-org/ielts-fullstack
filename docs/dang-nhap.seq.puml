@@ -1,0 +1,90 @@
+@startuml Đăng nhập bằng GitHub SEQ
+
+skinparam DefaultFontName Segoe UI
+
+hide footbox
+autonumber
+
+actor "Người dùng" as User
+boundary "Trình duyệt" as Browser
+control "Hệ thống" as App
+participant "OAuth Provider\n(GitHub)" as GitHub
+entity "users" as Users
+entity "accounts" as Accounts
+entity "sessions" as Sessions
+entity "verifications" as Verifications
+entity "profiles" as Profiles
+database "Cơ sở dữ liệu" as DB
+
+User -> Browser++: Chọn "Continue with GitHub"
+Browser -> App++: GET /api/auth/signin/github
+App -> Verifications++: Tạo state ủy quyền và code verifier
+Verifications -> DB++: Lưu state kèm thời hạn hiệu lực
+DB --> Verifications--: State đã được lưu
+Verifications --> App--: State đã được tạo
+App --> Browser--: Chuyển hướng người dùng đến\ntrang đăng nhập của GitHub (302)
+
+Browser -> GitHub++: GET github.com/login/oauth/authorize
+
+opt#Gold Chưa đăng nhập GitHub
+	GitHub --> Browser: Hiển thị trang đăng nhập
+	User -> Browser: Nhập thông tin đăng nhập GitHub
+	Browser -> GitHub: Gửi thông tin đăng nhập
+	GitHub -> GitHub: Xác thực thông tin đăng nhập
+end
+
+opt#Gold Chưa cấp quyền trước đó
+	GitHub --> Browser: Hiển thị trang cấp quyền
+	User -> Browser: Cấp quyền cho phép hệ thống\ntruy cập thông tin tài khoản GitHub
+	Browser -> GitHub: Chấp nhận cấp quyền
+end
+
+GitHub --> Browser--: Chuyển hướng người dùng về hệ thống\nvới mã ủy quyền và tham số state (302)
+
+Browser -> App++: GET /api/auth/callback/github?code=...&state=...
+
+App -> Verifications++: Xác thực state trả về từ GitHub
+Verifications -> DB++: Tra cứu và xóa bản ghi state
+DB --> Verifications--: Bản ghi state hợp lệ
+Verifications --> App--: Kết quả xác thực state
+destroy Verifications
+
+alt#Gold #LightPink State không hợp lệ hoặc đã hết hạn
+	App --> Browser: Thông báo dữ liệu không hợp lệ
+else #LightGreen State hợp lệ
+	App -> GitHub++: Lấy thông tin người dùng từ GitHub
+	GitHub --> App--: Thông tin người dùng
+
+	App -> Accounts++: Tra cứu liên kết tài khoản GitHub
+	Accounts -> DB++: Truy vấn liên kết tài khoản\ntheo thông tin người dùng GitHub
+	DB --> Accounts--: Kết quả tra cứu
+	Accounts --> App--: Kết quả tra cứu
+
+	opt#Gold Chưa có tài khoản
+		App -> Users++: Tạo người dùng
+		Users -> DB++: Lưu người dùng
+		DB --> Users--: Người dùng đã được lưu
+		Users --> App--: Người dùng đã được tạo
+		App -> Profiles++: Tạo hồ sơ người dùng
+		Profiles -> DB++: Lưu hồ sơ người dùng
+		DB --> Profiles--: Hồ sơ đã được lưu
+		Profiles --> App--: Hồ sơ đã được tạo
+		App -> Accounts++: Tạo liên kết tài khoản với người dùng
+		Accounts -> DB++: Lưu liên kết tài khoản
+		DB --> Accounts--: Liên kết đã được lưu
+		Accounts --> App--: Liên kết tài khoản đã được tạo
+	end
+
+	alt#Gold #LightPink Tài khoản bị cấm
+		App --> Browser: Thông báo tài khoản bị cấm
+	else #LightGreen Tài khoản hợp lệ
+		App -> Sessions++: Tạo phiên đăng nhập
+		Sessions -> DB++: Lưu phiên đăng nhập
+		DB --> Sessions--: Phiên đã được lưu
+		Sessions --> App--: Phiên đăng nhập đã được tạo
+		App --> Browser--: Chuyển hướng người dùng về trang chủ (302)
+	end
+end
+deactivate Browser
+
+@enduml

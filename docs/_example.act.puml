@@ -1,0 +1,5 @@
+@startuml <name of use case> ACT
+
+skinparam DefaultFontName Segoe UI
+
+@enduml

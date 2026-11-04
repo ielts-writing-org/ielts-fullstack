@@ -1,0 +1,8 @@
+@startuml <name of use case> SEQ
+
+skinparam DefaultFontName Segoe UI
+
+hide footbox
+autonumber
+
+@enduml

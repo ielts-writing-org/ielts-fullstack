@@ -1,0 +1,19 @@
+@startuml Đổi giao diện SEQ
+
+skinparam DefaultFontName Segoe UI
+
+hide footbox
+autonumber
+
+actor "Người dùng" as User
+boundary "Trình duyệt" as Browser
+
+User -> Browser++: Chọn vào hình đại diện người dùng
+Browser --> User: Hiển thị hộp thoại lựa chọn đổi giao diện
+User -> Browser: Chọn giao diện yêu thích
+Browser -> Browser: Cập nhật giao diện
+Browser -> Browser: Lưu lại giao diện đã chọn vào cookie
+Browser --> User: Hiển thị giao diện mới
+deactivate Browser
+
+@enduml

@@ -1,0 +1,17 @@
+@startuml Xem điều khoản dịch vụ ACT
+
+skinparam DefaultFontName Segoe UI
+
+|Tác nhân chính|
+start
+if (Người dùng đã có phiên đăng nhập?) then (Có)
+	:Truy cập trang điều khoản dịch vụ\ntừ trang chủ;
+else (Không)
+	:Truy cập trang điều khoản dịch vụ\ntừ trang đăng nhập;
+endif
+
+|Hệ thống|
+:Hiển thị điều khoản dịch vụ;
+stop
+
+@enduml

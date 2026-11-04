@@ -1,0 +1,13 @@
+@startuml Xem Dashboard tổng quan ACT
+
+skinparam DefaultFontName Segoe UI
+
+|Tác nhân chính|
+start
+:Truy cập trang trang chủ;
+
+|Hệ thống|
+:Hiển thị dashboard;
+stop
+
+@enduml

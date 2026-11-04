@@ -1,0 +1,20 @@
+@startuml Đổi giao diện ACT
+
+skinparam DefaultFontName Segoe UI
+
+|Tác nhân chính|
+start
+:Chọn vào hình đại diện người dùng;
+
+|Hệ thống|
+:Hiển thị hộp thoại lựa chọn đổi giao diện;
+
+|Tác nhân chính|
+:Chọn giao diện yêu thích;
+
+|Hệ thống|
+:Cập nhật giao diện;
+:Lưu lại giao diện đã chọn vào cookie;
+stop
+
+@enduml

@@ -1,0 +1,42 @@
+@startuml Đăng xuất SEQ
+
+skinparam DefaultFontName Segoe UI
+
+hide footbox
+autonumber
+
+actor "Người dùng" as User
+boundary "Trình duyệt" as Browser
+control "Hệ thống" as App
+entity "sessions" as Sessions
+database "Cơ sở dữ liệu" as DB
+
+User -> Browser++: Chọn vào hình đại diện người dùng
+Browser -> App++: Lấy thông tin phiên đăng nhập hiện tại
+App -> Sessions++: Đọc phiên đăng nhập hiện tại
+Sessions -> DB++: Truy vấn phiên đăng nhập
+DB --> Sessions--: Phiên đăng nhập
+Sessions --> App--: Thông tin người dùng
+App --> Browser--: Trả về thông tin người dùng
+Browser --> User: Hiển thị hộp thoại bật lên có lựa chọn "Sign out"
+User -> Browser: Chọn "Sign out"
+Browser --> User: Hiển thị hộp thoại xác nhận đăng xuất
+
+alt#Gold #LightPink Người dùng hủy đăng xuất
+	User -> Browser: Chọn "Cancel"
+	Browser --> User: Tắt hộp thoại xác nhận
+else #LightGreen Người dùng xác nhận đăng xuất
+	User -> Browser: Chọn "Sign out"
+	Browser -> App++: POST /api/auth/sign-out
+	App -> Sessions++: Xóa phiên đăng nhập hiện tại
+	Sessions -> DB++: Xóa session khỏi cơ sở dữ liệu
+	DB --> Sessions--: Phiên đã được xóa
+	Sessions --> App--: Phiên đã được xóa
+	destroy Sessions
+	App -> App: Xóa các cookie liên quan (Set-Cookie hết hạn)
+	App --> Browser--: Xác nhận đăng xuất (200)
+	Browser --> User: Làm mới giao diện người dùng
+end
+deactivate Browser
+
+@enduml
