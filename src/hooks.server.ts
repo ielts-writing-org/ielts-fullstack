@@ -1,12 +1,8 @@
 import { type Handle, sequence } from "@sveltejs/kit/hooks";
-import { error } from "@sveltejs/kit";
 import { building } from "$app/env";
-import { eq } from "drizzle-orm";
 import { svelteKitHandler } from "better-auth/svelte-kit";
 import { env } from "cloudflare:workers";
-import { getDb } from "./lib/server/db";
 import { createAuth } from "./lib/server/auth";
-import { profiles } from "#lib/server/db/app.schema.ts";
 
 const handleBetterAuth: Handle = async ({ event, resolve }) => {
 	const auth = createAuth(env.IELTS_WRITING_DB);
@@ -16,17 +12,6 @@ const handleBetterAuth: Handle = async ({ event, resolve }) => {
 	if (session) {
 		event.locals.session = session.session;
 		event.locals.user = session.user;
-
-		const db = getDb(env.IELTS_WRITING_DB);
-		const [profile] = await db
-			.select()
-			.from(profiles)
-			.where(eq(profiles.userId, event.locals.user.id))
-			.limit(1);
-		if (!profile) {
-			error(500, "Missing user profile.");
-		}
-		event.locals.profile = profile;
 	}
 
 	return svelteKitHandler({ auth, building, event, resolve });

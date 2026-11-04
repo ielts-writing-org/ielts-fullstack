@@ -1,8 +1,7 @@
 import type { createAuth } from "#lib/server/auth";
 import type { auth } from "#lib/server/auth/cli.ts";
-import type { TaskCategory, TaskCategory } from "#lib/schemas/task-category.ts";
-import type { TaskSubcategory } from "#lib/schemas/task-subcategory.ts";
-import type { ProfileEntity } from "#lib/server/db/app.schema.ts";
+import type { TaskCategory } from "#lib/domain/task-category.ts";
+import type { TaskSubcategory } from "#lib/domain/task-subcategory.ts";
 
 // See https://svelte.dev/docs/kit/types#app.d.ts
 // for information about these interfaces
@@ -12,7 +11,6 @@ declare global {
 			auth: ReturnType<typeof createAuth>;
 			session?: typeof auth.$Infer.Session.session;
 			user?: typeof auth.$Infer.Session.user;
-			profile?: ProfileEntity;
 		}
 
 		interface PageData {
@@ -25,11 +23,11 @@ declare global {
 	}
 }
 
-type PracticeSession<Category extends TaskCategory> = {
+type PracticeSession<TTaskCategory extends TaskCategory> = {
 	title: string;
 	type: "timed" | "free";
-	taskCategory: Category;
-	taskSubcategory: TaskSubcategory<Category>;
+	taskCategory: TTaskCategory;
+	taskSubcategory: TaskSubcategory<TTaskCategory>;
 };
 
 export {};
