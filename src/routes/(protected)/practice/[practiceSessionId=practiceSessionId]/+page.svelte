@@ -2,7 +2,6 @@
 	import { page } from "$app/state";
 	import { Dialect, WorkerLinter } from "harper.js";
 	import { onDestroy, onMount, untrack } from "svelte";
-	import type { TaskCategory } from "#lib/schemas/task-category.js";
 	import type { ChatMessage } from "#lib/schemas/chat-message.ts";
 	import type { Evaluation } from "#lib/schemas/evaluation.ts";
 	import PreventLeaving from "#lib/components/PreventLeaving.svelte";
@@ -14,6 +13,7 @@
 	import { saveTaskPrompt } from "#lib/remotes/command/save-task-prompt.remote.js";
 	import { savePracticeResponse } from "#lib/remotes/command/save-practice-response.remote.js";
 	import { setTimedUpAction } from "#lib/remotes/command/set-timed-up-action.remote.js";
+	import type { TaskCategory } from "#lib/domain/task-category.js";
 
 	const { data } = $props();
 

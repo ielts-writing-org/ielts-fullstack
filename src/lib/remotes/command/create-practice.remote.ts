@@ -2,7 +2,7 @@ import { resolve } from "$app/paths";
 import { command, getRequestEvent } from "$app/server";
 import { env } from "cloudflare:workers";
 import { z } from "zod";
-import { taskCategorySchema } from "#lib/schemas/task-category.ts";
+import { taskCategorySchema } from "#lib/domain/task-category.ts";
 import { practiceSessions, tasks } from "#lib/server/db/app.schema.ts";
 import { getDb } from "#lib/server/db/index.ts";
 import { getApiSession } from "#lib/server/auth/index.ts";

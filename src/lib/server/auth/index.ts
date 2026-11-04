@@ -17,7 +17,6 @@ import { env } from "cloudflare:workers";
 import { getDb } from "../db";
 import { profiles } from "../db/app.schema";
 import { redisSecondaryStorage } from "./secondary-storage";
-import { dev } from "$app/env";
 
 export const createAuth = (d1: D1Database) => {
 	return betterAuth({
@@ -69,26 +68,26 @@ export const createAuth = (d1: D1Database) => {
 		},
 		onAPIError: { errorURL: "/sign-in" },
 		rateLimit: { storage: "secondary-storage" },
-		secondaryStorage: dev ? undefined : redisSecondaryStorage
+		secondaryStorage: redisSecondaryStorage
 	});
 };
 
 export function getPageSession(locals: App.Locals) {
-	const { session, user, profile } = locals;
+	const { session, user } = locals;
 
-	if (!session || !user || !profile) {
+	if (!session || !user) {
 		redirect(307, resolve("/(public)/sign-in"));
 	}
 
-	return { session, user, profile };
+	return { session, user };
 }
 
 export function getApiSession(locals: App.Locals) {
-	const { session, user, profile } = locals;
+	const { session, user } = locals;
 
-	if (!session || !user || !profile) {
+	if (!session || !user) {
 		error(401, "Unauthorized");
 	}
 
-	return { session, user, profile };
+	return { session, user };
 }

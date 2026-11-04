@@ -2,20 +2,18 @@ import { getDb } from "#lib/server/db/index.ts";
 import { env } from "cloudflare:workers";
 import type { PageServerLoad } from "./$types";
 import type { Evaluation } from "#lib/schemas/evaluation.ts";
-import { TASK_SUBCATEGORIES_BY_CATEGORY } from "#lib/mappings/task-subcategory.ts";
-import type { AllTaskSubcategory } from "#lib/schemas/task-subcategory.ts";
 import { countWords } from "#lib/utils/stats.ts";
 import { chatMessages, evaluations, practiceSessions, tasks } from "#lib/server/db/app.schema.ts";
 import { and, asc, desc, eq, isNotNull, isNull, like, or, sql } from "drizzle-orm";
 import { getPageSession } from "#lib/server/auth/index.ts";
 import type { Criteria } from "#lib/schemas/criteria.ts";
+import { TASK_CATEGORIES } from "#lib/domain/task-category.ts";
+import { PRACTICE_TYPES } from "#lib/schemas/practice-type.ts";
+import { taskSubcategorySchema, getAllTaskSubcategories } from "#lib/domain/task-subcategory.ts";
 
 const PER_PAGE = 5;
 const SORTS = ["recent", "oldest", "band", "words"] as const;
-const TASK_CATEGORIES = ["1", "2"] as const;
-const PRACTICE_TYPES = ["free", "timed"] as const;
 const STATUSES = ["evaluated", "unevaluated"] as const;
-const ALL_SUBCATEGORIES = Object.values(TASK_SUBCATEGORIES_BY_CATEGORY).flat() as string[];
 
 type Sort = (typeof SORTS)[number];
 
@@ -58,16 +56,14 @@ export const load = (async ({ locals, url }) => {
 	const status = STATUSES.find((value) => value === searchParams.get("status"));
 	const includeBody = searchParams.get("body") === "1";
 	const subcategoryParam = searchParams.get("subcategory");
-	const subcategory = ALL_SUBCATEGORIES.includes(subcategoryParam ?? "")
-		? (subcategoryParam as AllTaskSubcategory)
-		: undefined;
+	const subcategory = taskSubcategorySchema.safeParse(subcategoryParam).data;
 	const sort: Sort = SORTS.find((value) => value === searchParams.get("sort")) ?? "recent";
 	const requestedPage = Number.parseInt(searchParams.get("page") ?? "1", 10);
 	const page = Number.isFinite(requestedPage) && requestedPage > 0 ? requestedPage : 1;
 
 	const conditions = [eq(practiceSessions.userId, user.id)];
 	if (task) conditions.push(eq(tasks.category, task));
-	if (subcategory) conditions.push(eq(tasks.subcategory, subcategory as AllTaskSubcategory));
+	if (subcategory) conditions.push(eq(tasks.subcategory, subcategory));
 	if (type) conditions.push(eq(practiceSessions.type, type));
 	if (status === "evaluated") conditions.push(isNotNull(evaluations.id));
 	if (status === "unevaluated") conditions.push(isNull(evaluations.id));
@@ -130,12 +126,6 @@ export const load = (async ({ locals, url }) => {
 		.limit(PER_PAGE)
 		.offset((safePage - 1) * PER_PAGE);
 
-	const subcategoryRows = await db
-		.selectDistinct({ subcategory: tasks.subcategory })
-		.from(practiceSessions)
-		.innerJoin(tasks, eq(practiceSessions.taskId, tasks.id))
-		.where(eq(practiceSessions.userId, user.id));
-
 	const totalSessions = await db.$count(practiceSessions, eq(practiceSessions.userId, user.id));
 
 	// Overall bands of the most recent evaluated sessions (oldest first) for
@@ -195,10 +185,7 @@ export const load = (async ({ locals, url }) => {
 				criteria: criterionBands(result)
 			};
 		}),
-		availableSubcategories: subcategoryRows
-			.map((row) => row.subcategory)
-			.filter((value): value is AllTaskSubcategory => value !== null)
-			.sort((a, b) => a.localeCompare(b)),
+		availableSubcategories: getAllTaskSubcategories(),
 		stats: {
 			total: totalSessions,
 			evaluated: task1.evaluated + task2.evaluated,

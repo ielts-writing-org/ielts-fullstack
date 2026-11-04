@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { goto } from "$app/navigation";
 	import { ArrowRight, Clock3 } from "@lucide/svelte";
-	import type { TaskCategory } from "#lib/schemas/task-category.ts";
+	import type { TaskCategory } from "#lib/domain/task-category.ts";
 	import { openModal } from "#lib/components/Modal.svelte";
 	import { createPractice } from "#lib/remotes/command/create-practice.remote.ts";
 	import TaskCreateForm from "#lib/components/TaskCreateForm.svelte";

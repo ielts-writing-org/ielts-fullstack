@@ -15,13 +15,13 @@ export const saveBandTarget = command(
 	}),
 	async ({ bandTarget }) => {
 		const { locals } = getRequestEvent();
-		const { profile } = getApiSession(locals);
+		const { user } = getApiSession(locals);
 
 		const db = getDb(env.IELTS_WRITING_DB);
 		const [updatedProfile] = await db
 			.update(profiles)
 			.set({ bandTarget })
-			.where(eq(profiles.id, profile.id))
+			.where(eq(profiles.userId, user.id))
 			.returning();
 
 		if (!updatedProfile) {

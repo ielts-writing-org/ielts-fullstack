@@ -1,7 +1,6 @@
 import { env } from "cloudflare:workers";
 import { and, asc, desc, eq, isNull, like, or, sql } from "drizzle-orm";
-import { TASK_SUBCATEGORIES_BY_CATEGORY } from "#lib/mappings/task-subcategory.ts";
-import type { AllTaskSubcategory } from "#lib/schemas/task-subcategory.ts";
+import { taskSubcategorySchema } from "#lib/domain/task-subcategory.ts";
 import { tasks } from "#lib/server/db/app.schema.ts";
 import { getDb } from "#lib/server/db/index.ts";
 import { getPageSession } from "#lib/server/auth/index.ts";
@@ -11,7 +10,6 @@ const PER_PAGE = 9;
 const SORTS = ["recent", "oldest", "name", "practiced"] as const;
 const TASK_CATEGORIES = ["1", "2"] as const;
 const SOURCES = ["mine", "example"] as const;
-const ALL_SUBCATEGORIES = Object.values(TASK_SUBCATEGORIES_BY_CATEGORY).flat() as string[];
 
 type Sort = (typeof SORTS)[number];
 
@@ -23,9 +21,7 @@ export const load = (async ({ locals, url }) => {
 	const q = searchParams.get("q")?.trim() ?? "";
 	const task = TASK_CATEGORIES.find((value) => value === searchParams.get("task"));
 	const subcategoryParam = searchParams.get("subcategory");
-	const subcategory = ALL_SUBCATEGORIES.includes(subcategoryParam ?? "")
-		? (subcategoryParam as AllTaskSubcategory)
-		: undefined;
+	const subcategory = taskSubcategorySchema.safeParse(subcategoryParam).data;
 	const sort: Sort = SORTS.find((value) => value === searchParams.get("sort")) ?? "recent";
 	const requestedPage = Number.parseInt(searchParams.get("page") ?? "1", 10);
 	const page = Number.isFinite(requestedPage) && requestedPage > 0 ? requestedPage : 1;

@@ -1,5 +1,5 @@
 import { env } from "cloudflare:workers";
-import type { TaskCategory } from "#lib/schemas/task-category.ts";
+import type { TaskCategory } from "#lib/domain/task-category.ts";
 import { abortableStream } from "#lib/utils/abortable-stream.ts";
 import { ConfigProvider } from "./config-provider";
 

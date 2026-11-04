@@ -5,7 +5,7 @@
 	import { refreshAll } from "$app/navigation";
 	import { ArrowLeft, Clock, FileText, InfinityIcon, LogOut, Palette } from "@lucide/svelte";
 	import { minWordsFor, timeLimitMinutesFor } from "#lib/utils/ielts.js";
-	import { taskSubcategoryLabel } from "#lib/mappings/task-subcategory.ts";
+	import { taskSubcategoryLabel } from "#lib/domain/task-subcategory.ts";
 	import { authClient } from "#lib/auth/auth-client.ts";
 	import AppLogo from "#lib/components/AppLogo.svelte";
 	import Modal, { openModal } from "#lib/components/Modal.svelte";
@@ -17,9 +17,7 @@
 
 	let { data, children }: LayoutProps = $props();
 
-	const showTabBar = $derived(
-		data.session && data.user && data.profile && !page.data.practiceSession
-	);
+	const showTabBar = $derived(data.session && data.user && !page.data.practiceSession);
 
 	async function handleSignOut() {
 		openModal({
@@ -60,7 +58,7 @@
 			title: "Change target band",
 			content: {
 				component: ChangeBandTarget,
-				props: { bandTarget: (await getProfile()).bandTarget }
+				props: { bandTarget: (await getProfile()).bandTarget ?? 0 }
 			}
 		});
 	}
@@ -169,7 +167,7 @@
 		{/if}
 
 		<!-- User menu -->
-		{#if data.session && data.user && data.profile}
+		{#if data.session && data.user}
 			<div class="navbar-end flex-1 gap-2 overflow-hidden">
 				<div class="flex flex-col items-end gap-1 overflow-hidden">
 					<div dir="rtl" class="w-full truncate text-left font-semibold">
@@ -180,7 +178,7 @@
 						class="badge cursor-pointer badge-soft badge-xs font-semibold hover:bg-primary hover:text-primary-content"
 						onclick={handleChangeTarget}
 						title="Change target">
-						Target: Band {(await getProfile()).bandTarget}
+						Target: Band {(await getProfile()).bandTarget ?? 0}
 					</button>
 				</div>
 

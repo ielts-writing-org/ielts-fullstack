@@ -3,10 +3,10 @@
 	import { saveBandTarget } from "#lib/remotes/command/save-band-target.remote.ts";
 
 	type Props = {
-		bandTarget: number | undefined;
+		bandTarget: number;
 	};
 
-	let { bandTarget = 0 }: Props = $props();
+	let { bandTarget }: Props = $props();
 
 	async function handleSave() {
 		await saveBandTarget({ bandTarget });
@@ -18,7 +18,7 @@
 	}
 </script>
 
-<p class="mb-4">Set your target band:</p>
+<p class="my-4">Set your target band:</p>
 <div class="w-full">
 	<input
 		class="range w-full range-primary range-sm"

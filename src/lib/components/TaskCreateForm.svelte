@@ -2,10 +2,7 @@
 	import type { Snippet } from "svelte";
 	import { onDestroy } from "svelte";
 	import { closeModal } from "#lib/components/Modal.svelte";
-	import {
-		TASK_SUBCATEGORIES_BY_CATEGORY,
-		taskSubcategoryLabel
-	} from "#lib/mappings/task-subcategory.ts";
+	import { getTaskSubcategories, taskSubcategoryLabel } from "#lib/domain/task-subcategory.ts";
 	import { createTask } from "#lib/remotes/form/create-task.remote.ts";
 
 	type Props = {
@@ -31,7 +28,7 @@
 	let previewUrl = $state<string | undefined>(undefined);
 	let error = $state<string | null>(null);
 
-	const subcategoryOptions = $derived(TASK_SUBCATEGORIES_BY_CATEGORY[selectedCategory]);
+	const subcategoryOptions = $derived(getTaskSubcategories(selectedCategory));
 
 	const form = createTask.enhance(async (f) => {
 		if (await f.submit()) {

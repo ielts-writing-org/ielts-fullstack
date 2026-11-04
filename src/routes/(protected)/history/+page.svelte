@@ -27,7 +27,7 @@
 	import { roundToNearestHalf } from "#lib/utils/math.ts";
 	import { timeLimitMinutesFor } from "#lib/utils/ielts.js";
 	import { CRITERIA_MAP } from "#lib/mappings/criteria.js";
-	import { taskSubcategoryLabel } from "#lib/mappings/task-subcategory.ts";
+	import { taskSubcategoryLabel } from "#lib/domain/task-subcategory.ts";
 	import { deletePracticeSession } from "#lib/remotes/command/delete-practice-session.remote.js";
 	import { changeSessionName } from "#lib/remotes/command/change-session-name.remote.js";
 	import { formatRelativeTime } from "#lib/utils/time.js";

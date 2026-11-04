@@ -1,11 +1,11 @@
 <script lang="ts">
 	import { AlarmClock, AlarmClockOff, Check } from "@lucide/svelte";
-	import type { TaskCategory } from "#lib/schemas/task-category.ts";
-	import type { PracticeSessionType } from "#lib/schemas/practice-session-type.ts";
+	import type { TaskCategory } from "#lib/domain/task-category.ts";
+	import type { PracticeType } from "#lib/domain/practice-type.ts";
 
 	type Props = {
 		category: TaskCategory;
-		value?: PracticeSessionType;
+		value?: PracticeType;
 		class?: string;
 	};
 

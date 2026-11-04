@@ -9,30 +9,21 @@
 	import RecentPracticeSessions from "./RecentPracticeSessions.svelte";
 	import ActivityStats from "./ActivityStats.svelte";
 	import ChangeBandTarget from "../ChangeBandTarget.svelte";
+	import { getProfile } from "#lib/remotes/query/get-profile.remote.js";
+	import { onMount } from "svelte";
 
 	const { data } = $props();
 
 	const firstName = $derived((page.data.user?.name ?? "there").split(" ")[0]);
 	const isNewUser = $derived(data.activity.totalSessions === 0);
 
-	const ONBOARDING_TARGET_KEY = "onboarding-target-band-dismissed";
-
-	// First-visit nudge: without a target band the Progress card has nothing to
-	// compare against. Shown once per browser, then never again.
-	$effect(() => {
-		if (data.profile?.bandTarget !== 0) {
-			return;
+	onMount(async () => {
+		if ((await getProfile()).bandTarget === null) {
+			openModal({
+				title: "Welcome to IELTS Writing Practice Platform",
+				content: { component: ChangeBandTarget, props: { bandTarget: 0 } }
+			});
 		}
-
-		if (localStorage.getItem(ONBOARDING_TARGET_KEY)) {
-			return;
-		}
-
-		localStorage.setItem(ONBOARDING_TARGET_KEY, "1");
-		openModal({
-			title: "Set your target band",
-			content: { component: ChangeBandTarget, props: { bandTarget: 0 } }
-		});
 	});
 </script>
 
@@ -68,7 +59,7 @@
 		<PracticeOptions practiceOptions={data.practiceOptions} />
 		<Statistics
 			statistics={data.statistics}
-			bandTarget={data.profile?.bandTarget ?? 0}
+			bandTarget={(await getProfile()).bandTarget ?? 0}
 			trend={data.bandTrend}
 			evaluatedCount={data.activity.evaluated} />
 	</section>

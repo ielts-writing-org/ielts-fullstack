@@ -1,4 +1,4 @@
-import { type TaskCategory, taskCategorySchema } from "#lib/schemas/task-category.ts";
+import { type TaskCategory, taskCategorySchema } from "#lib/domain/task-category.ts";
 
 export function isValidTaskCategory(taskType: string): taskType is TaskCategory {
 	return typeof taskType === "string" && taskCategorySchema.safeParse(taskType).success;

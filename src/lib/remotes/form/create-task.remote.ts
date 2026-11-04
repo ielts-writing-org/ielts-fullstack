@@ -1,4 +1,4 @@
-import { isValidSubcategoryFor } from "#lib/mappings/task-subcategory.ts";
+import { isValidSubcategory } from "#lib/domain/task-subcategory.ts";
 import { getApiSession } from "#lib/server/auth/index.ts";
 import { tasks } from "#lib/server/db/app.schema.ts";
 import { getDb } from "#lib/server/db/index.ts";
@@ -9,9 +9,9 @@ import { env } from "cloudflare:workers";
 import { eq } from "drizzle-orm";
 import { uuidv7 } from "uuidv7";
 import { z } from "zod";
-import { taskCategorySchema } from "#lib/schemas/task-category.ts";
+import { taskCategorySchema } from "#lib/domain/task-category.ts";
 import { taskImageSchema } from "#lib/schemas/task-image.ts";
-import { taskSubcategorySchema } from "#lib/schemas/task-subcategory.ts";
+import { taskSubcategorySchema } from "#lib/domain/task-subcategory.ts";
 
 export const createTask = form(
 	z.object({
@@ -28,7 +28,7 @@ export const createTask = form(
 		const { locals } = getRequestEvent();
 		const { user } = getApiSession(locals);
 
-		if (subcategory && !isValidSubcategoryFor(category, subcategory)) {
+		if (subcategory && !isValidSubcategory(category, subcategory)) {
 			error(400, "The subcategory does not belong to the selected task category.");
 		}
 

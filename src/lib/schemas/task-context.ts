@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { taskCategorySchema } from "./task-category";
+import { taskCategorySchema } from "#lib/domain/task-category.ts";
 
 export const practiceSessionContextSchema = z.object({
 	category: taskCategorySchema,

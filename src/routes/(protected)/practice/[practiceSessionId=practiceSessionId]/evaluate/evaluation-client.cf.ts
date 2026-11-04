@@ -1,9 +1,9 @@
 import type { EvaluateRequestWithStats, EvaluationClient } from "./evaluation-client.port";
 import type { ConfigProvider } from "#lib/server/infrastructure/config-provider/config-provider.port.ts";
-import type { TaskCategory } from "#lib/schemas/task-category.ts";
 import { abortableStream } from "#lib/utils/abortable-stream.ts";
 import { AI_CONFIGS } from "./config";
 import { evaluationSchema } from "#lib/schemas/evaluation.ts";
+import type { TaskCategory } from "#lib/domain/task-category.ts";
 
 export class CfEvaluationClient implements EvaluationClient {
 	constructor(

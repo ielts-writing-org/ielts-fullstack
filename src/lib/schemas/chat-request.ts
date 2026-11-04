@@ -1,7 +1,7 @@
 import { z } from "zod";
 import { chatMessageSchema } from "./chat-message";
 import { evaluationSchema } from "./evaluation";
-import { taskCategorySchema } from "./task-category";
+import { taskCategorySchema } from "#lib/domain/task-category.ts";
 
 export const chatRequestSchema = z.object({
 	task: z.object({

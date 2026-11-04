@@ -1,4 +1,4 @@
-import type { TaskCategory } from "#lib/schemas/task-category.ts";
+import type { TaskCategory } from "#lib/domain/task-category.ts";
 import type { EvaluateRequest } from "#lib/schemas/evaluate-request.ts";
 import type { DeterministicStats } from "#lib/utils/stats.ts";
 

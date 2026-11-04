@@ -17,7 +17,6 @@ export const load = (async ({ data }) => {
 	return {
 		session: data.session,
 		user: data.user,
-		profile: data.profile,
 		navItems: navItems
 	};
 }) satisfies LayoutLoad;

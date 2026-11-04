@@ -20,10 +20,7 @@
 	} from "@lucide/svelte";
 	import { closeModal, openModal } from "#lib/components/Modal.svelte";
 	import TaskCreateForm from "#lib/components/TaskCreateForm.svelte";
-	import {
-		TASK_SUBCATEGORIES_BY_CATEGORY,
-		taskSubcategoryLabel
-	} from "#lib/mappings/task-subcategory.ts";
+	import { getTaskSubcategories, taskSubcategoryLabel } from "#lib/domain/task-subcategory.ts";
 	import { bandBadgeTone } from "#lib/utils/ielts.js";
 	import { formatRelativeTime } from "#lib/utils/time.js";
 	import { createPractice } from "#lib/remotes/command/create-practice.remote.js";
@@ -32,6 +29,7 @@
 	import { deleteTask } from "#lib/remotes/command/delete-task.remote.js";
 	import { getTaskDependants } from "#lib/remotes/query/get-task-dependants.remote.js";
 	import { updateTask } from "#lib/remotes/form/update-task.remote.js";
+	import { SvelteURLSearchParams } from "svelte/reactivity";
 
 	const { data } = $props();
 
@@ -58,7 +56,7 @@
 			...overrides
 		};
 
-		const params = new URLSearchParams();
+		const params = new SvelteURLSearchParams();
 		if (state.q) params.set("q", state.q);
 		if (state.task !== "all") params.set("task", state.task);
 		if (state.subcategory !== "all") params.set("subcategory", state.subcategory);
@@ -242,9 +240,7 @@
 		}
 	});
 
-	const editSubcategoryOptions = $derived(
-		editTask ? TASK_SUBCATEGORIES_BY_CATEGORY[editTask.category] : []
-	);
+	const editSubcategoryOptions = $derived(editTask ? getTaskSubcategories(editTask.category) : []);
 
 	function handleEditImageChange(event: Event) {
 		replacePreviewUrl(event.currentTarget as HTMLInputElement, (url) => (editPreviewUrl = url));
@@ -427,17 +423,17 @@
 					onchange={(event) => update({ subcategory: event.currentTarget.value })}>
 					<option value="all">All subcategories</option>
 					{#if currentTask !== "all"}
-						{#each TASK_SUBCATEGORIES_BY_CATEGORY[currentTask as "1" | "2"] as subcategory (subcategory)}
+						{#each getTaskSubcategories(currentTask) as subcategory (subcategory)}
 							<option value={subcategory}>{taskSubcategoryLabel(subcategory)}</option>
 						{/each}
 					{:else}
 						<optgroup label="Task 1">
-							{#each TASK_SUBCATEGORIES_BY_CATEGORY["1"] as subcategory (subcategory)}
+							{#each getTaskSubcategories("1") as subcategory (subcategory)}
 								<option value={subcategory}>{taskSubcategoryLabel(subcategory)}</option>
 							{/each}
 						</optgroup>
 						<optgroup label="Task 2">
-							{#each TASK_SUBCATEGORIES_BY_CATEGORY["2"] as subcategory (subcategory)}
+							{#each getTaskSubcategories("2") as subcategory (subcategory)}
 								<option value={subcategory}>{taskSubcategoryLabel(subcategory)}</option>
 							{/each}
 						</optgroup>

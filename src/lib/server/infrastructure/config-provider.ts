@@ -1,6 +1,6 @@
 import { env } from "cloudflare:workers";
 
-import type { TaskCategory } from "#lib/schemas/task-category.ts";
+import type { TaskCategory } from "#lib/domain/task-category.ts";
 
 const CONFIGS = {
 	cacheTtl: 86_400,

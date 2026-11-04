@@ -1,4 +1,4 @@
-import { isValidSubcategoryFor } from "#lib/mappings/task-subcategory.ts";
+import { isValidSubcategory, taskSubcategorySchema } from "#lib/domain/task-subcategory.ts";
 import { getApiSession } from "#lib/server/auth/index.ts";
 import { tasks } from "#lib/server/db/app.schema.ts";
 import { getDb } from "#lib/server/db/index.ts";
@@ -10,7 +10,6 @@ import { and, eq } from "drizzle-orm";
 import { uuidv7 } from "uuidv7";
 import { z } from "zod";
 import { taskImageSchema } from "#lib/schemas/task-image.ts";
-import { taskSubcategorySchema } from "#lib/schemas/task-subcategory.ts";
 
 export const updateTask = form(
 	z.object({
@@ -36,7 +35,7 @@ export const updateTask = form(
 			error(404, "Task does not exist.");
 		}
 
-		if (subcategory && !isValidSubcategoryFor(task.category, subcategory)) {
+		if (subcategory && !isValidSubcategory(task.category, subcategory)) {
 			error(400, "The subcategory does not belong to the task category.");
 		}
 

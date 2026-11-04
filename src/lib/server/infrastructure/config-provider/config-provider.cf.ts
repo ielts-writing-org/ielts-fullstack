@@ -1,4 +1,4 @@
-import type { TaskCategory } from "#lib/schemas/task-category.ts";
+import type { TaskCategory } from "#lib/domain/task-category.ts";
 import type { ConfigProvider } from "./config-provider.port";
 import { CONFIGS } from "./config";
 import { ConfigMissingError } from "./error";
