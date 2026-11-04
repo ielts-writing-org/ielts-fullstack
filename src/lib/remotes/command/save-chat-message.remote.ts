@@ -1,5 +1,5 @@
 import { chatMessageSchema } from "#lib/domain/chat-message.ts";
-import { getApiSession } from "#lib/server/auth/index.ts";
+import { getApiSession } from "#lib/server/auth/session.ts";
 import { chatMessages, practiceSessions } from "#lib/server/db/app.schema.ts";
 import { getDb } from "#lib/server/db/index.ts";
 import { command, getRequestEvent } from "$app/server";

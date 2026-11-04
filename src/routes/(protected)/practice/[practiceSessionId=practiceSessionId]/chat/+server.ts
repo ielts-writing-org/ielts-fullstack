@@ -1,12 +1,12 @@
-import { chatRequestSchema, type ChatRequest } from "#lib/domain/chat-request.ts";
-import { getApiSession } from "#lib/server/auth/index.ts";
-import { AiClient } from "#lib/server/infrastructure/ai-client.ts";
-import { rateLimit } from "#lib/server/rate-limit.ts";
-import { computeDeterministicStats, type DeterministicStats } from "#lib/utils/stats.ts";
 import type { RequestHandler } from "./$types";
-import { env } from "cloudflare:workers";
-import { CfImagesClient } from "#lib/server/infrastructure/images-client/images-client.cf.ts";
 import { error } from "@sveltejs/kit";
+import { chatRequestSchema, type ChatRequest } from "#lib/domain/chat-request.ts";
+import { getApiSession } from "#lib/server/auth/session.ts";
+import { rateLimit } from "#lib/server/rate-limit.ts";
+import { computeDeterministicStats } from "#lib/utils/stats.ts";
+import { chatWithAi, type ChatWithAiData } from "#lib/server/infrastructure/ai.ts";
+import { getObjectAsBlob } from "#lib/server/infrastructure/bucket.ts";
+import { compressImageAsBase64 } from "#lib/server/infrastructure/images.ts";
 
 export const POST: RequestHandler = async ({ locals, request, getClientAddress }) => {
 	await rateLimit(getClientAddress());
@@ -20,61 +20,51 @@ export const POST: RequestHandler = async ({ locals, request, getClientAddress }
 		error(400);
 	}
 
-	const validatedJson = {
-		...result.data,
-		practiceSession: {
-			response: result.data.practiceSession.response,
-			stats: computeDeterministicStats(result.data.practiceSession.response)
-		}
-	} satisfies ChatRequest & {
-		practiceSession: { stats: DeterministicStats };
-	};
+	const chatData = await buildChatData(result.data);
 
-	let imageBase64: string | undefined;
-	if (validatedJson.task.category === "1" && validatedJson.task.imageName) {
-		const image = await env.IELTS_WRITING_BUCKET.get(validatedJson.task.imageName);
-		if (image) {
-			const blob = await image.blob();
-			const imagesClient = new CfImagesClient(env.IELTS_WRITING_IMAGES);
-			imageBase64 = await imagesClient.compress(blob);
-		}
-	}
-
-	const stream = await AiClient.instance.chat(
-		[
-			// Task context
-			{
-				role: "user",
-				content: [
-					{
-						type: "text",
-						text: JSON.stringify(validatedJson)
-					},
-					...(imageBase64
-						? [
-								{
-									type: "image_url" as const,
-									image_url: { url: imageBase64 }
-								}
-							]
-						: [])
-				]
-			},
-			// Previous AI evaluation
-			...(validatedJson.evaluation
-				? [{ role: "assistant" as const, content: JSON.stringify(validatedJson.evaluation) }]
-				: []),
-			// Chat messages
-			...validatedJson.messages.map((c) => ({
-				role: c.from,
-				content: [{ type: "text" as const, text: c.message }]
-			}))
-		],
-		validatedJson.task.category,
-		request.signal
-	);
+	const stream = await chatWithAi(chatData, chatData.task.category, request.signal);
 
 	return new Response(stream, {
 		headers: { "cache-control": "no-cache", "content-type": "text/event-stream" }
 	});
 };
+
+async function buildChatData({
+	task,
+	practiceSession,
+	messages,
+	evaluation
+}: ChatRequest): Promise<ChatWithAiData> {
+	if (task.category === "1" && task.imageName) {
+		let imageBase64: string | undefined;
+		if (task.imageName) {
+			const image = await getObjectAsBlob(task.imageName);
+			if (image) {
+				imageBase64 = await compressImageAsBase64(image);
+			}
+		}
+
+		return {
+			task: {
+				...task,
+				...(task.imageName ? { image: imageBase64 } : {})
+			},
+			practiceSession: {
+				...practiceSession,
+				stats: computeDeterministicStats(practiceSession.response)
+			},
+			messages: messages,
+			evaluation: evaluation
+		};
+	} else {
+		return {
+			task: task,
+			practiceSession: {
+				...practiceSession,
+				stats: computeDeterministicStats(practiceSession.response)
+			},
+			messages: messages,
+			evaluation: evaluation
+		};
+	}
+}

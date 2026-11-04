@@ -3,7 +3,7 @@ import { env } from "cloudflare:workers";
 import { getDb } from "#lib/server/db/index.ts";
 import type { PageServerLoad } from "./$types";
 import type { ChatMessage } from "#lib/domain/chat-message.ts";
-import { getPageSession } from "#lib/server/auth/index.ts";
+import { getPageSession } from "#lib/server/auth/session.ts";
 import { timeLimitMinutesFor } from "#lib/utils/ielts.ts";
 
 export const load = (async ({ locals, params, depends }) => {

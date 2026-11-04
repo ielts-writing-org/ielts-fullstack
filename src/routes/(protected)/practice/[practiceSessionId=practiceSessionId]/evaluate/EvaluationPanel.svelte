@@ -1,6 +1,5 @@
 <script lang="ts">
 	import { page } from "$app/state";
-	import { type EventSourceMessage, EventSourceParserStream } from "eventsource-parser/stream";
 	import JSONParser from "@streamparser/json/jsonparser.js";
 	import { Info, ListChecks, MessagesSquare } from "@lucide/svelte";
 	import type { Evaluation, EvaluationCriterion } from "#lib/domain/evaluation.ts";
@@ -14,7 +13,8 @@
 	import { getZodErrors } from "#lib/utils/error.ts";
 	import ValidationErrors from "#lib/components/ValidationErrors.svelte";
 	import { saveEvaluation } from "#lib/remotes/command/save-evaluation.remote.ts";
-	import { isCriteriaKey } from "./utils";
+	import { isCriteriaKey } from "#lib/domain/criteria.ts";
+	import { readAiStream } from "#lib/utils/stream.ts";
 
 	type Props = {
 		practiceSessionId: string;
@@ -127,7 +127,11 @@
 	}
 
 	/** The criterion with the lowest band, used to pre-open its details. */
-	function weakestCriterionKey(current: Evaluation): Criteria | null {
+	function weakestCriterionKey(current: Evaluation | undefined): Criteria | null {
+		if (!current) {
+			return null;
+		}
+
 		let weakest: { key: Criteria; band: number } | null = null;
 		for (const [key, criterion] of Object.entries(current.criteria)) {
 			if (!isCriteriaKey(key)) {
@@ -209,38 +213,13 @@
 				}
 			};
 
-			const reader = stream
-				.pipeThrough(new TextDecoderStream())
-				.pipeThrough(new EventSourceParserStream())
-				.pipeThrough(
-					new TransformStream<EventSourceMessage>({
-						transform(chunk, controller) {
-							if (chunk.data === "[DONE]") {
-								return;
-							}
-
-							try {
-								const json = JSON.parse(chunk.data);
-								// TODO: Make this into openapi-compatible structured json
-								const content = json.choices?.[0]?.delta?.content;
-								if (content) {
-									controller.enqueue(content);
-								}
-							} catch {
-								// Ignore non-JSON control signals or ping events
-							}
-						}
-					})
-				)
-				.getReader();
-			while (true) {
-				const { done, value } = await reader.read();
-				if (done) {
+			await readAiStream(
+				stream,
+				(value) => parser.write(value),
+				() => {
 					openCriterionKey = weakestCriterionKey(evaluation);
-					break;
 				}
-				parser.write(value);
-			}
+			);
 		} catch (e) {
 			openModal({
 				title: "Unable to evaluate",

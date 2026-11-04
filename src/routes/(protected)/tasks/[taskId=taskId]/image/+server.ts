@@ -1,4 +1,4 @@
-import { getApiSession } from "#lib/server/auth/index.ts";
+import { getApiSession } from "#lib/server/auth/session.ts";
 import { getDb } from "#lib/server/db/index.ts";
 import { error } from "@sveltejs/kit";
 import { env } from "cloudflare:workers";

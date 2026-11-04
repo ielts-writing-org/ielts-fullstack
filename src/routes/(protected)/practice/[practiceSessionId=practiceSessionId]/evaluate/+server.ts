@@ -1,18 +1,16 @@
 import type { RequestHandler } from "./$types";
-import { env } from "cloudflare:workers";
-import { evaluateRequestSchema } from "#lib/domain/evaluate-request.ts";
-import { getApiSession } from "#lib/server/auth/index.ts";
-import { rateLimit } from "#lib/server/rate-limit.ts";
-import { CfConfigProvider } from "#lib/server/infrastructure/config-provider/config-provider.cf.ts";
-import { CfBucketClient } from "#lib/server/infrastructure/bucket-client/bucket-client.cf.ts";
-import { CfImagesClient } from "#lib/server/infrastructure/images-client/images-client.cf.ts";
-import { CfEvaluationClient } from "./evaluation-client.cf";
-import { EvaluateHandler } from "./evaluate.handler";
 import { error } from "@sveltejs/kit";
+import { evaluateRequestSchema, type EvaluateRequest } from "#lib/domain/evaluate-request.ts";
+import { getApiSession } from "#lib/server/auth/session.ts";
+import { rateLimit } from "#lib/server/rate-limit.ts";
+import { computeDeterministicStats } from "#lib/utils/stats.ts";
+import { evaluateWithAi, type EvaluateWithAiData } from "#lib/server/infrastructure/ai.ts";
+import { getObjectAsBlob } from "#lib/server/infrastructure/bucket.ts";
+import { compressImageAsBase64 } from "#lib/server/infrastructure/images.ts";
 
-export const POST: RequestHandler = async ({ locals, request, getClientAddress }) => {
-	await rateLimit(getClientAddress());
-	getApiSession(locals);
+export const POST: RequestHandler = async ({ locals, request }) => {
+	const { user } = getApiSession(locals);
+	await rateLimit(user.id);
 
 	const json = await request.json();
 	const validationResult = evaluateRequestSchema.safeParse(json);
@@ -21,18 +19,43 @@ export const POST: RequestHandler = async ({ locals, request, getClientAddress }
 		error(400);
 	}
 
-	const configProvider = new CfConfigProvider(env.IELTS_WRITING_KV);
-	const evaluationClient = new CfEvaluationClient(configProvider, env.IELTS_WRITING_AI);
-	const bucketClient = new CfBucketClient(env.IELTS_WRITING_BUCKET);
-	const imagesClient = new CfImagesClient(env.IELTS_WRITING_IMAGES);
-	const handler = new EvaluateHandler(evaluationClient, bucketClient, imagesClient);
+	const evaluateData = await buildEvaluateData(validationResult.data);
 
-	const handlerResult = await handler.execute(validationResult.data, request.signal);
-	if (!handlerResult.success) {
-		error(400);
-	}
+	const stream = await evaluateWithAi(evaluateData, evaluateData.task.category, request.signal);
 
-	return new Response(handlerResult.stream, {
+	return new Response(stream, {
 		headers: { "cache-control": "no-cache", "content-type": "text/event-stream" }
 	});
 };
+
+async function buildEvaluateData({
+	task,
+	practiceSession
+}: EvaluateRequest): Promise<EvaluateWithAiData> {
+	if (task.category === "1") {
+		const image = await getObjectAsBlob(task.imageName);
+
+		if (!image) {
+			error(400);
+		}
+
+		return {
+			task: {
+				...task,
+				image: await compressImageAsBase64(image)
+			},
+			practiceSession: {
+				...practiceSession,
+				stats: computeDeterministicStats(practiceSession.response)
+			}
+		};
+	} else {
+		return {
+			task: task,
+			practiceSession: {
+				...practiceSession,
+				stats: computeDeterministicStats(practiceSession.response)
+			}
+		};
+	}
+}

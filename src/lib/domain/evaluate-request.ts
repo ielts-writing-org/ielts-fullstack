@@ -6,7 +6,7 @@ const PROMPT_MAX_WORDS = 85;
 const RESPONSE_MIN_WORDS = 125;
 const RESPONSE_MAX_WORDS = 320;
 
-const taskPromptSchema = z.string("Task prompt should be a string.").refine((val) => {
+const taskPromptSchema = z.string().refine((val) => {
 	const words = countWords(val);
 	return words >= PROMPT_MIN_WORDS && words <= PROMPT_MAX_WORDS;
 }, `Task prompt must be between ${PROMPT_MIN_WORDS.toString()} and ${PROMPT_MAX_WORDS.toString()} words`);
@@ -22,7 +22,7 @@ const taskSchema = z.discriminatedUnion("category", [
 	z.object({
 		category: z.literal("1"),
 		prompt: taskPromptSchema,
-		imageName: z.string("Task image name should be a string.")
+		imageName: z.string()
 	}),
 	z.object({
 		category: z.literal("2"),

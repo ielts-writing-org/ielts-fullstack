@@ -6,7 +6,7 @@ import { desc, eq, sql } from "drizzle-orm";
 import type { PageServerLoad } from "./$types";
 import { roundToNearestHalf } from "#lib/utils/math.ts";
 import { formatRelativeTime } from "#lib/utils/time.ts";
-import { getPageSession } from "#lib/server/auth/index.ts";
+import { getPageSession } from "#lib/server/auth/session.ts";
 
 const PRACTICE_OPTIONS = [
 	{

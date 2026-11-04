@@ -5,10 +5,8 @@ import {
 	GITHUB_CLIENT_SECRET
 } from "$app/env/private";
 import { ORIGIN } from "$app/env/public";
-import { resolve } from "$app/paths";
 import { getRequestEvent } from "$app/server";
 import { dash, sentinel } from "@better-auth/infra";
-import { error, redirect } from "@sveltejs/kit";
 import { drizzleAdapter } from "better-auth/adapters/drizzle";
 import { betterAuth } from "better-auth/minimal";
 import { admin } from "better-auth/plugins";
@@ -60,34 +58,10 @@ export const createAuth = (d1: D1Database) => {
 				}
 			}
 		},
-		session: {
-			storeSessionInDatabase: true
-		},
-		verification: {
-			storeInDatabase: true
-		},
+		session: { storeSessionInDatabase: true },
+		verification: { storeInDatabase: true },
 		onAPIError: { errorURL: "/sign-in" },
 		rateLimit: { storage: "secondary-storage" },
 		secondaryStorage: redisSecondaryStorage
 	});
 };
-
-export function getPageSession(locals: App.Locals) {
-	const { session, user } = locals;
-
-	if (!session || !user) {
-		redirect(307, resolve("/(public)/sign-in"));
-	}
-
-	return { session, user };
-}
-
-export function getApiSession(locals: App.Locals) {
-	const { session, user } = locals;
-
-	if (!session || !user) {
-		error(401, "Unauthorized");
-	}
-
-	return { session, user };
-}

@@ -2,7 +2,7 @@ import { type Handle, sequence } from "@sveltejs/kit/hooks";
 import { building } from "$app/env";
 import { svelteKitHandler } from "better-auth/svelte-kit";
 import { env } from "cloudflare:workers";
-import { createAuth } from "./lib/server/auth";
+import { createAuth } from "./lib/server/auth/auth";
 
 const handleBetterAuth: Handle = async ({ event, resolve }) => {
 	const auth = createAuth(env.IELTS_WRITING_DB);

@@ -1,6 +1,5 @@
 <script lang="ts">
 	import { page } from "$app/state";
-	import { type EventSourceMessage, EventSourceParserStream } from "eventsource-parser/stream";
 	import sanitize from "sanitize-html";
 	import { marked } from "marked";
 	import { MessagesSquare, Send, Trash } from "@lucide/svelte";
@@ -12,6 +11,7 @@
 	import { getZodErrors, type SerializedZodError } from "#lib/utils/error.ts";
 	import { saveChatMessages } from "#lib/remotes/command/save-chat-message.remote.ts";
 	import { clearChatMessages } from "#lib/remotes/command/clear-chat-messages.remote.ts";
+	import { readAiStream } from "#lib/utils/stream.ts";
 
 	type Props = {
 		practiceSessionId: string;
@@ -56,10 +56,7 @@
 					messages.length = 0;
 				}
 			},
-			secondaryButton: {
-				text: "Cancel",
-				color: "primary"
-			}
+			secondaryButton: "Cancel"
 		});
 	}
 
@@ -87,7 +84,7 @@
 				practiceSession: {
 					response: props.practiceSessionContext.response
 				},
-				messages: [...messages, { from: "user" as const, message }],
+				messages: [...messages, { from: "user", message }],
 				evaluation: props.evaluation
 			});
 
@@ -132,39 +129,16 @@
 			messages.push({ from: "user", message: message }, { from: "assistant", message: "" });
 			input = "";
 
-			const reader = stream
-				.pipeThrough(new TextDecoderStream())
-				.pipeThrough(new EventSourceParserStream())
-				.pipeThrough(
-					new TransformStream<EventSourceMessage>({
-						transform(chunk, controller) {
-							if (chunk.data === "[DONE]") return;
-
-							try {
-								const json = JSON.parse(chunk.data);
-								// TODO: Make this into openapi-compatible structured json
-								const content = json.choices?.[0]?.delta?.content;
-								if (content) {
-									controller.enqueue(content);
-								}
-							} catch {
-								// Ignore non-JSON control signals or ping events
-							}
-						}
-					})
-				)
-				.getReader();
-			while (true) {
-				const { done, value } = await reader.read();
-				if (done) {
+			await readAiStream(
+				stream,
+				(value) => (messages[messages.length - 1].message += value),
+				async () => {
 					await saveChatMessages({
 						practiceSessionId: props.practiceSessionId,
 						chatMessages: [messages[messages.length - 2], messages[messages.length - 1]]
 					});
-					break;
 				}
-				messages[messages.length - 1].message += value;
-			}
+			);
 		} catch (e) {
 			openModal({
 				title: "Unable to chat",

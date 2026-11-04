@@ -1,6 +1,6 @@
 import { defineParams } from "@sveltejs/kit/params";
 
-import { isValidTaskCategory } from "#lib/utils/validator.ts";
+import { isValidTaskCategory } from "#lib/domain/task-category.ts";
 import { isValidUUIDv7 } from "#lib/utils/validator.ts";
 
 export const params = defineParams({

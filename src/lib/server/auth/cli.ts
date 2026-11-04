@@ -1,4 +1,4 @@
-import { createAuth } from ".";
+import { createAuth } from "./auth";
 
 /**
  * DO NOT USE!

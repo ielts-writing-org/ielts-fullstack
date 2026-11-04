@@ -1,7 +1,7 @@
-import { getApiSession } from "#lib/server/auth/index.ts";
+import { getApiSession } from "#lib/server/auth/session.ts";
 import { tasks } from "#lib/server/db/app.schema.ts";
 import { getDb } from "#lib/server/db/index.ts";
-import { CfImagesClient } from "#lib/server/infrastructure/images-client/images-client.cf.ts";
+import { compressImageAsBlob } from "#lib/server/infrastructure/images.ts";
 import { form, getRequestEvent } from "$app/server";
 import { error } from "@sveltejs/kit";
 import { env } from "cloudflare:workers";
@@ -32,8 +32,7 @@ export const saveTaskImage = form(
 		const oldImageName = task.image;
 
 		const newImageName = `${uuidv7()}.webp`;
-		const imagesClient = new CfImagesClient(env.IELTS_WRITING_IMAGES);
-		const compressed = await imagesClient.compressAsBlob(image);
+		const compressed = await compressImageAsBlob(image);
 		await env.IELTS_WRITING_BUCKET.put(newImageName, compressed);
 		await db.update(tasks).set({ image: newImageName }).where(eq(tasks.id, taskId));
 

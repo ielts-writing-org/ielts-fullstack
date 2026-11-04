@@ -5,7 +5,7 @@ import type { Evaluation } from "#lib/domain/evaluation.ts";
 import { countWords } from "#lib/utils/stats.ts";
 import { chatMessages, evaluations, practiceSessions, tasks } from "#lib/server/db/app.schema.ts";
 import { and, asc, desc, eq, isNotNull, isNull, like, or, sql } from "drizzle-orm";
-import { getPageSession } from "#lib/server/auth/index.ts";
+import { getPageSession } from "#lib/server/auth/session.ts";
 import type { Criteria } from "#lib/domain/criteria.ts";
 import { TASK_CATEGORIES } from "#lib/domain/task-category.ts";
 import { PRACTICE_TYPES } from "#lib/domain/practice-type.ts";

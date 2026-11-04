@@ -3,7 +3,7 @@ import { and, asc, desc, eq, isNull, like, or, sql } from "drizzle-orm";
 import { taskSubcategorySchema } from "#lib/domain/task-subcategory.ts";
 import { tasks } from "#lib/server/db/app.schema.ts";
 import { getDb } from "#lib/server/db/index.ts";
-import { getPageSession } from "#lib/server/auth/index.ts";
+import { getPageSession } from "#lib/server/auth/session.ts";
 import type { PageServerLoad } from "./$types";
 
 const PER_PAGE = 9;

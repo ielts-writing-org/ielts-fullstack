@@ -1,5 +1,5 @@
 import { evaluationSchema } from "#lib/domain/evaluation.ts";
-import { getApiSession } from "#lib/server/auth/index.ts";
+import { getApiSession } from "#lib/server/auth/session.ts";
 import { evaluations } from "#lib/server/db/app.schema.ts";
 import { getDb } from "#lib/server/db/index.ts";
 import { command, getRequestEvent } from "$app/server";

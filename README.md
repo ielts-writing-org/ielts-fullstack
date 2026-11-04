@@ -49,28 +49,40 @@ Missing keys throw `ConfigMissingError` at request time.
 1. Clone the repo and install:
 
    ```bash
-   npm install
+   npm install --ignore-scripts
    ```
 
-2. Generate worker types:
+2. If it didn't generate worker types, run:
 
    ```bash
    npm run gen
    ```
 
-3. Start the dev server:
+3. Run this once to download Redis:
+
+   ```bash
+   npm run dev:redis
+   ```
+
+4. Wrangler requires to be run in interactive mode so you will have to run it once then sign in to your Cloudflare account:
+
+   ```bash
+   npm run dev:app
+   ```
+
+5. Stop `dev:redis` and `dev:app` and start this instead of manually run all dev scripts:
 
    ```bash
    npm run dev
    ```
 
-4. Wait until the app is idle, then create local D1 tables:
+6. Wait until the app is idle, then create local D1 tables:
 
    ```bash
    npm run db:push
    ```
 
-5. Add the KV entries with localflare:
+7. Add the KV entries with localflare:
 
    ```bash
    npx localflare attach

@@ -37,3 +37,6 @@ export const CRITERION_CHECK_STATUS_LABELS = {
 	partially_met: "Partially met",
 	not_met: "Not met"
 } as const satisfies Record<CriterionCheckStatus, string>;
+export const isCriteriaKey = (key: unknown): key is Criteria => {
+	return criteria.includes(key as Criteria);
+};

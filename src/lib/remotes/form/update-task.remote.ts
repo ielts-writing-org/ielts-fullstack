@@ -1,8 +1,7 @@
 import { isValidSubcategory, taskSubcategorySchema } from "#lib/domain/task-subcategory.ts";
-import { getApiSession } from "#lib/server/auth/index.ts";
+import { getApiSession } from "#lib/server/auth/session.ts";
 import { tasks } from "#lib/server/db/app.schema.ts";
 import { getDb } from "#lib/server/db/index.ts";
-import { CfImagesClient } from "#lib/server/infrastructure/images-client/images-client.cf.ts";
 import { form, getRequestEvent } from "$app/server";
 import { error } from "@sveltejs/kit";
 import { env } from "cloudflare:workers";
@@ -10,6 +9,7 @@ import { and, eq } from "drizzle-orm";
 import { uuidv7 } from "uuidv7";
 import { z } from "zod";
 import { taskImageSchema } from "#lib/domain/task-image.ts";
+import { compressImageAsBlob } from "#lib/server/infrastructure/images.ts";
 
 export const updateTask = form(
 	z.object({
@@ -41,8 +41,7 @@ export const updateTask = form(
 
 		if (image) {
 			const newImageName = `${uuidv7()}.webp`;
-			const imagesClient = new CfImagesClient(env.IELTS_WRITING_IMAGES);
-			const compressed = await imagesClient.compressAsBlob(image);
+			const compressed = await compressImageAsBlob(image);
 			await env.IELTS_WRITING_BUCKET.put(newImageName, compressed);
 			await db.update(tasks).set({ image: newImageName }).where(eq(tasks.id, taskId));
 
