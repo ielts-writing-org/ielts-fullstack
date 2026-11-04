@@ -1,4 +1,4 @@
-import type { EvaluateRequest } from "#lib/schemas/evaluate-request.ts";
+import type { EvaluateRequest } from "#lib/domain/evaluate-request.ts";
 import type { EvaluateRequestWithStats, EvaluationClient } from "./evaluation-client.port";
 import type { BucketClient } from "#lib/server/infrastructure/bucket-client/bucket-client.port.ts";
 import type { ImagesClient } from "#lib/server/infrastructure/images-client/images-client.port.ts";

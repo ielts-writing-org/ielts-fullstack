@@ -5,10 +5,10 @@
 	import { marked } from "marked";
 	import { MessagesSquare, Send, Trash } from "@lucide/svelte";
 	import { openModal } from "#lib/components/Modal.svelte";
-	import type { ChatMessage } from "#lib/schemas/chat-message.ts";
-	import { chatRequestSchema } from "#lib/schemas/chat-request.ts";
-	import type { Evaluation } from "#lib/schemas/evaluation.ts";
-	import type { PracticeSessionContext } from "#lib/schemas/task-context.ts";
+	import type { ChatMessage } from "#lib/domain/chat-message.ts";
+	import { chatRequestSchema } from "#lib/domain/chat-request.ts";
+	import type { Evaluation } from "#lib/domain/evaluation.ts";
+	import type { PracticeSessionContext } from "#lib/domain/task-context.ts";
 	import { getZodErrors, type SerializedZodError } from "#lib/utils/error.ts";
 	import { saveChatMessages } from "#lib/remotes/command/save-chat-message.remote.ts";
 	import { clearChatMessages } from "#lib/remotes/command/clear-chat-messages.remote.ts";

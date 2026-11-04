@@ -10,7 +10,7 @@ import { eq } from "drizzle-orm";
 import { uuidv7 } from "uuidv7";
 import { z } from "zod";
 import { taskCategorySchema } from "#lib/domain/task-category.ts";
-import { taskImageSchema } from "#lib/schemas/task-image.ts";
+import { taskImageSchema } from "#lib/domain/task-image.ts";
 import { taskSubcategorySchema } from "#lib/domain/task-subcategory.ts";
 
 export const createTask = form(

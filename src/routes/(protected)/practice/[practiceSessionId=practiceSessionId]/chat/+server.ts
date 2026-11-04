@@ -1,4 +1,4 @@
-import { chatRequestSchema, type ChatRequest } from "#lib/schemas/chat-request.ts";
+import { chatRequestSchema, type ChatRequest } from "#lib/domain/chat-request.ts";
 import { getApiSession } from "#lib/server/auth/index.ts";
 import { AiClient } from "#lib/server/infrastructure/ai-client.ts";
 import { rateLimit } from "#lib/server/rate-limit.ts";

@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { chatMessageSchema } from "./chat-message";
+import { chatMessageSchema } from "../domain/chat-message";
 import { evaluationSchema } from "./evaluation";
 import { taskCategorySchema } from "#lib/domain/task-category.ts";
 

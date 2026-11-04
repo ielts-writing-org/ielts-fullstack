@@ -26,7 +26,7 @@
 	import { openModal } from "#lib/components/Modal.svelte";
 	import { roundToNearestHalf } from "#lib/utils/math.ts";
 	import { timeLimitMinutesFor } from "#lib/utils/ielts.js";
-	import { CRITERIA_MAP } from "#lib/mappings/criteria.js";
+	import { CRITERIA_LABELS } from "#lib/domain/criteria.js";
 	import { taskSubcategoryLabel } from "#lib/domain/task-subcategory.ts";
 	import { deletePracticeSession } from "#lib/remotes/command/delete-practice-session.remote.js";
 	import { changeSessionName } from "#lib/remotes/command/change-session-name.remote.js";
@@ -104,9 +104,9 @@
 	const paged = $derived(
 		data.practiceSessions.map((session) => ({
 			...session,
-			rings: (Object.keys(CRITERIA_MAP) as (keyof typeof CRITERIA_MAP)[]).flatMap((key) => {
+			rings: (Object.keys(CRITERIA_LABELS) as (keyof typeof CRITERIA_LABELS)[]).flatMap((key) => {
 				const band = session.criteria?.[key];
-				return band === undefined ? [] : [{ key, label: CRITERIA_MAP[key], band }];
+				return band === undefined ? [] : [{ key, label: CRITERIA_LABELS[key], band }];
 			})
 		}))
 	);

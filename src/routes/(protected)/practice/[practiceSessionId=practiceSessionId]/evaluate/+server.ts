@@ -1,6 +1,6 @@
 import type { RequestHandler } from "./$types";
 import { env } from "cloudflare:workers";
-import { evaluateRequestSchema } from "#lib/schemas/evaluate-request.ts";
+import { evaluateRequestSchema } from "#lib/domain/evaluate-request.ts";
 import { getApiSession } from "#lib/server/auth/index.ts";
 import { rateLimit } from "#lib/server/rate-limit.ts";
 import { CfConfigProvider } from "#lib/server/infrastructure/config-provider/config-provider.cf.ts";

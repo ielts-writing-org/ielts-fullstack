@@ -1,6 +1,6 @@
 import { z } from "zod";
-import { bandSchema } from "./band";
-import { criterionCheckStatus } from "./criteria";
+import { bandSchema } from "../domain/band";
+import { criterionCheckStatus } from "../domain/criteria";
 
 const criterionCheckSchema = z
 	.object({

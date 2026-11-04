@@ -3,14 +3,14 @@
 	import { type EventSourceMessage, EventSourceParserStream } from "eventsource-parser/stream";
 	import JSONParser from "@streamparser/json/jsonparser.js";
 	import { Info, ListChecks, MessagesSquare } from "@lucide/svelte";
-	import type { Evaluation, EvaluationCriterion } from "#lib/schemas/evaluation.ts";
-	import type { PracticeSessionContext } from "#lib/schemas/task-context.ts";
+	import type { Evaluation, EvaluationCriterion } from "#lib/domain/evaluation.ts";
+	import type { PracticeSessionContext } from "#lib/domain/task-context.ts";
 	import { openModal } from "#lib/components/Modal.svelte";
-	import { type EvaluateRequest, evaluateRequestSchema } from "#lib/schemas/evaluate-request.ts";
+	import { type EvaluateRequest, evaluateRequestSchema } from "#lib/domain/evaluate-request.ts";
 	import { bandToProgressValue, bandTone, minWordsFor } from "#lib/utils/ielts.ts";
 	import { countWords } from "#lib/utils/stats.ts";
-	import type { Criteria } from "#lib/schemas/criteria.ts";
-	import { CRITERIA_MAP, CRITERION_CHECK_STATUS_MAP } from "#lib/mappings/criteria.ts";
+	import type { Criteria } from "#lib/domain/criteria.ts";
+	import { CRITERIA_LABELS, CRITERION_CHECK_STATUS_LABELS } from "#lib/domain/criteria.ts";
 	import { getZodErrors } from "#lib/utils/error.ts";
 	import ValidationErrors from "#lib/components/ValidationErrors.svelte";
 	import { saveEvaluation } from "#lib/remotes/command/save-evaluation.remote.ts";
@@ -350,7 +350,7 @@
 					<details class="collapse-arrow collapse bg-base-100" open={openCriterionKey === key}>
 						<summary class="collapse-title cursor-pointer p-0">
 							<span class="font-semibold">
-								{CRITERIA_MAP[key]}
+								{CRITERIA_LABELS[key]}
 							</span>
 
 							{#if criterion.band}
@@ -394,7 +394,7 @@
 									class="btn mt-1 self-start btn-ghost text-primary btn-xs"
 									onclick={() =>
 										props.onAskTutor(
-											`How can I improve my ${CRITERIA_MAP[key]} band? The evaluation says: "${criterion.nextBandGap}"`
+											`How can I improve my ${CRITERIA_LABELS[key]} band? The evaluation says: "${criterion.nextBandGap}"`
 										)}>
 									<MessagesSquare class="size-3.5" />
 									Ask the tutor how to get there
@@ -417,7 +417,7 @@
 																check.status === "partially_met" && "badge-warning",
 																check.status === "not_met" && "badge-error"
 															]}>
-															{CRITERION_CHECK_STATUS_MAP[check.status]}
+															{CRITERION_CHECK_STATUS_LABELS[check.status]}
 														</span>
 													</summary>
 													<div class="collapse-content p-0 text-base-content/75">
@@ -477,7 +477,7 @@
 																class="btn mt-1 btn-ghost text-primary btn-xs"
 																onclick={() =>
 																	props.onAskTutor(
-																		`How can I fix this weakness in ${CRITERIA_MAP[key]}? The weakness is "${weakness.title}" — evidence in my writing: ${weakness.evidence}`
+																		`How can I fix this weakness in ${CRITERIA_LABELS[key]}? The weakness is "${weakness.title}" — evidence in my writing: ${weakness.evidence}`
 																	)}>
 																<MessagesSquare class="size-3.5" />
 																Ask the tutor about this

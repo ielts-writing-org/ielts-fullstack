@@ -1,14 +1,14 @@
 import { getDb } from "#lib/server/db/index.ts";
 import { env } from "cloudflare:workers";
 import type { PageServerLoad } from "./$types";
-import type { Evaluation } from "#lib/schemas/evaluation.ts";
+import type { Evaluation } from "#lib/domain/evaluation.ts";
 import { countWords } from "#lib/utils/stats.ts";
 import { chatMessages, evaluations, practiceSessions, tasks } from "#lib/server/db/app.schema.ts";
 import { and, asc, desc, eq, isNotNull, isNull, like, or, sql } from "drizzle-orm";
 import { getPageSession } from "#lib/server/auth/index.ts";
-import type { Criteria } from "#lib/schemas/criteria.ts";
+import type { Criteria } from "#lib/domain/criteria.ts";
 import { TASK_CATEGORIES } from "#lib/domain/task-category.ts";
-import { PRACTICE_TYPES } from "#lib/schemas/practice-type.ts";
+import { PRACTICE_TYPES } from "#lib/domain/practice-type.ts";
 import { taskSubcategorySchema, getAllTaskSubcategories } from "#lib/domain/task-subcategory.ts";
 
 const PER_PAGE = 5;

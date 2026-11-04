@@ -1,4 +1,4 @@
-import { bandSchema } from "#lib/schemas/band.ts";
+import { bandSchema } from "#lib/domain/band.ts";
 import { getApiSession } from "#lib/server/auth/index.ts";
 import { profiles } from "#lib/server/db/app.schema.ts";
 import { getDb } from "#lib/server/db/index.ts";

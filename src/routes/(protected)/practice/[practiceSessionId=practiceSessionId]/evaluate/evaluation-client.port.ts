@@ -1,5 +1,5 @@
 import type { TaskCategory } from "#lib/domain/task-category.ts";
-import type { EvaluateRequest } from "#lib/schemas/evaluate-request.ts";
+import type { EvaluateRequest } from "#lib/domain/evaluate-request.ts";
 import type { DeterministicStats } from "#lib/utils/stats.ts";
 
 export type EvaluateRequestWithStats = EvaluateRequest & {

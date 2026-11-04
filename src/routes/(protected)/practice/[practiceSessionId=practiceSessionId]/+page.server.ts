@@ -2,7 +2,7 @@ import { error } from "@sveltejs/kit";
 import { env } from "cloudflare:workers";
 import { getDb } from "#lib/server/db/index.ts";
 import type { PageServerLoad } from "./$types";
-import type { ChatMessage } from "#lib/schemas/chat-message.ts";
+import type { ChatMessage } from "#lib/domain/chat-message.ts";
 import { getPageSession } from "#lib/server/auth/index.ts";
 import { timeLimitMinutesFor } from "#lib/utils/ielts.ts";
 

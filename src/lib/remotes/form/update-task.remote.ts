@@ -9,7 +9,7 @@ import { env } from "cloudflare:workers";
 import { and, eq } from "drizzle-orm";
 import { uuidv7 } from "uuidv7";
 import { z } from "zod";
-import { taskImageSchema } from "#lib/schemas/task-image.ts";
+import { taskImageSchema } from "#lib/domain/task-image.ts";
 
 export const updateTask = form(
 	z.object({

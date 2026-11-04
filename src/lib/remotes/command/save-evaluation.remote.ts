@@ -1,4 +1,4 @@
-import { evaluationSchema } from "#lib/schemas/evaluation.ts";
+import { evaluationSchema } from "#lib/domain/evaluation.ts";
 import { getApiSession } from "#lib/server/auth/index.ts";
 import { evaluations } from "#lib/server/db/app.schema.ts";
 import { getDb } from "#lib/server/db/index.ts";

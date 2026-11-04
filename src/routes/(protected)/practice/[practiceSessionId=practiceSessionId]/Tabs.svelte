@@ -1,7 +1,7 @@
 <script lang="ts">
-	import type { ChatMessage } from "#lib/schemas/chat-message.ts";
-	import type { Evaluation } from "#lib/schemas/evaluation.ts";
-	import type { PracticeSessionContext } from "#lib/schemas/task-context.ts";
+	import type { ChatMessage } from "#lib/domain/chat-message.ts";
+	import type { Evaluation } from "#lib/domain/evaluation.ts";
+	import type { PracticeSessionContext } from "#lib/domain/task-context.ts";
 	import { ListCheck, MessagesSquare } from "@lucide/svelte";
 	import ChatPanel from "./chat/ChatPanel.svelte";
 	import EvaluationPanel from "./evaluate/EvaluationPanel.svelte";

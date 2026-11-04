@@ -1,6 +1,6 @@
 import { relations } from "drizzle-orm";
 import { integer, real, sqliteTable, text } from "drizzle-orm/sqlite-core";
-import type { Evaluation } from "#lib/schemas/evaluation.ts";
+import type { Evaluation } from "#lib/domain/evaluation.ts";
 import type { TaskCategory } from "#lib/domain/task-category.ts";
 import type { TaskSubcategory } from "#lib/domain/task-subcategory.ts";
 import { users } from "./auth.schema";

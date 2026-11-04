@@ -2,8 +2,8 @@
 	import { page } from "$app/state";
 	import { Dialect, WorkerLinter } from "harper.js";
 	import { onDestroy, onMount, untrack } from "svelte";
-	import type { ChatMessage } from "#lib/schemas/chat-message.ts";
-	import type { Evaluation } from "#lib/schemas/evaluation.ts";
+	import type { ChatMessage } from "#lib/domain/chat-message.js";
+	import type { Evaluation } from "#lib/domain/evaluation.js";
 	import PreventLeaving from "#lib/components/PreventLeaving.svelte";
 	import { openModal } from "#lib/components/Modal.svelte";
 	import { minWordsFor } from "#lib/utils/ielts.ts";
