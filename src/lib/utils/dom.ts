@@ -11,7 +11,9 @@ export function waitForTransition(element: HTMLElement, timeoutMs = 2000): Promi
 
 		const onTransitionEnd = () => {
 			clearTimeout(timer);
-			resolve();
+			setTimeout(() => {
+				resolve();
+			}, 250);
 		};
 
 		element.addEventListener("transitionend", onTransitionEnd, { once: true });

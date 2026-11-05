@@ -100,7 +100,7 @@
 
 <dialog class="modal" bind:this={modal}>
 	{#if current}
-		<div class="modal-box">
+		<div class="modal-box overflow-hidden">
 			<!-- Close Button -->
 			{const closeButton = current.closeButton}
 			{#if closeButton}
@@ -135,9 +135,9 @@
 			<!-- Content -->
 			{#if current.content}
 				{#if typeof current.content === "string"}
-					<p class="my-4 max-h-[50dvh] overflow-y-auto">{current.content}</p>
+					<p class="my-4 max-h-[75dvh] overflow-y-auto">{current.content}</p>
 				{:else if "snippet" in current.content}
-					<div class="my-4 max-h-[50dvh] overflow-y-auto">
+					<div class="my-4 max-h-[75dvh] overflow-y-auto">
 						{@render current.content.snippet(current.content.args)}
 					</div>
 				{:else}
