@@ -1,5 +1,5 @@
 import { describe, expect, test } from "vitest";
-import { getContrastingTextColor, getRelativeLuminance } from "./utils.js";
+import { getContrastingTextColor, getRelativeLuminance } from "./lint-kind-color.js";
 
 const getContrastingTextColorTCs: [string, string, "black" | "white"][] = [
 	// Named colors

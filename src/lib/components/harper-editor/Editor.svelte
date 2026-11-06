@@ -2,11 +2,11 @@
 	import type { Lint, Linter } from "harper.js";
 	import type Quill from "quill";
 	import { type EditorFontFamily, fontStackFor, normalizeFontFamily } from "./editor-display";
-	import LintFramework from "./lint-framework/lint/lint-framework";
-	import type { UnpackedLintGroups } from "./lint-framework/lint/unpack-lint";
-	import unpackLint from "./lint-framework/lint/unpack-lint";
+	import LintFramework from "./lint-framework/lint-framework";
+	import type { UnpackedLintGroups } from "./lint-framework/unpack-lint";
+	import unpackLint from "./lint-framework/unpack-lint";
 	import StatusBar from "./StatusBar.svelte";
-	import type { IgnorableLintBox } from "./lint-framework/lint/box";
+	import type { IgnorableLintBox } from "./lint-framework/box";
 	import { onDestroy, onMount, tick, untrack } from "svelte";
 
 	interface Props {
@@ -110,7 +110,7 @@
 						console.error("Failed to ignore lint", e);
 					}
 				},
-				getDelay: () => new Promise((resolve) => resolve(250))
+				getDelay: async () => 250
 			}
 		);
 

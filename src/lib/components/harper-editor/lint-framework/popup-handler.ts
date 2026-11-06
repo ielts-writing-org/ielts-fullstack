@@ -1,13 +1,13 @@
 import h from "./dom";
 import { closestBox, type IgnorableLintBox, isPointInBox } from "./box";
-import { getCaretPosition } from "./editor-utils";
+import { getCaretPosition } from "./dom-utils";
 import type { UnpackedLint } from "./unpack-lint";
 
-type ActivationKey = "off" | "shift" | "control";
-
-import hintsData from "../assets/hints.json";
+import hintsData from "./assets/hints.json";
 import RenderBox from "./render-box";
 import SuggestionBox from "./suggestion-box";
+
+type ActivationKey = "off" | "shift" | "control";
 
 type ActivationHandler = () => void;
 

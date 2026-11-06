@@ -1,8 +1,7 @@
 import type { LintOptions } from "harper.js";
 import { closestBox, type IgnorableLintBox } from "./box";
 import computeLintBoxes from "./compute-lint-boxes";
-import { isHeading, isVisible } from "./dom-utils";
-import { getCaretPosition } from "./editor-utils";
+import { getCaretPosition, isHeading, isVisible } from "./dom-utils";
 import Highlights from "./highlights";
 import PopupHandler from "./popup-handler";
 import { remapLintToCurrentSource } from "./span-mapping";
@@ -31,15 +30,7 @@ type FrameworkActions = {
 /** Events on an input (any kind) that can trigger a re-render. */
 const INPUT_EVENTS = ["focus", "keyup", "keydown", "paste", "change", "scroll", "input"] as const;
 /** Events on the window that can trigger a re-render. */
-const PAGE_EVENTS = [
-	"resize",
-	// "scroll",
-	// "keyup",
-	// "keydown",
-	// "input",
-	"compositionend",
-	"selectionchange"
-] as const;
+const PAGE_EVENTS = ["resize", "compositionend", "selectionchange"] as const;
 
 /** Orchestrates linting and rendering in response to events on the page. */
 export default class LintFramework {
@@ -47,15 +38,12 @@ export default class LintFramework {
 	private popupHandler: PopupHandler;
 	private targets: Set<Node>;
 	private scrollableAncestors: Set<HTMLElement>;
-	// private observers: Map<Node, MutationObserver>;
 	private lintRequest: Promise<unknown> | null = null;
 	private renderRequested = false;
 	private lintDelayTimer: number | null = null;
-	private intervalTimer: ReturnType<typeof setTimeout> | null = null;
 	private lastInputAt: number = 0;
 	private lastLints: { target: HTMLElement; lints: UnpackedLintGroups }[] = [];
 	private lastBoxes: IgnorableLintBox[] = [];
-	private lastLintBoxes: IgnorableLintBox[] = [];
 	private updateEventCallbackRequested: boolean = false;
 
 	/** The function to be called to re-render the highlights. This is a variable because it is used to register/deregister event listeners. */
@@ -90,7 +78,6 @@ export default class LintFramework {
 		});
 		this.targets = new Set();
 		this.scrollableAncestors = new Set();
-		// this.observers = new Map();
 		this.lastLints = [];
 
 		this.updateEventCallback = () => {
@@ -265,26 +252,13 @@ export default class LintFramework {
 
 	/** Return the last known ignorable lint boxes rendered on-screen. */
 	public getLastIgnorableLintBoxes(): IgnorableLintBox[] {
-		return this.lastLintBoxes;
+		return this.lastBoxes;
 	}
 
 	private attachTargetListeners(target: Node) {
 		for (const event of INPUT_EVENTS) {
 			target.addEventListener(event, this.updateEventCallback);
 		}
-
-		// const observer = new MutationObserver(this.updateEventCallback);
-		// const config = { subtree: true, characterData: true };
-
-		// let observedNode: Node;
-		// if (target.nodeName == undefined) {
-		// 	observedNode = target.parentElement!;
-		// } else {
-		// 	observedNode = target as Element;
-		// }
-
-		// observer.observe(observedNode, config);
-		// this.observers.set(observedNode, observer);
 
 		const scrollableAncestors = getScrollableAncestors(target);
 
@@ -303,19 +277,6 @@ export default class LintFramework {
 		for (const event of INPUT_EVENTS) {
 			target.removeEventListener(event, this.updateEventCallback);
 		}
-
-		// let observedNode: Node;
-		// if (target.nodeName == undefined) {
-		// 	observedNode = target.parentElement!;
-		// } else {
-		// 	observedNode = target;
-		// }
-
-		// const observer = this.observers.get(observedNode);
-		// if (observer) {
-		// 	observer.disconnect();
-		// 	this.observers.delete(observedNode);
-		// }
 	}
 
 	private attachWindowListeners() {
@@ -386,12 +347,11 @@ export default class LintFramework {
 					})
 				);
 			});
-			this.lastLintBoxes = boxes;
+			this.lastBoxes = boxes;
 			this.highlights.renderLintBoxes(boxes);
 			this.popupHandler.updateLintBoxes(boxes);
 
 			this.renderRequested = false;
-			this.lastBoxes = boxes;
 		});
 	}
 
@@ -401,20 +361,10 @@ export default class LintFramework {
 			window.removeEventListener(event, this.updateEventCallback);
 		}
 
-		if (this.intervalTimer != null) {
-			clearTimeout(this.intervalTimer);
-			this.intervalTimer = null;
-		}
-
 		if (this.lintDelayTimer != null) {
 			clearTimeout(this.lintDelayTimer);
 			this.lintDelayTimer = null;
 		}
-
-		// for (const [, observer] of this.observers) {
-		// 	observer.disconnect();
-		// }
-		// this.observers.clear();
 
 		for (const el of this.scrollableAncestors) {
 			el.removeEventListener("scroll", this.updateEventCallback, {

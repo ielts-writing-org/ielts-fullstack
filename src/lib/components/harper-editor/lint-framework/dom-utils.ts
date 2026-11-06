@@ -1,18 +1,6 @@
 import type { Span } from "harper.js";
-import { isBoxInScreen } from "./box";
-
-/**
- * Turn a `NodeList` into a normal JavaScript array.
- * @param collection
- */
-export function extractFromHTMLCollection(collection: HTMLCollection): Element[] {
-	const elements: Element[] = [];
-	for (let i = 0; i < collection.length; i++) {
-		const el = collection.item(i);
-		if (el) elements.push(el);
-	}
-	return elements;
-}
+import { type Box, type SourceElement, domRectToBox, isBoxInScreen } from "./box";
+import TextFieldRange from "./text-field-range";
 
 /**
  * Turn a `NodeList` into a normal JavaScript array.
@@ -27,31 +15,6 @@ export function extractFromNodeList<T extends Node>(list: NodeListOf<T>): T[] {
 	}
 
 	return elements;
-}
-
-export function getNodesFromQuerySelector(element: Element, query: string) {
-	return extractFromNodeList(element.querySelectorAll(query));
-}
-
-/** Get a node's closest ancestor that has `display: block`. */
-export function getClosestBlockAncestor(leaf: Node, root: Element): Element | null {
-	let current: Node | null = leaf;
-
-	while (current) {
-		if (current instanceof Element) {
-			if (getComputedStyle(current).display === "block") {
-				return current;
-			}
-
-			if (current === root) {
-				break;
-			}
-		}
-
-		current = current.parentNode;
-	}
-
-	return null;
 }
 
 /**
@@ -158,4 +121,63 @@ export function isVisible(node: Node): boolean {
 	} catch {
 		return false;
 	}
+}
+
+export function findAncestor(
+	el: SourceElement,
+	predicate: (el: SourceElement) => boolean
+): SourceElement | null {
+	let current: SourceElement | null = el;
+	while (current != null) {
+		if (predicate(current)) return current;
+		current = current.parentElement;
+	}
+	return null;
+}
+
+export function getQuillJsRoot(el: SourceElement): SourceElement | null {
+	return findAncestor(
+		el,
+		(node: SourceElement) => !isTextNode(node) && node.classList.contains("ql-container")
+	);
+}
+
+export function getCaretPosition(): Box | null {
+	const active = document.activeElement;
+
+	if (
+		active instanceof HTMLTextAreaElement ||
+		(active instanceof HTMLInputElement && active.type === "text")
+	) {
+		if (
+			active.selectionStart == null ||
+			active.selectionEnd == null ||
+			active.selectionStart !== active.selectionEnd
+		) {
+			return null;
+		}
+
+		const offset = active.selectionStart;
+		const tfRange = new TextFieldRange(active, offset, offset);
+		const rects = tfRange.getClientRects();
+		tfRange.detach();
+
+		return rects.length ? domRectToBox(rects[0]) : null;
+	}
+
+	const selection = window.getSelection();
+	if (!selection || selection.rangeCount === 0) return null;
+
+	const range = selection.getRangeAt(0);
+	if (!range.collapsed) return null;
+
+	return domRectToBox(range.getBoundingClientRect());
+}
+
+export function isFormEl(el: HTMLElement): el is HTMLInputElement | HTMLTextAreaElement {
+	return el instanceof HTMLInputElement || el instanceof HTMLTextAreaElement;
+}
+
+export function isTextNode(el: SourceElement): el is Text {
+	return el.nodeType === Node.TEXT_NODE;
 }

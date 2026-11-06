@@ -1,9 +1,8 @@
-import type { LintBox } from "./box";
-import { getQuillJsRoot } from "./editor-utils";
+import type { LintBox, SourceElement } from "./box";
+import { getQuillJsRoot } from "./dom-utils";
 import h from "./dom";
-import { type LintKind, lintKindColor } from "./lint-lind-color";
+import { type LintKind, lintKindColor } from "./lint-kind-color";
 import RenderBox from "./render-box";
-import type { SourceElement } from "./source-element";
 import type { UnpackedLint } from "./unpack-lint";
 
 /** A class that renders highlights to a page and nothing else. Uses direct DOM updates to minimize jitter. Require CSS Highlights API*/

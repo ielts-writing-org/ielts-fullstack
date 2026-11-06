@@ -1,7 +1,6 @@
 import { type Span, SuggestionKind } from "harper.js";
 import { domRectToBox, type IgnorableLintBox, isBottomEdgeInBox, shrinkBoxToFit } from "./box";
-import { getRangeForTextSpan } from "./dom-utils";
-import { isFormEl } from "./editor-utils";
+import { getRangeForTextSpan, isFormEl } from "./dom-utils";
 import TextFieldRange from "./text-field-range";
 import {
 	applySuggestion,

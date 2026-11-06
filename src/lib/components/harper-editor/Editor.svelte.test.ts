@@ -2,7 +2,7 @@ import { userEvent } from "vitest/browser";
 import { describe, expect, test, vi } from "vitest";
 import { render } from "vitest-browser-svelte";
 import Editor from "./Editor.svelte";
-import { makeMockLinter, makeMockLint } from "./lint-framework/lint/test-support";
+import { makeMockLinter, makeMockLint } from "./lint-framework/test-support";
 import { countCharacters, countWords } from "#lib/utils/stats.ts";
 
 const CONTENT = "This is a teh sentence.";

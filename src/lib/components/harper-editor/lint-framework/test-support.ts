@@ -1,6 +1,5 @@
 import { SuggestionKind, type Lint, type Linter } from "harper.js";
-import type { IgnorableLintBox } from "./box";
-import type { SourceElement } from "./source-element";
+import type { IgnorableLintBox, SourceElement } from "./box";
 import type { UnpackedLint, UnpackedLintGroups, UnpackedSuggestion } from "./unpack-lint";
 
 export const DEFAULT_SOURCE = "This is a teh sentence.";
