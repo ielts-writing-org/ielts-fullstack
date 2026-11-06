@@ -25,7 +25,7 @@
 	} from "@lucide/svelte";
 	import { openModal } from "#lib/components/Modal.svelte";
 	import { roundToNearestHalf } from "#lib/utils/math.ts";
-	import { timeLimitMinutesFor } from "#lib/utils/ielts.js";
+	import { getTimeLimitInMinutes } from "#lib/utils/ielts.js";
 	import { CRITERIA_LABELS } from "#lib/domain/criteria.js";
 	import { taskSubcategoryLabel } from "#lib/domain/task-subcategory.ts";
 	import { deletePracticeSession } from "#lib/remotes/command/delete-practice-session.remote.js";
@@ -591,7 +591,7 @@
 								<span class="flex items-center gap-1">
 									<Clock3 size="1em" />
 									{session.type === "timed"
-										? `${timeLimitMinutesFor(session.taskCategory)} min limit`
+										? `${getTimeLimitInMinutes(session.taskCategory)} min limit`
 										: "Unlimited time"}
 								</span>
 								<span

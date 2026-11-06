@@ -4,7 +4,7 @@
 	import { resolve } from "$app/paths";
 	import { refreshAll } from "$app/navigation";
 	import { ArrowLeft, Clock, FileText, InfinityIcon, LogOut, Palette } from "@lucide/svelte";
-	import { minWordsFor, timeLimitMinutesFor } from "#lib/utils/ielts.js";
+	import { getMinWords, getTimeLimitInMinutes } from "#lib/utils/ielts.js";
 	import { taskSubcategoryLabel } from "#lib/domain/task-subcategory.ts";
 	import { authClient } from "#lib/auth/auth-client.ts";
 	import AppLogo from "#lib/components/AppLogo.svelte";
@@ -111,13 +111,13 @@
 						<span class="badge badge-ghost badge-sm font-medium">
 							{#if session.type === "timed"}
 								<Clock class="size-[1em]" />
-								{timeLimitMinutesFor(session.taskCategory)} min limit
+								{getTimeLimitInMinutes(session.taskCategory)} min limit
 							{:else}
 								<InfinityIcon class="size-[1em]" />
 								Unlimited time
 							{/if}
 						</span>
-						{const minWords = minWordsFor(session.taskCategory)}
+						{const minWords = getMinWords(session.taskCategory)}
 						<span
 							class="badge gap-1 badge-ghost badge-sm font-medium"
 							title={`A strong answer for this task is at least ${minWords} words`}>

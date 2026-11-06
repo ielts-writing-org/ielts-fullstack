@@ -21,7 +21,7 @@
 	import { closeModal, openModal } from "#lib/components/Modal.svelte";
 	import TaskCreateForm from "#lib/components/TaskCreateForm.svelte";
 	import { getTaskSubcategories, taskSubcategoryLabel } from "#lib/domain/task-subcategory.ts";
-	import { bandBadgeTone } from "#lib/utils/ielts.js";
+	import { getBandBadgeTone } from "#lib/utils/ielts.js";
 	import { formatRelativeTime } from "#lib/utils/time.js";
 	import { createPractice } from "#lib/remotes/command/create-practice.remote.js";
 	import { clearTaskImage } from "#lib/remotes/command/clear-task-image.remote.js";
@@ -550,7 +550,7 @@
 								</span>
 							{/if}
 							{#if task.bestBand !== null}
-								<span class={["badge badge-soft badge-xs", bandBadgeTone(task.bestBand)]}>
+								<span class={["badge badge-soft badge-xs", getBandBadgeTone(task.bestBand)]}>
 									Best band {task.bestBand.toFixed(1)}
 								</span>
 							{/if}

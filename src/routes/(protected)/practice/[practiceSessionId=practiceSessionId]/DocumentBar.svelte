@@ -4,7 +4,7 @@
 	import { page } from "$app/state";
 	import type { TaskCategory } from "#lib/domain/task-category.ts";
 	import { openModal } from "#lib/components/Modal.svelte";
-	import { minWordsFor, timeLimitMinutesFor } from "#lib/utils/ielts.ts";
+	import { getMinWords, getTimeLimitInMinutes } from "#lib/utils/ielts.ts";
 	import {
 		Eye,
 		EyeOff,
@@ -46,8 +46,8 @@
 
 	let megamenu = $state<HTMLElement>();
 
-	const minWords = $derived(minWordsFor(category));
-	const timeLimit = $derived(timeLimitMinutesFor(category));
+	const minWords = $derived(getMinWords(category));
+	const timeLimit = $derived(getTimeLimitInMinutes(category));
 	const isFocusMode = $derived(!showTask && !showAssistant);
 
 	async function run(action: () => void | Promise<void>) {

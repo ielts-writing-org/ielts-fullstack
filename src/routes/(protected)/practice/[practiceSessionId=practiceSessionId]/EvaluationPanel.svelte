@@ -6,7 +6,7 @@
 	import type { PracticeSessionContext } from "#lib/domain/task-context.ts";
 	import { openModal } from "#lib/components/Modal.svelte";
 	import { type EvaluateRequest, evaluateRequestSchema } from "#lib/domain/evaluate-request.ts";
-	import { bandToProgressValue, bandTone, minWordsFor } from "#lib/utils/ielts.ts";
+	import { convertBandToProgressValue, getBandTone, getMinWords } from "#lib/utils/ielts.ts";
 	import { countWords } from "#lib/utils/stats.ts";
 	import type { Criteria } from "#lib/domain/criteria.ts";
 	import { CRITERIA_LABELS, CRITERION_CHECK_STATUS_LABELS } from "#lib/domain/criteria.ts";
@@ -36,7 +36,7 @@
 	const criteriaList = $derived<{ key: Criteria; criterion: EvaluationCriterion }[]>(
 		evaluation ? getCriteriaOf(evaluation) : []
 	);
-	const minWords = $derived(minWordsFor(props.practiceSessionContext.category));
+	const minWords = $derived(getMinWords(props.practiceSessionContext.category));
 	const wordCount = $derived(countWords(props.practiceSessionContext.response));
 	const readiness = $derived.by(() => {
 		const items = [
@@ -302,8 +302,8 @@
 					]}>
 					{#if estimatedBand}
 						<div
-							class={["radial-progress text-3xl font-bold", bandTone(estimatedBand)]}
-							style:--value={bandToProgressValue(estimatedBand)}
+							class={["radial-progress text-3xl font-bold", getBandTone(estimatedBand)]}
+							style:--value={convertBandToProgressValue(estimatedBand)}
 							role="progressbar"
 							aria-label="Estimated band"
 							aria-valuenow={estimatedBand}

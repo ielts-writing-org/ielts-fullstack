@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { Minus, Pencil, Target, TrendingDown, TrendingUp } from "@lucide/svelte";
 	import { roundToNearestHalf } from "#lib/utils/math.ts";
-	import { bandTone, bandToProgressValue } from "#lib/utils/ielts.ts";
+	import { getBandTone, convertBandToProgressValue } from "#lib/utils/ielts.ts";
 	import { openModal } from "#lib/components/Modal.svelte";
 	import ChangeBandTarget from "../ChangeBandTarget.svelte";
 
@@ -95,8 +95,8 @@
 		<div class="flex items-center gap-4">
 			<div class="flex flex-col items-center">
 				<div
-					class={["radial-progress font-bold", bandTone(overall)]}
-					style:--value={bandToProgressValue(overall)}
+					class={["radial-progress font-bold", getBandTone(overall)]}
+					style:--value={convertBandToProgressValue(overall)}
 					style:--size="4.75em"
 					role="progressbar"
 					aria-label="Overall average band"

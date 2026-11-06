@@ -2,20 +2,20 @@
 	import { AlarmClock, AlarmClockOff, Check } from "@lucide/svelte";
 	import type { TaskCategory } from "#lib/domain/task-category.ts";
 	import type { PracticeType } from "#lib/domain/practice-type.ts";
+	import { getTimeLimitInMinutes } from "#lib/utils/ielts.ts";
 
 	type Props = {
 		category: TaskCategory;
 		value?: PracticeType;
-		class?: string;
 	};
 
-	let { category, value = $bindable("timed"), class: className }: Props = $props();
+	let { category, value = $bindable("timed") }: Props = $props();
 
 	const options = $derived([
 		{
 			value: "timed" as const,
 			icon: AlarmClock,
-			title: `Timed — ${category === "1" ? 20 : 40} minutes`,
+			title: `Timed — ${getTimeLimitInMinutes(category)} minutes`,
 			description: "Exam conditions. The timer starts with the editor and warns you at the end."
 		},
 		{
@@ -27,7 +27,7 @@
 	]);
 </script>
 
-<div class={["grid gap-2 sm:grid-cols-2", className]} role="radiogroup" aria-label="Practice type">
+<div class="flex flex-col gap-2" role="radiogroup" aria-label="Practice type">
 	{#each options as option (option.value)}
 		<label
 			class={[

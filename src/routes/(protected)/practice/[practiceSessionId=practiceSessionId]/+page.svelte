@@ -6,7 +6,7 @@
 	import type { Evaluation } from "#lib/domain/evaluation.js";
 	import PreventLeaving from "#lib/components/PreventLeaving.svelte";
 	import { openModal } from "#lib/components/Modal.svelte";
-	import { minWordsFor } from "#lib/utils/ielts.ts";
+	import { getMinWords } from "#lib/utils/ielts.ts";
 	import AppEditor from "./AppEditor.svelte";
 	import DocumentBar from "./DocumentBar.svelte";
 	import Tabs from "./Tabs.svelte";
@@ -46,7 +46,7 @@
 
 	let timedUpAction = $derived(data.timedUpAction);
 
-	const minWords = $derived(minWordsFor(category));
+	const minWords = $derived(getMinWords(category));
 
 	const responsePlaceholder = $derived(
 		category === "1"
