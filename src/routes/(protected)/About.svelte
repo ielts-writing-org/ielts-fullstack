@@ -10,7 +10,7 @@
 		<AppLogo />
 
 		<div class="min-w-0">
-			<p class="text-xs font-bold tracking-wide text-indigo-300/80 uppercase">
+			<p class="text-xs font-bold tracking-wide text-indigo-300/75 uppercase">
 				Achieve Your Target IELTS Writing <span class="text-rotate">
 					<span>
 						<span class="text-warning">Band Score</span>
@@ -41,7 +41,7 @@
 
 		<nav aria-label="Legal information" class="flex shrink-0 items-center gap-3 text-xs">
 			<a href={resolve("terms-of-service")} class="link text-slate-400 link-hover">Terms</a>
-			<span class="h-3 w-px bg-white/15" aria-hidden="true"></span>
+			<span class="h-3 w-px bg-white/10" aria-hidden="true"></span>
 			<a href={resolve("privacy-policy")} class="link text-slate-400 link-hover">Privacy</a>
 		</nav>
 	</div>

@@ -45,7 +45,7 @@
 				class="animate-typing overflow-hidden border-r-4 border-primary text-2xl font-semibold text-nowrap text-base-content">
 				{detail.message}
 			</h1>
-			<h3 class="max-w-xs text-sm text-base-content/70">{detail.subMessage}</h3>
+			<h3 class="max-w-xs text-sm text-base-content/75">{detail.subMessage}</h3>
 		</div>
 	</div>
 
