@@ -43,6 +43,8 @@
 
 	type FilterKey = "q" | "task" | "subcategory" | "type" | "status" | "body" | "sort" | "page";
 
+	const historyHref = resolve("/(protected)/history");
+
 	/** Builds a query string for the current filter state with optional overrides. */
 	function href(overrides: Partial<Record<FilterKey, string>>) {
 		const state: Record<FilterKey, string> = {
@@ -68,16 +70,16 @@
 		if (state.page !== "1") params.set("page", state.page);
 
 		const query = params.toString();
-		return query ? `?${query}` : "?";
+		return query ? `?${query}` : "";
 	}
 
 	/** Applies a filter change and resets to the first page. */
 	function update(overrides: Partial<Record<FilterKey, string>>) {
-		goto(href({ page: "1", ...overrides }), { reset: false });
+		goto(historyHref + href({ page: "1", ...overrides }), { reset: false });
 	}
 
 	function goToPage(next: number) {
-		goto(href({ page: String(next) }), { reset: false });
+		goto(historyHref + href({ page: String(next) }), { reset: false });
 	}
 
 	let searchTimer: ReturnType<typeof setTimeout> | undefined;
@@ -142,7 +144,7 @@
 	}
 
 	function clearFilters() {
-		goto(resolve("/(protected)/history"), { reset: false });
+		goto(historyHref, { reset: false });
 	}
 
 	const bandTone = (band: number) =>

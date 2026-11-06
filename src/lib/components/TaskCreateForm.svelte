@@ -1,58 +1,34 @@
 <script lang="ts">
 	import type { Snippet } from "svelte";
 	import { onDestroy } from "svelte";
+	import type { TaskCategory } from "#lib/domain/task-category.ts";
 	import { closeModal } from "#lib/components/Modal.svelte";
 	import { getTaskSubcategories, taskSubcategoryLabel } from "#lib/domain/task-subcategory.ts";
 	import { createTask } from "#lib/remotes/form/create-task.remote.ts";
 
 	type Props = {
-		/** Fixed task category; omit to let the user choose between Task 1 and Task 2. */
-		category?: "1" | "2";
-		/** Label for the submit button. */
+		category?: TaskCategory;
 		submitLabel?: string;
-		/** Called with the new task id after the modal is closed. */
 		onSaved?: (taskId: string) => void | Promise<void>;
-		/** Extra form fields rendered between the task fields and the actions. */
 		children?: Snippet;
 	};
 
 	let { category, submitLabel = "Save task", onSaved, children }: Props = $props();
 
-	// The component remounts on every modal open, so capturing the fixed
-	// category prop once here is intentional.
-	// svelte-ignore state_referenced_locally
-	let selectedCategory = $state<"1" | "2">(category ?? "1");
-	let subcategory = $state("");
-	let prompt = $state("");
-	let files = $state<FileList | null>(null);
+	let selectedCategory = $derived<TaskCategory>(
+		(category || createTask.fields.category.value()) ?? "1"
+	);
 	let previewUrl = $state<string | undefined>(undefined);
-	let error = $state<string | null>(null);
 
 	const subcategoryOptions = $derived(getTaskSubcategories(selectedCategory));
 
-	const form = createTask.enhance(async (f) => {
-		if (await f.submit()) {
-			const taskId = createTask.result?.taskId;
-			await closeModal();
-			if (taskId) {
-				await onSaved?.(taskId);
-			}
-		} else {
-			error = f.fields.allIssues()?.[0]?.message ?? "Please review the highlighted fields.";
-		}
-	});
-
-	function handleCategoryChange() {
-		subcategory = "";
-	}
-
-	function handleImageChange(event: Event) {
+	function handleImageChange() {
 		if (previewUrl) {
 			URL.revokeObjectURL(previewUrl);
 		}
 		previewUrl = undefined;
 
-		const file = (event.currentTarget as HTMLInputElement).files?.[0];
+		const file = createTask.fields.image.value();
 		if (file) {
 			previewUrl = URL.createObjectURL(file);
 		}
@@ -66,26 +42,30 @@
 </script>
 
 <form
-	{...form}
-	class="flex flex-col gap-3"
+	{...createTask.enhance(async (f) => {
+		if (await f.submit()) {
+			const taskId = createTask.result?.taskId;
+			await closeModal();
+			if (taskId) {
+				await onSaved?.(taskId);
+			}
+		}
+	})}
+	class="flex flex-col gap-3 p-2"
 	enctype="multipart/form-data"
-	oninput={() => (error = null)}>
+	oninput={() => createTask.validate()}>
 	{#if category}
-		<input type="hidden" name="category" value={selectedCategory} />
+		<input {...createTask.fields.category.as("hidden", selectedCategory)} />
 	{:else}
-		<fieldset class="flex flex-col gap-1.5">
-			<legend class="text-xs font-semibold text-base-content/75">Task category</legend>
+		<fieldset class="fieldset">
+			<legend class="fieldset-legend">Task category</legend>
 			<div class="join w-full" role="group" aria-label="Task category">
-				{#each [{ v: "1", l: "Task 1 · Visual report" }, { v: "2", l: "Task 2 · Essay" }] as option (option.v)}
-					<label
-						class={["btn join-item flex-1", selectedCategory === option.v ? "btn-primary" : ""]}>
+				{#each [{ v: "1", l: "Task 1 · Visual report" }, { v: "2", l: "Task 2 · Essay" }] as option, i (option.v)}
+					<label class="btn relative join-item flex-1 has-checked:btn-primary">
 						<input
-							class="appearance-none"
-							type="radio"
-							name="category"
-							value={option.v}
-							bind:group={selectedCategory}
-							onchange={handleCategoryChange} />
+							{...createTask.fields.category.as("radio", option.v, i === 0)}
+							class="sr-only"
+							required />
 						{option.l}
 					</label>
 				{/each}
@@ -93,43 +73,36 @@
 		</fieldset>
 	{/if}
 
-	<label class="flex flex-col gap-1.5">
-		<span class="text-xs font-semibold text-base-content/75">
-			Subcategory <span class="font-normal">(optional)</span>
-		</span>
-		<select class="select w-full" name="subcategory" bind:value={subcategory}>
+	<fieldset class="fieldset">
+		<legend class="fieldset-legend">Subcategory</legend>
+		<select {...createTask.fields.subcategory.as("select", "")} class="select w-full">
 			<option value="">None</option>
 			{#each subcategoryOptions as subcategoryOption (subcategoryOption)}
 				<option value={subcategoryOption}>{taskSubcategoryLabel(subcategoryOption)}</option>
 			{/each}
 		</select>
-	</label>
+	</fieldset>
 
-	<label class="flex flex-col gap-1.5">
-		<span class="text-xs font-semibold text-base-content/75">Prompt</span>
+	<fieldset class="fieldset">
+		<legend class="fieldset-legend">Prompt</legend>
 		<textarea
+			{...createTask.fields.prompt.as("text")}
 			class="textarea w-full"
-			name="prompt"
 			rows="5"
 			required
-			maxlength={20000}
-			placeholder="Paste or type the task prompt..."
-			bind:value={prompt}>
+			placeholder="Paste or type the task prompt...">
 		</textarea>
-	</label>
+	</fieldset>
 
 	{#if selectedCategory === "1"}
-		<fieldset class="flex flex-col gap-1.5">
-			<legend class="text-xs font-semibold text-base-content/75">
-				Image <span class="font-normal">(required for evaluation)</span>
-			</legend>
+		<fieldset class="fieldset">
+			<legend class="fieldset-legend">Image</legend>
 			<input
-				class="file-input-bordered file-input w-full file-input-sm"
-				type="file"
-				name="image"
+				{...createTask.fields.image.as("file")}
+				class="file-input w-full file-input-sm"
 				accept="image/jpeg,image/png,image/webp,image/avif"
-				bind:files
 				onchange={handleImageChange} />
+			<span class="fieldset-label">Max size 1MB</span>
 			{#if previewUrl}
 				<img
 					src={previewUrl}
@@ -141,12 +114,12 @@
 
 	{@render children?.()}
 
-	{#if error}
-		<p class="text-xs text-error" role="alert">{error}</p>
-	{/if}
+	{#each createTask.fields.allIssues() as issue (issue.message)}
+		<p class="text-xs text-error" role="alert">{issue.message}</p>
+	{/each}
 
 	<div class="modal-action">
-		<button type="button" class="btn" onclick={() => closeModal()}>Cancel</button>
+		<button type="button" class="btn btn-ghost btn-error" onclick={closeModal}>Cancel</button>
 		<button type="submit" class="btn btn-primary" disabled={createTask.pending > 0}>
 			{createTask.pending > 0 ? "Saving..." : submitLabel}
 		</button>
