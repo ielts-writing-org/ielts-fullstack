@@ -13,6 +13,7 @@ import { taskImageSchema } from "#lib/domain/task-image.ts";
 import { taskSubcategorySchema } from "#lib/domain/task-subcategory.ts";
 import { compressImageAsBlob } from "#lib/server/infrastructure/images.ts";
 import { taskPromptSchema } from "#lib/domain/task-prompt.ts";
+import { putObject } from "#lib/server/infrastructure/bucket.ts";
 
 export const createTask = form(
 	z.object({
@@ -48,8 +49,8 @@ export const createTask = form(
 		if (image) {
 			const imageName = `${uuidv7()}.webp`;
 			const compressed = await compressImageAsBlob(image);
-			await env.IELTS_WRITING_BUCKET.put(imageName, compressed);
-			await db.update(tasks).set({ image: imageName }).where(eq(tasks.id, createdTask.id));
+			await putObject(imageName, compressed);
+			await db.update(tasks).set({ imageName }).where(eq(tasks.id, createdTask.id));
 		}
 
 		return { success: true, taskId: createdTask.id };

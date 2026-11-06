@@ -27,7 +27,7 @@ export const load = (async ({ locals, params, depends }) => {
 	const category = practiceSession.task.category;
 
 	let taskImage: string | undefined;
-	if (practiceSession.task.image) {
+	if (practiceSession.task.imageName) {
 		const image = await env.IELTS_WRITING_BUCKET.get(practiceSession.task.image);
 		if (image) {
 			const blob = await image.blob();
@@ -45,7 +45,7 @@ export const load = (async ({ locals, params, depends }) => {
 			isOwner: practiceSession.task.userId === user.id,
 			prompt: practiceSession.task.prompt,
 			image: taskImage,
-			imageName: practiceSession.task.image,
+			imageName: practiceSession.task.imageName,
 			subcategory: practiceSession.task.subcategory
 		},
 		response: practiceSession.response,

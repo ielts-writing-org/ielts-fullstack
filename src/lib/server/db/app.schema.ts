@@ -31,7 +31,7 @@ export const tasks = sqliteTable(
 			.notNull(),
 		subcategory: text("subcategory").$type<TaskSubcategory<TaskCategory>>(),
 		prompt: text("prompt").notNull(),
-		image: text("image")
+		imageName: text("image_name")
 	})
 );
 

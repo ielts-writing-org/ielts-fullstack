@@ -6,7 +6,7 @@
 	"scripts": {
 		"dev": "concurrently \"npm run dev:app\" \"npm run dev:redis\" \"npm run dev:urs\" -n \"App,Redis,URS\"",
 		"dev:urs": "SET URS_TOKEN=local&& SET PORT=6378&& npx @humanwhocodes/upstash-redis-server",
-		"dev:redis": "SET REDISMS_PORT=6379&& SET REDISMS_DEBUG=true&& redis-memory-server",
+		"dev:redis": "SET REDISMS_PORT=6379&& redis-memory-server",
 		"dev:app": "vite dev",
 		"gen": "wrangler types",
 		"prepare": "svelte-kit sync || echo ''",

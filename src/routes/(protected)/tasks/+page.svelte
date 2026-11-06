@@ -18,6 +18,7 @@
 		TriangleAlert,
 		X
 	} from "@lucide/svelte";
+	import { R2_IMAGES_PATH } from "$app/env/public";
 	import { closeModal, openModal } from "#lib/components/Modal.svelte";
 	import TaskCreateForm from "#lib/components/TaskCreateForm.svelte";
 	import { getTaskSubcategories, taskSubcategoryLabel } from "#lib/domain/task-subcategory.ts";
@@ -129,8 +130,7 @@
 		goto(resolve("/(protected)/tasks"), { reset: false });
 	}
 
-	const imageHref = (taskId: string) =>
-		resolve("/(protected)/tasks/[taskId=taskId]/image", { taskId });
+	const imageHref = (imageName: string) => `${R2_IMAGES_PATH}/${imageName}`;
 
 	const practiceHref = (id: string) =>
 		resolve("/(protected)/practice/[practiceSessionId=practiceSessionId]", {
@@ -250,7 +250,7 @@
 		if (!editTask) return;
 
 		await clearTaskImage({ taskId: editTask.id });
-		editTask = { ...editTask, hasImage: false };
+		editTask = { ...editTask, imageName: "" };
 		await refreshAll();
 	}
 
@@ -517,9 +517,9 @@
 						aria-label="View task details"
 						onclick={() => openDetailsModal(task)}>
 						<div class="overflow-hidden rounded-t-box border-b border-base-content/10">
-							{#if task.hasImage}
+							{#if task.imageName}
 								<img
-									src={imageHref(task.id)}
+									src={imageHref(task.imageName)}
 									alt="Task visual"
 									class="aspect-video w-full object-contain"
 									loading="lazy" />
@@ -695,9 +695,9 @@
 {/snippet}
 
 {#snippet detailsSnippet(props: { task: TaskItem })}
-	{#if props.task.hasImage}
+	{#if props.task.imageName}
 		<img
-			src={imageHref(props.task.id)}
+			src={imageHref(props.task.imageName)}
 			alt="Task visual"
 			class="max-h-64 w-full rounded-box border border-base-content/10 bg-base-200/40 object-contain" />
 	{/if}
@@ -774,9 +774,9 @@
 						src={editPreviewUrl}
 						alt="Selected visual preview"
 						class="max-h-40 w-full rounded-box border border-base-content/10 object-contain" />
-				{:else if editTask?.hasImage}
+				{:else if editTask?.imageName}
 					<img
-						src={imageHref(editTask.id)}
+						src={imageHref(editTask.imageName)}
 						alt="Current task visual"
 						class="max-h-40 w-full rounded-box border border-base-content/10 bg-base-200/40 object-contain" />
 					<button

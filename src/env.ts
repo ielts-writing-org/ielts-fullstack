@@ -41,5 +41,9 @@ export const variables = defineEnvVars({
 				message: "Invalid duration format. Expected format like '10s', '1.5 m', or '24h'."
 			})
 			.transform((val) => val as Parameters<typeof Ratelimit.slidingWindow>[1])
+	},
+	R2_IMAGES_PATH: {
+		description: "Public path to the Cloudflare R2 bucket used for images.",
+		public: true
 	}
 });
