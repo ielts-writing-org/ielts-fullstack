@@ -41,6 +41,11 @@ export const load = (async ({ locals, params, depends }) => {
 			(m) => ({ from: m.from, message: m.message }) satisfies ChatMessage
 		),
 		endAt: getTimeLimitInMinutes(category) + Math.floor(practiceSession.startedAt.getTime() / 1000),
-		timedUpAction: practiceSession.timeUpAction
+		timedUpAction: practiceSession.timeUpAction,
+		metadata: {
+			title: practiceSession.name,
+			taskCategory: category,
+			taskSubcategory: practiceSession.task.subcategory
+		}
 	};
 }) satisfies PageServerLoad;

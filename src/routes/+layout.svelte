@@ -3,8 +3,7 @@
 	import { page } from "$app/state";
 	import { resolve } from "$app/paths";
 	import { refreshAll } from "$app/navigation";
-	import { ArrowLeft, Clock, FileText, InfinityIcon, LogOut, Palette } from "@lucide/svelte";
-	import { getMinWords, getTimeLimitInMinutes } from "#lib/utils/ielts.js";
+	import { ArrowLeft, LogOut, Palette } from "@lucide/svelte";
 	import { taskSubcategoryLabel } from "#lib/domain/task-subcategory.ts";
 	import { authClient } from "#lib/auth/auth-client.ts";
 	import AppLogo from "#lib/components/AppLogo.svelte";
@@ -17,7 +16,7 @@
 
 	let { data, children }: LayoutProps = $props();
 
-	const showTabBar = $derived(data.session && data.user && !page.data.practiceSession);
+	const showTabBar = $derived(data.session && data.user && !page.data.metadata);
 
 	async function handleSignOut() {
 		openModal({
@@ -86,7 +85,7 @@
 	]}>
 	<header
 		class="navbar sticky top-0 z-10 flex shrink-0 gap-2 border-b border-base-content/10 bg-base-100 not-lg:flex-wrap">
-		{const session = page.data.practiceSession}
+		{const session = page.data.metadata}
 		{#if session}
 			<div class="navbar-start min-w-0 gap-2">
 				<a
@@ -99,30 +98,15 @@
 					<h1 class="block truncate text-lg font-bold text-primary">
 						{page.data.title}
 					</h1>
-					<h2 class="flex flex-nowrap overflow-x-auto text-xs font-semibold text-base-content/75">
-						<span class="badge badge-soft badge-sm badge-primary">
+					<h2
+						class="flex flex-nowrap gap-1 overflow-x-auto text-xs font-semibold text-base-content/75">
+						<span class="badge badge-soft badge-xs badge-primary">
 							Task {session.taskCategory}
 						</span>
-						<span class="badge badge-ghost badge-sm font-medium">
+						<span class="badge badge-ghost badge-xs font-medium">
 							{session.taskSubcategory
 								? taskSubcategoryLabel(session.taskSubcategory)
 								: "Uncategorized"}
-						</span>
-						<span class="badge badge-ghost badge-sm font-medium">
-							{#if session.type === "timed"}
-								<Clock class="size-[1em]" />
-								{getTimeLimitInMinutes(session.taskCategory)} min limit
-							{:else}
-								<InfinityIcon class="size-[1em]" />
-								Unlimited time
-							{/if}
-						</span>
-						{const minWords = getMinWords(session.taskCategory)}
-						<span
-							class="badge gap-1 badge-ghost badge-sm font-medium"
-							title={`A strong answer for this task is at least ${minWords} words`}>
-							<FileText class="size-[1em]" />
-							Min {minWords} words
 						</span>
 					</h2>
 				</div>

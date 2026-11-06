@@ -14,7 +14,11 @@ declare global {
 		}
 
 		interface PageData {
-			practiceSession?: PracticeSession<"1"> | PracticeSession<"2">;
+			metadata?: {
+				title: string;
+				taskCategory: TaskCategory;
+				taskSubcategory: TaskSubcategory<TaskCategory>;
+			};
 		}
 
 		// interface Platform {}
@@ -22,12 +26,5 @@ declare global {
 		// interface PageState {}
 	}
 }
-
-type PracticeSession<TTaskCategory extends TaskCategory> = {
-	title: string;
-	type: "timed" | "free";
-	taskCategory: TTaskCategory;
-	taskSubcategory: TaskSubcategory<TTaskCategory>;
-};
 
 export {};
