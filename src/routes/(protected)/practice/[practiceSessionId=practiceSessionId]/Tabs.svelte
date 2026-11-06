@@ -3,8 +3,8 @@
 	import type { Evaluation } from "#lib/domain/evaluation.ts";
 	import type { PracticeSessionContext } from "#lib/domain/task-context.ts";
 	import { ListCheck, MessagesSquare } from "@lucide/svelte";
-	import ChatPanel from "./chat/ChatPanel.svelte";
-	import EvaluationPanel from "./evaluate/EvaluationPanel.svelte";
+	import ChatPanel from "./ChatPanel.svelte";
+	import EvaluationPanel from "./EvaluationPanel.svelte";
 
 	type Props = {
 		practiceSessionId: string;
