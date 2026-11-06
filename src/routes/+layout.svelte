@@ -85,7 +85,7 @@
 	]}>
 	<header
 		class="navbar sticky top-0 z-10 flex shrink-0 gap-2 border-b border-base-content/10 bg-base-100 not-lg:flex-wrap">
-		{const session = page.data.metadata}
+		{const session = $derived(page.data.metadata)}
 		{#if session}
 			<div class="navbar-start min-w-0 gap-2">
 				<a
