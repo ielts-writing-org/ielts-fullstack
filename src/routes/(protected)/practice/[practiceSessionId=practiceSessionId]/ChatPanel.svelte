@@ -8,7 +8,8 @@
 	import { chatRequestSchema } from "#lib/domain/chat-request.ts";
 	import type { Evaluation } from "#lib/domain/evaluation.ts";
 	import type { PracticeSessionContext } from "#lib/domain/task-context.ts";
-	import { getZodErrors, type SerializedZodError } from "#lib/utils/error.ts";
+	import { getZodErrors } from "#lib/utils/error.ts";
+	import ValidationErrors from "#lib/components/ValidationErrors.svelte";
 	import { saveChatMessages } from "#lib/remotes/command/save-chat-message.remote.ts";
 	import { clearChatMessages } from "#lib/remotes/command/clear-chat-messages.remote.ts";
 	import { readAiStream } from "#lib/utils/stream.ts";
@@ -93,8 +94,8 @@
 				return openModal({
 					title: "Validation Error",
 					content: {
-						snippet: validationErrorSnippet,
-						args: { errors: errors }
+						component: ValidationErrors,
+						props: { errors: errors }
 					},
 					primaryButton: "Close"
 				});
@@ -150,17 +151,6 @@
 		}
 	}
 </script>
-
-{#snippet validationErrorSnippet(args: { errors: SerializedZodError[] })}
-	<ol class="list-inside list-decimal">
-		{#each args.errors as error, i (i)}
-			<li>
-				<span class="font-semibold">{error.field}:</span>
-				{error.message}
-			</li>
-		{/each}
-	</ol>
-{/snippet}
 
 <div class={["h-full w-full rounded-box", isBusy && "aura aura-holo"]}>
 	<div class="flex h-full w-full flex-col rounded-box bg-base-100 p-3">

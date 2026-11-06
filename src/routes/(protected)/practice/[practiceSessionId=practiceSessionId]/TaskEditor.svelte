@@ -1,31 +1,26 @@
 <script lang="ts">
-	import { debounce } from "#lib/utils/debounce.ts";
+	import { untrack } from "svelte";
 	import { Pen, PenOff, Trash } from "@lucide/svelte";
 	import type { WorkerLinter } from "harper.js";
-	import { onDestroy, untrack } from "svelte";
-	import { saveTaskImage } from "#lib/remotes/form/save-task-image.remote.ts";
-	import { clearTaskImage } from "#lib/remotes/command/clear-task-image.remote.ts";
 	import { openModal } from "#lib/components/Modal.svelte";
-	import { page } from "$app/state";
 	import Editor from "#lib/components/harper-editor/Editor.svelte";
 	import { getAllowedImageMimeTypes } from "#lib/domain/task-image.ts";
 	import { getImageUrl } from "#lib/utils/links.ts";
+	import { saveTaskPrompt } from "#lib/remotes/command/save-task-prompt.remote.js";
+	import { saveTaskImage } from "#lib/remotes/form/save-task-image.remote.ts";
+	import { clearTaskImage } from "#lib/remotes/command/clear-task-image.remote.ts";
+	import { EditorSaver } from "./save-state.svelte.ts";
 
 	type Props = {
 		class?: string;
+		title: string;
+		taskId: string;
 		content: string;
-		allowImage?: boolean;
 		imageName?: string;
 		isDirty?: boolean;
 		canUnlock?: boolean;
 		isUnlocked?: boolean;
 		linters: WorkerLinter[];
-		onPostContentChanged: () => Promise<void> | void;
-		title: string;
-		/** Minimum acceptable word count, surfaced in the editor status bar. */
-		wordTarget?: number;
-		/** Placeholder shown while the document is empty. */
-		placeholder?: string;
 	};
 
 	let {
@@ -37,20 +32,12 @@
 	}: Props = $props();
 
 	let isReady = $state<boolean>(false);
-	let currentState = $state<"Not saved" | "Saved" | "Saving" | "Failed">("Saved");
 
-	const imagePreview = $derived(props.allowImage && imageName ? getImageUrl(imageName) : undefined);
+	const saver = new EditorSaver(async () => {
+		await saveTaskPrompt({ taskId: props.taskId, prompt: content });
+	});
 
-	/** Save state surfaced in the editor status bar. */
-	const saveState = $derived(
-		currentState === "Not saved"
-			? ("unsaved" as const)
-			: currentState === "Saving"
-				? ("saving" as const)
-				: currentState === "Saved"
-					? ("saved" as const)
-					: ("failed" as const)
-	);
+	const saveState = $derived(saver.status);
 
 	/** Force an immediate save, bypassing the autosave debounce (Ctrl/Cmd + S or the toolbar button). */
 	export async function saveNow() {
@@ -58,15 +45,8 @@
 			return;
 		}
 
-		currentState = "Saving";
-		try {
-			await props.onPostContentChanged();
-			currentState = "Saved";
+		if (await saver.saveNow()) {
 			isDirty = false;
-		} catch {
-			// Keep the content dirty so it is retried by the next autosave or the
-			// explicit Retry button in the status bar.
-			currentState = "Failed";
 		}
 	}
 
@@ -89,30 +69,16 @@
 	}
 
 	async function handleRemoveImage() {
-		await clearTaskImage({ taskId: page.data.task.id });
+		await clearTaskImage({ taskId: props.taskId });
 		imageName = undefined;
 	}
 
-	const handlePostContentChangedDebounced = debounce(async () => {
-		currentState = "Saving";
-		try {
-			await props.onPostContentChanged();
-			currentState = "Saved";
-			isDirty = false;
-		} catch {
-			currentState = "Failed";
-		}
-	}, 2000);
-
-	async function handleContentChanged(newContent: string) {
+	function handleContentChanged(newContent: string) {
 		content = newContent;
 		isDirty = true;
-		if (currentState !== "Saving") {
-			currentState = "Not saved";
-		}
 		// Rescheduling on every keystroke keeps the autosave 2s behind the last
 		// keystroke, even after a failed save.
-		handlePostContentChangedDebounced();
+		saver.markUnsaved();
 	}
 
 	function handleReady() {
@@ -126,12 +92,6 @@
 
 		return isUnlocked ? "Lock editor" : "Unlock editor";
 	}
-
-	onDestroy(() => {
-		if (imagePreview) {
-			URL.revokeObjectURL(imagePreview);
-		}
-	});
 
 	$effect(() => {
 		const issues = saveTaskImage.fields.image.issues();
@@ -164,35 +124,33 @@
 			<div class="text-sm font-bold text-primary uppercase">{props.title}</div>
 		</div>
 
-		<div class="flex items-center gap-2">
-			<!-- Image controls -->
-			{#if props.allowImage && isUnlocked}
-				<div class="flex items-center gap-1">
-					<form {...saveTaskImage} class="contents" enctype="multipart/form-data">
-						<input {...saveTaskImage.fields.taskId.as("hidden", page.data.task.id)} />
-						<label class={["btn btn-primary btn-xs", imageName ? "btn-outline" : "btn-primary"]}>
-							<input
-								{...saveTaskImage.fields.image.as("file")}
-								class="hidden"
-								accept={getAllowedImageMimeTypes().join(",")}
-								onchange={handleAddImage} />
-							{imageName ? "Change" : "Add an"} image
-						</label>
-					</form>
-					{#if imageName}
-						<button
-							class="btn btn-ghost text-error btn-xs"
-							title="Remove image"
-							aria-label="Remove task image"
-							disabled={clearTaskImage.pending > 0}
-							onclick={handleRemoveImage}>
-							<Trash size="1em" />
-							Remove image
-						</button>
-					{/if}
-				</div>
-			{/if}
-		</div>
+		<!-- Image controls -->
+		{#if isUnlocked}
+			<div class="flex items-center gap-1">
+				<form {...saveTaskImage} class="contents" enctype="multipart/form-data">
+					<input {...saveTaskImage.fields.taskId.as("hidden", props.taskId)} />
+					<label class={["btn btn-primary btn-xs", imageName ? "btn-outline" : "btn-primary"]}>
+						<input
+							{...saveTaskImage.fields.image.as("file")}
+							class="hidden"
+							accept={getAllowedImageMimeTypes().join(",")}
+							onchange={handleAddImage} />
+						{imageName ? "Change" : "Add an"} image
+					</label>
+				</form>
+				{#if imageName}
+					<button
+						class="btn btn-ghost text-error btn-xs"
+						title="Remove image"
+						aria-label="Remove task image"
+						disabled={clearTaskImage.pending > 0}
+						onclick={handleRemoveImage}>
+						<Trash size="1em" />
+						Remove image
+					</button>
+				{/if}
+			</div>
+		{/if}
 	</div>
 	{#if props.linters.length}
 		{#if !isReady}
@@ -206,17 +164,15 @@
 				linters={props.linters}
 				{content}
 				isEditable={isUnlocked}
-				wordTarget={props.wordTarget ?? 0}
-				placeholder={props.placeholder}
 				{saveState}
 				onRetrySave={saveNow}
 				onReady={handleReady}
 				onChange={handleContentChanged} />
 
 			<!-- Image preview -->
-			{#if props.allowImage && isReady && imagePreview}
+			{#if isReady && imageName}
 				<div class="flex min-h-fit flex-1 flex-col items-center justify-center gap-2">
-					<img src={imagePreview} alt={imageName} class="placeholder max-w-full" />
+					<img src={getImageUrl(imageName)} alt={imageName} class="placeholder max-w-full" />
 				</div>
 			{/if}
 		</div>

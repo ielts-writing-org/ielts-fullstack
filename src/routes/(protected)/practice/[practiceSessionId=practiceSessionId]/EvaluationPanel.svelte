@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { page } from "$app/state";
 	import JSONParser from "@streamparser/json/jsonparser.js";
-	import { Info, ListChecks, MessagesSquare } from "@lucide/svelte";
+	import { Info, ListChecks } from "@lucide/svelte";
 	import type { Evaluation, EvaluationCriterion } from "#lib/domain/evaluation.ts";
 	import type { PracticeSessionContext } from "#lib/domain/task-context.ts";
 	import { openModal } from "#lib/components/Modal.svelte";
@@ -9,12 +9,12 @@
 	import { convertBandToProgressValue, getBandTone, getMinWords } from "#lib/utils/ielts.ts";
 	import { countWords } from "#lib/utils/stats.ts";
 	import type { Criteria } from "#lib/domain/criteria.ts";
-	import { CRITERIA_LABELS, CRITERION_CHECK_STATUS_LABELS } from "#lib/domain/criteria.ts";
+	import { isCriteriaKey } from "#lib/domain/criteria.ts";
 	import { getZodErrors } from "#lib/utils/error.ts";
 	import ValidationErrors from "#lib/components/ValidationErrors.svelte";
 	import { saveEvaluation } from "#lib/remotes/command/save-evaluation.remote.ts";
-	import { isCriteriaKey } from "#lib/domain/criteria.ts";
 	import { readAiStream } from "#lib/utils/stream.ts";
+	import EvaluationCriteria from "./EvaluationCriteria.svelte";
 
 	type Props = {
 		practiceSessionId: string;
@@ -33,9 +33,6 @@
 	let openCriterionKey = $state<Criteria | null>(null);
 
 	const estimatedBand = $derived(evaluation?.estimatedBand);
-	const criteriaList = $derived<{ key: Criteria; criterion: EvaluationCriterion }[]>(
-		evaluation ? getCriteriaOf(evaluation) : []
-	);
 	const minWords = $derived(getMinWords(props.practiceSessionContext.category));
 	const wordCount = $derived(countWords(props.practiceSessionContext.response));
 	const readiness = $derived.by(() => {
@@ -50,33 +47,13 @@
 		if (props.practiceSessionContext.category === "1") {
 			items.push({
 				label: "Attach the task image",
-				done: Boolean(props.practiceSessionContext.image),
-				hint: props.practiceSessionContext.image ? "Attached" : "Required"
+				done: Boolean(props.practiceSessionContext.imageName),
+				hint: props.practiceSessionContext.imageName ? "Attached" : "Required"
 			});
 		}
 
 		return items;
 	});
-
-	function getCriteriaOf(current: Evaluation): { key: Criteria; criterion: EvaluationCriterion }[] {
-		const { coherenceAndCohesion, lexicalResource, grammaticalRangeAndAccuracy } = current.criteria;
-
-		if (current.taskCategory === "1") {
-			return [
-				{ key: "taskAchievement", criterion: current.criteria.taskAchievement },
-				{ key: "coherenceAndCohesion", criterion: coherenceAndCohesion },
-				{ key: "lexicalResource", criterion: lexicalResource },
-				{ key: "grammaticalRangeAndAccuracy", criterion: grammaticalRangeAndAccuracy }
-			];
-		}
-
-		return [
-			{ key: "taskResponse", criterion: current.criteria.taskResponse },
-			{ key: "coherenceAndCohesion", criterion: coherenceAndCohesion },
-			{ key: "lexicalResource", criterion: lexicalResource },
-			{ key: "grammaticalRangeAndAccuracy", criterion: grammaticalRangeAndAccuracy }
-		];
-	}
 
 	function createEmptyEvaluation(category: "1" | "2"): Evaluation {
 		const common = {
@@ -325,153 +302,13 @@
 					{/if}
 				</div>
 
-				{#each criteriaList as { key, criterion } (key)}
-					<details class="collapse-arrow collapse bg-base-100" open={openCriterionKey === key}>
-						<summary class="collapse-title cursor-pointer p-0">
-							<span class="font-semibold">
-								{CRITERIA_LABELS[key]}
-							</span>
-
-							{#if criterion.band}
-								<div class="flex items-center gap-2">
-									<div
-										class={[
-											criterion.band >= 7.5 && "text-success",
-											criterion.band >= 5.5 && criterion.band < 7.5 && "text-warning",
-											criterion.band < 5.5 && "text-error"
-										]}>
-										{criterion.band.toPrecision(2)}
-									</div>
-									<progress
-										class={[
-											"progress w-[80%]",
-											criterion.band >= 7.5 && "progress-success",
-											criterion.band >= 5.5 && criterion.band < 7.5 && "progress-warning",
-											criterion.band < 5.5 && "progress-error"
-										]}
-										value={criterion.band}
-										max={9}>
-									</progress>
-								</div>
-							{:else if isBusy}
-								<div class="animate-pulse text-base-content/75">Analyzing...</div>
-							{/if}
-						</summary>
-
-						{#if criterion.why}
-							<div class="collapse-content text-sm">
-								<p class="text-base-content/75">
-									<span class="font-semibold">Summary:</span>
-									{criterion.why}
-								</p>
-								<p class="text-base-content/75">
-									<span class="font-semibold">Advice:</span>
-									{criterion.nextBandGap}
-								</p>
-								<button
-									type="button"
-									class="btn mt-1 self-start btn-ghost text-primary btn-xs"
-									onclick={() =>
-										props.onAskTutor(
-											`How can I improve my ${CRITERIA_LABELS[key]} band? The evaluation says: "${criterion.nextBandGap}"`
-										)}>
-									<MessagesSquare class="size-3.5" />
-									Ask the tutor how to get there
-								</button>
-
-								{const checks = $state(criterion.checks)}
-								{#if checks && checks.length > 0}
-									<p class="mt-2 font-semibold text-base-content/75">Checks:</p>
-									<ul class="list list-decimal pl-6">
-										{#each checks as check (check.title)}
-											<li class="py-1">
-												<details class="collapse">
-													<summary
-														class="collapse-title flex cursor-pointer flex-col justify-between p-0 sm:flex-row">
-														<span>{check.title}</span>
-														<span
-															class={[
-																"badge badge-sm",
-																check.status === "met" && "badge-success",
-																check.status === "partially_met" && "badge-warning",
-																check.status === "not_met" && "badge-error"
-															]}>
-															{CRITERION_CHECK_STATUS_LABELS[check.status]}
-														</span>
-													</summary>
-													<div class="collapse-content p-0 text-base-content/75">
-														{check.evidence}
-													</div>
-												</details>
-											</li>
-										{/each}
-									</ul>
-								{/if}
-
-								{const strengths = $state(criterion.strengths)}
-								{#if strengths}
-									<div class="mt-2 text-base-content/75">
-										<p class="font-semibold">Strengths:</p>
-										<ul class="list list-decimal pl-6">
-											{#each strengths as strength (strength.title)}
-												<li class="py-1">
-													<details class="collapse">
-														<summary
-															class="collapse-title flex cursor-pointer flex-col justify-between p-0 sm:flex-row">
-															<span>{strength.title}</span>
-														</summary>
-														<div class="collapse-content p-0 text-base-content/75">
-															{strength.evidence}
-														</div>
-													</details>
-												</li>
-											{/each}
-										</ul>
-									</div>
-								{/if}
-
-								{const weaknesses = $state(criterion.weaknesses)}
-								{#if weaknesses.length}
-									<div class="mt-2 text-base-content/75">
-										<p class="font-semibold">Weaknesses:</p>
-										<ul class="list list-decimal pl-6">
-											{#each weaknesses as weakness (weakness.title)}
-												<li class="py-1">
-													<details class="collapse">
-														<summary
-															class="collapse-title flex cursor-pointer flex-col justify-between p-0 sm:flex-row">
-															<span>{weakness.title}</span>
-														</summary>
-														<div class="collapse-content p-0 text-base-content/75">
-															<div>
-																<span class="font-semibold">Evidence:</span>
-																{weakness.evidence}
-															</div>
-															<div>
-																<span class="font-semibold">Advice:</span>
-																{weakness.advice}
-															</div>
-															<button
-																type="button"
-																class="btn mt-1 btn-ghost text-primary btn-xs"
-																onclick={() =>
-																	props.onAskTutor(
-																		`How can I fix this weakness in ${CRITERIA_LABELS[key]}? The weakness is "${weakness.title}" — evidence in my writing: ${weakness.evidence}`
-																	)}>
-																<MessagesSquare class="size-3.5" />
-																Ask the tutor about this
-															</button>
-														</div>
-													</details>
-												</li>
-											{/each}
-										</ul>
-									</div>
-								{/if}
-							</div>
-						{/if}
-					</details>
-				{/each}
+				{#if evaluation}
+					<EvaluationCriteria
+						{evaluation}
+						{isBusy}
+						{openCriterionKey}
+						onAskTutor={props.onAskTutor} />
+				{/if}
 			{/if}
 		</div>
 

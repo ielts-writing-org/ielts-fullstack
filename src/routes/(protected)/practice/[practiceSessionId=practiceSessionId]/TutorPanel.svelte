@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { untrack } from "svelte";
 	import type { ChatMessage } from "#lib/domain/chat-message.ts";
 	import type { Evaluation } from "#lib/domain/evaluation.ts";
 	import type { PracticeSessionContext } from "#lib/domain/task-context.ts";
@@ -9,27 +10,34 @@
 	type Props = {
 		practiceSessionId: string;
 		practiceSessionContext: PracticeSessionContext;
-		evaluation: Evaluation | undefined;
-		messages: ChatMessage[];
-		isChatBusy: boolean;
-		isEvaluationBusy: boolean;
+		evaluation?: Evaluation;
+		messages?: ChatMessage[];
+		isChatBusy?: boolean;
+		isEvaluationBusy?: boolean;
 	};
 
 	let {
-		evaluation = $bindable(),
-		messages = $bindable(),
-		isChatBusy = $bindable(),
-		isEvaluationBusy = $bindable(),
-		...props
+		practiceSessionId,
+		practiceSessionContext,
+		evaluation: initialEvaluation,
+		messages: initialMessages,
+		isChatBusy = $bindable(false),
+		isEvaluationBusy = $bindable(false)
 	}: Props = $props();
 
-	const estimatedBand = $derived(evaluation?.estimatedBand);
+	let evaluation = $state<Evaluation | undefined>(untrack(() => initialEvaluation));
+	let messages = $state<ChatMessage[]>(untrack(() => initialMessages ?? []));
+	let chatDraft = $state("");
+
 	// Open the panel the learner most likely needs: the evaluation if one
 	// exists, otherwise the tutor chat if they have already been asking.
 	let activeTab = $state<"chat" | "evaluate">(
-		!evaluation && messages.length > 0 ? "chat" : "evaluate"
+		untrack(() =>
+			!initialEvaluation && (initialMessages?.length ?? 0) > 0 ? "chat" : "evaluate"
+		)
 	);
-	let chatDraft = $state("");
+
+	const estimatedBand = $derived(evaluation?.estimatedBand);
 
 	/** Switches to the tutor chat with a prefilled question (evaluation bridge). */
 	function askTutor(question: string) {
@@ -57,8 +65,8 @@
 	</label>
 	<div class="tab-content border-base-content/20">
 		<ChatPanel
-			practiceSessionId={props.practiceSessionId}
-			practiceSessionContext={props.practiceSessionContext}
+			{practiceSessionId}
+			{practiceSessionContext}
 			{evaluation}
 			bind:messages
 			bind:isBusy={isChatBusy}
@@ -89,8 +97,8 @@
 	</label>
 	<div class="tab-content border-base-content/20">
 		<EvaluationPanel
-			practiceSessionId={props.practiceSessionId}
-			practiceSessionContext={props.practiceSessionContext}
+			{practiceSessionId}
+			{practiceSessionContext}
 			bind:evaluation
 			bind:isBusy={isEvaluationBusy}
 			onAskTutor={askTutor} />

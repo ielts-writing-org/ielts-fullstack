@@ -2,18 +2,15 @@
 	import { page } from "$app/state";
 	import { Dialect, WorkerLinter } from "harper.js";
 	import { onDestroy, onMount, untrack } from "svelte";
-	import type { ChatMessage } from "#lib/domain/chat-message.js";
-	import type { Evaluation } from "#lib/domain/evaluation.js";
+	import type { TaskCategory } from "#lib/domain/task-category.js";
 	import PreventLeaving from "#lib/components/PreventLeaving.svelte";
 	import { openModal } from "#lib/components/Modal.svelte";
 	import { getMinWords } from "#lib/utils/ielts.ts";
-	import AppEditor from "./AppEditor.svelte";
-	import DocumentBar from "./DocumentBar.svelte";
-	import Tabs from "./Tabs.svelte";
-	import { saveTaskPrompt } from "#lib/remotes/command/save-task-prompt.remote.js";
-	import { savePracticeResponse } from "#lib/remotes/command/save-practice-response.remote.js";
 	import { setTimedUpAction } from "#lib/remotes/command/set-timed-up-action.remote.js";
-	import type { TaskCategory } from "#lib/domain/task-category.js";
+	import DocumentBar from "./DocumentBar.svelte";
+	import ResponseEditor from "./ResponseEditor.svelte";
+	import TaskEditor from "./TaskEditor.svelte";
+	import TutorPanel from "./TutorPanel.svelte";
 
 	const { data } = $props();
 
@@ -21,8 +18,6 @@
 	let prompt = $state<string>(untrack(() => data.task.prompt));
 	let response = $state<string>(untrack(() => data.response));
 	let imageName = $state<string | undefined>(untrack(() => data.task.imageName ?? undefined));
-	let evaluation = $state<Evaluation | undefined>(untrack(() => data.evaluation));
-	let messages = $state<ChatMessage[]>(untrack(() => data.chatMessages));
 
 	const linters = $state<Array<WorkerLinter>>([]);
 	let isPromptDirty = $state<boolean>(false);
@@ -53,19 +48,9 @@
 			: `Write your essay in at least ${minWords} words...`
 	);
 
-	async function handleSaveTaskPrompt() {
-		await saveTaskPrompt({
-			taskId: data.task.id,
-			prompt: prompt
-		});
-	}
+	const practiceSessionId = $derived(page.params.practiceSessionId!);
 
-	async function handleSaveTaskResponse() {
-		await savePracticeResponse({
-			practiceSessionId: page.params.practiceSessionId!,
-			response: response
-		});
-	}
+	const practiceSessionContext = $derived({ category, prompt, response, imageName });
 
 	function handleTimedUp() {
 		if (timedUpAction) {
@@ -81,7 +66,7 @@
 				color: "primary",
 				onclick: async () => {
 					await setTimedUpAction({
-						practiceSessionId: page.params.practiceSessionId!,
+						practiceSessionId,
 						timedUpAction: "stop"
 					});
 				}
@@ -117,6 +102,8 @@
 	<section class="flex flex-1 flex-col gap-2 lg:flex-3 lg:overflow-y-auto xl:flex-2">
 		<DocumentBar
 			{category}
+			{practiceSessionId}
+			practiceSessionName={data.title}
 			timer={data.type === "timed" ? { endAt: data.endAt, onTimedUp: handleTimedUp } : undefined}
 			onSave={handleSaveAll}
 			{canSave}
@@ -124,46 +111,39 @@
 			bind:showAssistant />
 
 		{#if showTask}
-			<AppEditor
+			<TaskEditor
 				class="flex-1"
 				title="Task"
-				allowImage={category === "1"}
+				taskId={data.task.id}
 				bind:this={taskEditor}
-				bind:imageName
 				bind:content={prompt}
+				bind:imageName
 				bind:isDirty={isPromptDirty}
 				canUnlock={data.task.isOwner}
 				isUnlocked={data.task.isOwner && !response && timedUpAction !== "stop"}
-				{linters}
-				onPostContentChanged={handleSaveTaskPrompt} />
+				{linters} />
 		{/if}
 
-		<AppEditor
+		<ResponseEditor
 			class="flex-3"
 			title="Your response"
+			{practiceSessionId}
 			bind:this={responseEditor}
 			bind:content={response}
 			bind:isDirty={isResponseDirty}
-			canUnlock={true}
 			isUnlocked={timedUpAction !== "stop"}
 			wordTarget={minWords}
 			placeholder={responsePlaceholder}
-			{linters}
-			onPostContentChanged={handleSaveTaskResponse} />
+			{linters} />
 	</section>
 
 	{#if showAssistant}
 		<aside class="top-0 basis-[75dvh] overflow-y-auto lg:sticky lg:flex-1">
-			<Tabs
-				practiceSessionId={page.params.practiceSessionId!}
-				practiceSessionContext={{
-					category,
-					prompt,
-					response,
-					imageName
-				}}
-				bind:evaluation
-				bind:messages
+			<TutorPanel
+				{practiceSessionId}
+				{practiceSessionContext}
+				evaluation={data.evaluation}
+				messages={data.chatMessages}
 				bind:isChatBusy
 				bind:isEvaluationBusy />
 		</aside>

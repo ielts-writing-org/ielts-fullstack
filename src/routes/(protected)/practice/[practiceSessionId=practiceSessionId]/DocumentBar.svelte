@@ -1,7 +1,6 @@
 <script lang="ts">
 	import { goto } from "$app/navigation";
 	import { resolve } from "$app/paths";
-	import { page } from "$app/state";
 	import type { TaskCategory } from "#lib/domain/task-category.ts";
 	import { openModal } from "#lib/components/Modal.svelte";
 	import { getMinWords, getTimeLimitInMinutes } from "#lib/utils/ielts.ts";
@@ -23,6 +22,8 @@
 
 	type Props = {
 		category: TaskCategory;
+		practiceSessionId: string;
+		practiceSessionName: string;
 		timer?: {
 			endAt: number;
 			onTimedUp: () => void;
@@ -37,6 +38,8 @@
 
 	let {
 		category,
+		practiceSessionId,
+		practiceSessionName,
 		timer,
 		showTask = $bindable(true),
 		showAssistant = $bindable(true),
@@ -65,15 +68,13 @@
 	function handleDelete() {
 		openModal({
 			title: { text: "Delete practice session", color: "error" },
-			content: `"${page.data.pageName}" and its evaluation and chat will be permanently removed. This cannot be undone.`,
+			content: `"${practiceSessionName}" and its evaluation and chat will be permanently removed. This cannot be undone.`,
 			primaryButton: {
 				text: "Delete",
 				color: "error",
 				style: "ghost",
 				onclick: async () => {
-					await deletePracticeSession({
-						practiceSessionId: page.params.practiceSessionId!
-					});
+					await deletePracticeSession({ practiceSessionId });
 					await goto(resolve("/(protected)"));
 				}
 			},
