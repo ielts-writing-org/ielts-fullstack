@@ -33,7 +33,11 @@
 	{:else}
 		{#each practiceSessions as practiceSession (practiceSession.id)}
 			<a
-				class="mt-1.5 grid min-h-7.5 cursor-pointer grid-cols-[45px_minmax(0,1fr)_120px] items-center gap-1.5 rounded-box border border-primary-content px-2.5 text-xs hover:bg-primary hover:text-primary-content sm:grid-cols-[45px_minmax(170px,1fr)_150px_120px]"
+				class={[
+					"mt-1.5 grid min-h-7.5 cursor-pointer grid-cols-[45px_minmax(0,1fr)_120px] items-center gap-1.5 rounded-box border border-primary-content px-2.5 text-xs",
+					"sm:grid-cols-[45px_minmax(170px,1fr)_150px_120px]",
+					"hover:bg-primary hover:text-primary-content hover:shadow"
+				]}
 				href={resolve("/(protected)/practice/[practiceSessionId=practiceSessionId]", {
 					practiceSessionId: practiceSession.id
 				})}>
@@ -45,7 +49,7 @@
 				<span
 					class={[
 						"text-right text-xs",
-						practiceSession.band ? getBandTone(practiceSession.band) : "text-base-content/60"
+						practiceSession.band ? getBandTone(practiceSession.band) : ""
 					]}>
 					{practiceSession.band
 						? `Overall band ${practiceSession.band.toFixed(1)}`
