@@ -26,8 +26,6 @@ export const load = (async ({ locals, url }) => {
 	const requestedPage = Number.parseInt(searchParams.get("page") ?? "1", 10);
 	const page = Number.isFinite(requestedPage) && requestedPage > 0 ? requestedPage : 1;
 
-	// Own tasks plus ownerless example tasks added by the admin (user_id IS NULL).
-	// The `source` filter narrows the library to one of the two.
 	const source = SOURCES.find((value) => value === searchParams.get("source"));
 	const visibility =
 		source === "mine"
@@ -96,7 +94,7 @@ export const load = (async ({ locals, url }) => {
 			unused: sql<number>`count(case when not exists (select 1 from "practice_sessions" where "practice_sessions"."task_id" = "tasks"."id") then 1 end)`
 		})
 		.from(tasks)
-		.where(or(eq(tasks.userId, user.id), isNull(tasks.userId)));
+		.where(eq(tasks.userId, user.id));
 
 	return {
 		tasks: rows.map((row) => ({
