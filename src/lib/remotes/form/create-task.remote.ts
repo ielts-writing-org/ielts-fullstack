@@ -12,6 +12,7 @@ import { taskCategorySchema } from "#lib/domain/task-category.ts";
 import { taskImageSchema } from "#lib/domain/task-image.ts";
 import { taskSubcategorySchema } from "#lib/domain/task-subcategory.ts";
 import { compressImageAsBlob } from "#lib/server/infrastructure/images.ts";
+import { taskPromptSchema } from "#lib/domain/task-prompt.ts";
 
 export const createTask = form(
 	z.object({
@@ -20,8 +21,9 @@ export const createTask = form(
 		subcategory: z
 			.union([taskSubcategorySchema, z.literal("")])
 			.optional()
-			.transform((value) => (value === "" ? undefined : value)),
-		prompt: z.string().trim().min(1, "The prompt is required.").max(20000),
+			.transform((value) => (value === "" ? null : value)),
+		// Dropping prompt field means the prompt will be input later
+		prompt: taskPromptSchema.optional().transform((value) => (value === undefined ? "" : value)),
 		image: taskImageSchema.optional()
 	}),
 	async ({ category, subcategory, prompt, image }) => {

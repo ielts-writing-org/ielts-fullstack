@@ -1,15 +1,9 @@
 import { countWords } from "#lib/utils/stats.ts";
 import { z } from "zod";
+import { taskPromptSchema } from "./task-prompt";
 
-const PROMPT_MIN_WORDS = 15;
-const PROMPT_MAX_WORDS = 85;
 const RESPONSE_MIN_WORDS = 125;
 const RESPONSE_MAX_WORDS = 320;
-
-const taskPromptSchema = z.string().refine((val) => {
-	const words = countWords(val);
-	return words >= PROMPT_MIN_WORDS && words <= PROMPT_MAX_WORDS;
-}, `Task prompt must be between ${PROMPT_MIN_WORDS.toString()} and ${PROMPT_MAX_WORDS.toString()} words`);
 
 const practiceSessionSchema = z.object({
 	response: z.string().refine((val) => {

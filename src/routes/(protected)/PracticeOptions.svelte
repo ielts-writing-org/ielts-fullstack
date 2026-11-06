@@ -22,7 +22,6 @@
 
 	let selectedPracticeSessionType = $state<"timed" | "free">("timed");
 
-	/** Opens the combined "new task + practice style" flow for a fixed category. */
 	const handleCreateCustomTaskPractice = (taskCategory: TaskCategory) => {
 		selectedPracticeSessionType = "timed";
 		openModal({
@@ -92,8 +91,8 @@
 		category={props.category}
 		submitLabel="Start practice"
 		onSaved={(taskId) => startPractice(props.category, taskId)}>
-		<fieldset class="flex flex-col gap-1.5">
-			<legend class="text-xs font-semibold text-base-content/75">Practice style</legend>
+		<fieldset class="fieldset">
+			<legend class="fieldset-legend">Practice style</legend>
 			<PracticeTypePicker bind:value={selectedPracticeSessionType} category={props.category} />
 		</fieldset>
 	</TaskCreateForm>
