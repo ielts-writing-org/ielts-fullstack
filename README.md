@@ -49,15 +49,15 @@ Missing keys throw `ConfigMissingError` at request time.
 Tailwind color opacity modifiers (`bg-primary/5`, `text-base-content/75`, ...) are restricted to a
 single shared scale. Do not introduce other values (no `/15`, `/30`, `/40`, `/70`, `/80`, `/90`).
 
-| Value | Role                                                                                        |
-| ----- | ------------------------------------------------------------------------------------------- |
-| `/5`  | Soft tinted fills (selected-state washes like `bg-primary/5`).                               |
-| `/10` | Hairline borders, dividers, and soft fills on colored elements (`bg-primary/10` icon chips). |
-| `/20` | Default card borders.                                                                        |
-| `/25` | Disabled / placeholder icons (empty-state icons).                                            |
+| Value | Role                                                                                                                               |
+| ----- | ---------------------------------------------------------------------------------------------------------------------------------- |
+| `/5`  | Soft tinted fills (selected-state washes like `bg-primary/5`).                                                                     |
+| `/10` | Hairline borders, dividers, and soft fills on colored elements (`bg-primary/10` icon chips).                                       |
+| `/20` | Default card borders.                                                                                                              |
+| `/25` | Disabled / placeholder icons (empty-state icons).                                                                                  |
 | `/50` | Tertiary text, metadata, timestamps; soft neutral fills (`bg-base-200/50`). Not body text - fails WCAG 4.5:1 on light backgrounds. |
-| `/60` | Muted secondary text (auxiliary/large text only).                                            |
-| `/75` | Standard secondary text - lowest tier that reliably passes AA on `base-100`.                 |
+| `/60` | Muted secondary text (auxiliary/large text only).                                                                                  |
+| `/75` | Standard secondary text - lowest tier that reliably passes AA on `base-100`.                                                       |
 
 Never use the element-level `opacity-*` utility for text (it is inherited by children); always use
 the color slash modifier. Frosted-glass surfaces (`/80` + `backdrop-blur`) are the only exception -

@@ -10,7 +10,9 @@
 	}
 </script>
 
-<nav class="mt-4 flex flex-wrap items-center justify-between gap-2" aria-label="Task library pagination">
+<nav
+	class="mt-4 flex flex-wrap items-center justify-between gap-2"
+	aria-label="Task library pagination">
 	<span class="text-xs text-base-content/75">
 		Page {page} of {totalPages}
 	</span>

@@ -49,9 +49,7 @@
 
 		<div class="relative mt-3 h-40">
 			<span class="absolute top-0 right-0 text-[10px] text-base-content/50 tabular-nums">9</span>
-			<span class="absolute right-0 bottom-0 text-[10px] text-base-content/50 tabular-nums">
-				0
-			</span>
+			<span class="absolute right-0 bottom-0 text-[10px] text-base-content/50 tabular-nums">0</span>
 
 			{#if bandTarget > 0}
 				<div

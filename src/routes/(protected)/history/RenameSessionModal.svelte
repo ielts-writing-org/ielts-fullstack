@@ -31,7 +31,7 @@
 	aria-label="New session name" />
 
 <div class="modal-action">
-	<button type="button" class="btn btn-error btn-ghost" onclick={closeModal}>Cancel</button>
+	<button type="button" class="btn btn-ghost btn-error" onclick={closeModal}>Cancel</button>
 	<button type="button" class="btn btn-primary" onclick={save}>
 		{changeSessionName.pending > 0 ? "Saving..." : "Save"}
 	</button>

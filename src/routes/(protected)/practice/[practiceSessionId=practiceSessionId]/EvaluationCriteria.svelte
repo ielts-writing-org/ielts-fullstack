@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { MessagesSquare } from "@lucide/svelte";
-	import type { Evaluation, EvaluationCriterion } from "#lib/domain/evaluation.ts";
+	import type { Evaluation } from "#lib/domain/evaluation.ts";
 	import type { Criteria } from "#lib/domain/criteria.ts";
 	import { CRITERIA_LABELS, CRITERION_CHECK_STATUS_LABELS } from "#lib/domain/criteria.ts";
 
@@ -16,7 +16,8 @@
 	let { evaluation, isBusy, openCriterionKey, onAskTutor }: Props = $props();
 
 	const criteriaList = $derived.by(() => {
-		const { coherenceAndCohesion, lexicalResource, grammaticalRangeAndAccuracy } = evaluation.criteria;
+		const { coherenceAndCohesion, lexicalResource, grammaticalRangeAndAccuracy } =
+			evaluation.criteria;
 
 		if (evaluation.taskCategory === "1") {
 			return [

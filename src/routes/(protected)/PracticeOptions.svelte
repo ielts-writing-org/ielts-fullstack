@@ -53,7 +53,9 @@
 					<div class="badge badge-soft badge-xs">{type}</div>
 				{/each}
 			</div>
-			<button class="btn mt-auto btn-primary" onclick={() => openStartPracticeModal(option.taskCategory)}>
+			<button
+				class="btn mt-auto btn-primary"
+				onclick={() => openStartPracticeModal(option.taskCategory)}>
 				Start Task {option.taskCategory} Practice
 				<ArrowRight size="1em" />
 			</button>

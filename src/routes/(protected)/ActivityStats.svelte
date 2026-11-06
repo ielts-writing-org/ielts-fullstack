@@ -7,7 +7,6 @@
 			totalWords: number;
 			sessionsThisWeek: number;
 			totalSessions: number;
-			evaluated: number;
 		};
 		streakDays: number;
 	};

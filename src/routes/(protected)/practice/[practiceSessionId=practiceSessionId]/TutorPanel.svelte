@@ -32,9 +32,7 @@
 	// Open the panel the learner most likely needs: the evaluation if one
 	// exists, otherwise the tutor chat if they have already been asking.
 	let activeTab = $state<"chat" | "evaluate">(
-		untrack(() =>
-			!initialEvaluation && (initialMessages?.length ?? 0) > 0 ? "chat" : "evaluate"
-		)
+		untrack(() => (!initialEvaluation && (initialMessages?.length ?? 0) > 0 ? "chat" : "evaluate"))
 	);
 
 	const estimatedBand = $derived(evaluation?.estimatedBand);

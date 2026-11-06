@@ -20,7 +20,10 @@
 	<div class="flex items-center gap-1.5">
 		<Target class="size-4 shrink-0 text-primary" />
 		<span class="text-sm font-semibold">Target {bandTarget.toFixed(1)}</span>
-		<button class="btn btn-circle btn-ghost btn-xs" aria-label="Change target band" onclick={openTargetModal}>
+		<button
+			class="btn btn-circle btn-ghost btn-xs"
+			aria-label="Change target band"
+			onclick={openTargetModal}>
 			<Pencil class="size-3.5" />
 		</button>
 	</div>
