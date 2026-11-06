@@ -61,6 +61,6 @@ const TASK_SUBCATEGORY_LABELS = {
 	"two-part-question-essay": "Two-part question essay"
 } as const satisfies Record<TaskSubcategory<TaskCategory>, string>;
 
-export function taskSubcategoryLabel(subcategory: TaskSubcategory<TaskCategory>) {
+export function getTaskSubcategoryLabel(subcategory: TaskSubcategory<TaskCategory>) {
 	return TASK_SUBCATEGORY_LABELS[subcategory];
 }

@@ -3,7 +3,7 @@
 	import { onDestroy } from "svelte";
 	import type { TaskCategory } from "#lib/domain/task-category.ts";
 	import { closeModal } from "#lib/components/Modal.svelte";
-	import { getTaskSubcategories, taskSubcategoryLabel } from "#lib/domain/task-subcategory.ts";
+	import { getTaskSubcategories, getTaskSubcategoryLabel } from "#lib/domain/task-subcategory.ts";
 	import { createTask } from "#lib/remotes/form/create-task.remote.ts";
 
 	type Props = {
@@ -78,7 +78,7 @@
 		<select {...createTask.fields.subcategory.as("select", "")} class="select w-full">
 			<option value="">None</option>
 			{#each subcategoryOptions as subcategoryOption (subcategoryOption)}
-				<option value={subcategoryOption}>{taskSubcategoryLabel(subcategoryOption)}</option>
+				<option value={subcategoryOption}>{getTaskSubcategoryLabel(subcategoryOption)}</option>
 			{/each}
 		</select>
 	</fieldset>

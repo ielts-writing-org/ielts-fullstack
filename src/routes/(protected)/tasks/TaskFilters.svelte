@@ -2,7 +2,7 @@
 	import { onDestroy } from "svelte";
 	import { goto } from "$app/navigation";
 	import { Search, X } from "@lucide/svelte";
-	import { getTaskSubcategories, taskSubcategoryLabel } from "#lib/domain/task-subcategory.ts";
+	import { getTaskSubcategories, getTaskSubcategoryLabel } from "#lib/domain/task-subcategory.ts";
 	import { buildQuery, tasksHref, type FilterKey, type TaskFiltersData } from "./links.ts";
 
 	type Props = { filters: TaskFiltersData; resultCount: number; total: number };
@@ -25,7 +25,7 @@
 		}
 		if (filters.task) chips.push({ key: "task", label: `Task ${filters.task}` });
 		if (filters.subcategory) {
-			chips.push({ key: "subcategory", label: taskSubcategoryLabel(filters.subcategory) });
+			chips.push({ key: "subcategory", label: getTaskSubcategoryLabel(filters.subcategory) });
 		}
 		if (filters.q) chips.push({ key: "search", label: `"${filters.q}"` });
 		return chips;
@@ -114,17 +114,17 @@
 				<option value="all">All subcategories</option>
 				{#if currentTask !== "all"}
 					{#each getTaskSubcategories(currentTask) as subcategory (subcategory)}
-						<option value={subcategory}>{taskSubcategoryLabel(subcategory)}</option>
+						<option value={subcategory}>{getTaskSubcategoryLabel(subcategory)}</option>
 					{/each}
 				{:else}
 					<optgroup label="Task 1">
 						{#each getTaskSubcategories("1") as subcategory (subcategory)}
-							<option value={subcategory}>{taskSubcategoryLabel(subcategory)}</option>
+							<option value={subcategory}>{getTaskSubcategoryLabel(subcategory)}</option>
 						{/each}
 					</optgroup>
 					<optgroup label="Task 2">
 						{#each getTaskSubcategories("2") as subcategory (subcategory)}
-							<option value={subcategory}>{taskSubcategoryLabel(subcategory)}</option>
+							<option value={subcategory}>{getTaskSubcategoryLabel(subcategory)}</option>
 						{/each}
 					</optgroup>
 				{/if}

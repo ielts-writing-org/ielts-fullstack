@@ -3,7 +3,7 @@ import { env } from "cloudflare:workers";
 import type { PageServerLoad } from "./$types";
 import type { Evaluation } from "#lib/domain/evaluation.ts";
 import { countWords } from "#lib/utils/stats.ts";
-import { chatMessages, evaluations, practiceSessions, tasks } from "#lib/server/db/app.schema.ts";
+import { evaluations, practiceSessions, tasks } from "#lib/server/db/app.schema.ts";
 import { and, asc, desc, eq, isNotNull, isNull, like, or, sql } from "drizzle-orm";
 import { getPageSession } from "#lib/server/auth/session.ts";
 import type { Criteria } from "#lib/domain/criteria.ts";
@@ -103,8 +103,6 @@ export const load = (async ({ locals, url }) => {
 		words: [desc(wordCount)]
 	}[sort];
 
-	const messageCount = sql<number>`(select count(*) from ${chatMessages} where ${chatMessages.practiceSessionId} = ${practiceSessions.id})`;
-
 	const rows = await db
 		.select({
 			id: practiceSessions.id,
@@ -115,8 +113,7 @@ export const load = (async ({ locals, url }) => {
 			taskCategory: tasks.category,
 			taskSubcategory: tasks.subcategory,
 			taskPrompt: tasks.prompt,
-			evaluationResult: evaluations.result,
-			messages: messageCount
+			evaluationResult: evaluations.result
 		})
 		.from(practiceSessions)
 		.innerJoin(tasks, eq(practiceSessions.taskId, tasks.id))
@@ -180,7 +177,6 @@ export const load = (async ({ locals, url }) => {
 				updatedAt: row.updatedAt,
 				response: row.response,
 				words: countWords(row.response),
-				messages: row.messages,
 				estimatedBand: result?.estimatedBand,
 				criteria: criterionBands(result)
 			};

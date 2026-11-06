@@ -10,7 +10,7 @@
 	} from "@lucide/svelte";
 	import { getBandBadgeTone } from "#lib/utils/ielts.js";
 	import { formatRelativeTime } from "#lib/utils/time.js";
-	import { taskSubcategoryLabel } from "#lib/domain/task-subcategory.ts";
+	import { getTaskSubcategoryLabel } from "#lib/domain/task-subcategory.ts";
 	import { type TaskItem } from "./links.ts";
 	import { getImageUrl } from "#lib/utils/links.ts";
 
@@ -26,12 +26,15 @@
 
 <article
 	class={[
-		"flex h-24 items-center gap-3 rounded-box border border-base-content/20 bg-base-100 p-3 transition-colors",
+		"flex items-center gap-3 rounded-box border border-base-content/20 bg-base-100 p-3 transition-colors",
 		"hover:border-primary hover:shadow"
 	]}>
 	<button
 		type="button"
-		class="flex aspect-video h-full cursor-pointer items-center justify-center overflow-hidden border border-base-content/10 bg-base-200/50"
+		class={[
+			"flex aspect-video h-16 cursor-pointer items-center justify-center overflow-hidden border border-base-content/10 bg-base-200/50",
+			"sm:h-24"
+		]}
 		aria-label="View task details"
 		onclick={onDetails}>
 		{#if task.imageName}
@@ -67,7 +70,7 @@
 				<span class="badge badge-soft badge-xs badge-info">Example</span>
 			{/if}
 			{#if task.subcategory}
-				<span class="badge badge-soft badge-xs">{taskSubcategoryLabel(task.subcategory)}</span>
+				<span class="badge badge-soft badge-xs">{getTaskSubcategoryLabel(task.subcategory)}</span>
 			{/if}
 			{#if task.bestBand !== null}
 				<span class={["badge badge-soft badge-xs", getBandBadgeTone(task.bestBand)]}>

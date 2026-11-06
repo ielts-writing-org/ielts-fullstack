@@ -4,7 +4,7 @@
 	import { resolve } from "$app/paths";
 	import { refreshAll } from "$app/navigation";
 	import { ArrowLeft, LogOut, Palette } from "@lucide/svelte";
-	import { taskSubcategoryLabel } from "#lib/domain/task-subcategory.ts";
+	import { getTaskSubcategoryLabel } from "#lib/domain/task-subcategory.ts";
 	import { authClient } from "#lib/auth/auth-client.ts";
 	import AppLogo from "#lib/components/AppLogo.svelte";
 	import Modal, { openModal } from "#lib/components/Modal.svelte";
@@ -105,7 +105,7 @@
 						</span>
 						<span class="badge badge-ghost badge-xs font-medium">
 							{session.taskSubcategory
-								? taskSubcategoryLabel(session.taskSubcategory)
+								? getTaskSubcategoryLabel(session.taskSubcategory)
 								: "Uncategorized"}
 						</span>
 					</h2>

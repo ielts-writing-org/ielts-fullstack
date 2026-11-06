@@ -2,7 +2,7 @@
 	import { onDestroy } from "svelte";
 	import { Trash } from "@lucide/svelte";
 	import { closeModal } from "#lib/components/Modal.svelte";
-	import { getTaskSubcategories, taskSubcategoryLabel } from "#lib/domain/task-subcategory.ts";
+	import { getTaskSubcategories, getTaskSubcategoryLabel } from "#lib/domain/task-subcategory.ts";
 	import { clearTaskImage } from "#lib/remotes/command/clear-task-image.remote.js";
 	import { updateTask } from "#lib/remotes/form/update-task.remote.js";
 	import { type TaskItem } from "./links.ts";
@@ -71,7 +71,7 @@
 				class="select w-full">
 				<option value="">None</option>
 				{#each subcategoryOptions as subcategory (subcategory)}
-					<option value={subcategory}>{taskSubcategoryLabel(subcategory)}</option>
+					<option value={subcategory}>{getTaskSubcategoryLabel(subcategory)}</option>
 				{/each}
 			</select>
 		</label>
