@@ -1,21 +1,22 @@
 <script lang="ts">
 	import { resolve } from "$app/paths";
 	import { page } from "$app/state";
+	import { onMount } from "svelte";
 	import { LibraryBig, PenLine } from "@lucide/svelte";
 	import { openModal } from "#lib/components/Modal.svelte";
 	import About from "./About.svelte";
 	import PracticeOptions from "./PracticeOptions.svelte";
-	import Statistics from "./Statistics.svelte";
+	import Progress from "./Progress.svelte";
 	import RecentPracticeSessions from "./RecentPracticeSessions.svelte";
 	import ActivityStats from "./ActivityStats.svelte";
 	import ChangeBandTarget from "../ChangeBandTarget.svelte";
 	import { getProfile } from "#lib/remotes/query/get-profile.remote.js";
-	import { onMount } from "svelte";
 
 	const { data } = $props();
 
 	const firstName = $derived((page.data.user?.name ?? "there").split(" ")[0]);
 	const isNewUser = $derived(data.activity.totalSessions === 0);
+	const profile = $derived(await getProfile());
 
 	onMount(async () => {
 		if ((await getProfile()).bandTarget === null) {
@@ -57,9 +58,9 @@
 	<section
 		class="mt-4 grid w-full grid-cols-1 gap-4 xl:grid-cols-[minmax(0,1.55fr)_minmax(320px,1fr)]">
 		<PracticeOptions practiceOptions={data.practiceOptions} />
-		<Statistics
+		<Progress
 			statistics={data.statistics}
-			bandTarget={(await getProfile()).bandTarget ?? 0}
+			bandTarget={profile.bandTarget ?? 0}
 			trend={data.bandTrend}
 			evaluatedCount={data.activity.evaluated} />
 	</section>

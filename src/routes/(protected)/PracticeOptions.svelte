@@ -1,11 +1,8 @@
 <script lang="ts">
-	import { goto } from "$app/navigation";
 	import { ArrowRight, Clock3 } from "@lucide/svelte";
 	import type { TaskCategory } from "#lib/domain/task-category.ts";
 	import { openModal } from "#lib/components/Modal.svelte";
-	import { createPractice } from "#lib/remotes/command/create-practice.remote.ts";
-	import TaskCreateForm from "#lib/components/TaskCreateForm.svelte";
-	import PracticeTypePicker from "./PracticeTypePicker.svelte";
+	import NewTaskPractice from "./NewTaskPractice.svelte";
 
 	type Props = {
 		practiceOptions: {
@@ -20,33 +17,16 @@
 
 	const { practiceOptions }: Props = $props();
 
-	let selectedPracticeSessionType = $state<"timed" | "free">("timed");
+	let openKey = 0;
 
-	const handleCreateCustomTaskPractice = (taskCategory: TaskCategory) => {
-		selectedPracticeSessionType = "timed";
+	function openStartPracticeModal(taskCategory: TaskCategory) {
 		openModal({
 			title: `Start Task ${taskCategory} practice`,
-			content: { snippet: startPracticeSnippet, args: { category: taskCategory } }
-		});
-	};
-
-	async function startPractice(taskCategory: TaskCategory, taskId: string) {
-		try {
-			const result = await createPractice({
-				taskCategory,
-				taskId,
-				practiceSessionType: selectedPracticeSessionType
-			});
-			if (result.success) {
-				goto(result.location);
+			content: {
+				component: NewTaskPractice,
+				props: { category: taskCategory, openKey: ++openKey }
 			}
-		} catch (error) {
-			openModal({
-				title: "Unable to start practice",
-				content: String(error),
-				primaryButton: "Close"
-			});
-		}
+		});
 	}
 </script>
 
@@ -73,27 +53,10 @@
 					<div class="badge badge-soft badge-xs">{type}</div>
 				{/each}
 			</div>
-			<button
-				class="btn mt-auto btn-primary"
-				onclick={() => handleCreateCustomTaskPractice(option.taskCategory)}>
+			<button class="btn mt-auto btn-primary" onclick={() => openStartPracticeModal(option.taskCategory)}>
 				Start Task {option.taskCategory} Practice
 				<ArrowRight size="1em" />
 			</button>
 		</article>
 	{/each}
 </div>
-
-{#snippet startPracticeSnippet(props: { category: TaskCategory })}
-	<p class="mb-3 text-xs text-base-content/75">
-		Set up the task you want to write about, pick a practice style, and start.
-	</p>
-	<TaskCreateForm
-		category={props.category}
-		submitLabel="Start practice"
-		onSaved={(taskId) => startPractice(props.category, taskId)}>
-		<fieldset class="fieldset">
-			<legend class="fieldset-legend">Practice style</legend>
-			<PracticeTypePicker bind:value={selectedPracticeSessionType} category={props.category} />
-		</fieldset>
-	</TaskCreateForm>
-{/snippet}
