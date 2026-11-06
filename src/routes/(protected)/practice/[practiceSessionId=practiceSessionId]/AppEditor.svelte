@@ -8,12 +8,13 @@
 	import { openModal } from "#lib/components/Modal.svelte";
 	import { page } from "$app/state";
 	import Editor from "#lib/components/harper-editor/Editor.svelte";
+	import { getAllowedImageMimeTypes } from "#lib/domain/task-image.ts";
+	import { getImageUrl } from "#lib/utils/links.ts";
 
 	type Props = {
 		class?: string;
 		content: string;
-		hasImage?: boolean;
-		image?: Blob;
+		allowImage?: boolean;
 		imageName?: string;
 		isDirty?: boolean;
 		canUnlock?: boolean;
@@ -29,7 +30,6 @@
 
 	let {
 		content = $bindable(""),
-		image = $bindable(),
 		imageName = $bindable(),
 		isDirty = $bindable(false),
 		isUnlocked = $bindable(true),
@@ -39,7 +39,7 @@
 	let isReady = $state<boolean>(false);
 	let currentState = $state<"Not saved" | "Saved" | "Saving" | "Failed">("Saved");
 
-	const imagePreview = $derived(props.hasImage && image ? URL.createObjectURL(image) : undefined);
+	const imagePreview = $derived(props.allowImage && imageName ? getImageUrl(imageName) : undefined);
 
 	/** Save state surfaced in the editor status bar. */
 	const saveState = $derived(
@@ -77,31 +77,20 @@
 		}
 	}
 
-	async function handleAddImage(e: Event & { currentTarget: EventTarget & HTMLInputElement }) {
-		const files = e.currentTarget.files;
-		if (!files) {
+	async function handleAddImage() {
+		const file = saveTaskImage.fields.image.value();
+
+		if (!file) {
 			return;
 		}
-
-		const file = files[0];
-
-		if (imagePreview) {
-			URL.revokeObjectURL(imagePreview);
-		}
-
-		image = file;
 
 		await saveTaskImage.submit();
 		imageName = saveTaskImage.result?.imageName;
 	}
 
 	async function handleRemoveImage() {
-		if (imagePreview) {
-			URL.revokeObjectURL(imagePreview);
-		}
-
 		await clearTaskImage({ taskId: page.data.task.id });
-		image = undefined;
+		imageName = undefined;
 	}
 
 	const handlePostContentChangedDebounced = debounce(async () => {
@@ -177,20 +166,20 @@
 
 		<div class="flex items-center gap-2">
 			<!-- Image controls -->
-			{#if props.hasImage && isUnlocked}
+			{#if props.allowImage && isUnlocked}
 				<div class="flex items-center gap-1">
 					<form {...saveTaskImage} class="contents" enctype="multipart/form-data">
 						<input {...saveTaskImage.fields.taskId.as("hidden", page.data.task.id)} />
-						<label class={["btn btn-primary btn-xs", image ? "btn-outline" : "btn-primary"]}>
+						<label class={["btn btn-primary btn-xs", imageName ? "btn-outline" : "btn-primary"]}>
 							<input
 								{...saveTaskImage.fields.image.as("file")}
 								class="hidden"
-								accept="image/*"
+								accept={getAllowedImageMimeTypes().join(",")}
 								onchange={handleAddImage} />
-							{image ? "Change" : "Add an"} image
+							{imageName ? "Change" : "Add an"} image
 						</label>
 					</form>
-					{#if image}
+					{#if imageName}
 						<button
 							class="btn btn-ghost text-error btn-xs"
 							title="Remove image"
@@ -225,7 +214,7 @@
 				onChange={handleContentChanged} />
 
 			<!-- Image preview -->
-			{#if props.hasImage && isReady && imagePreview}
+			{#if props.allowImage && isReady && imagePreview}
 				<div class="flex min-h-fit flex-1 flex-col items-center justify-center gap-2">
 					<img src={imagePreview} alt={imageName} class="placeholder max-w-full" />
 				</div>

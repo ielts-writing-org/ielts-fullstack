@@ -1,6 +1,5 @@
 import { error } from "@sveltejs/kit";
-import { env } from "cloudflare:workers";
-import { getDb } from "#lib/server/db/index.ts";
+import { getDatabase } from "#lib/server/db/index.ts";
 import type { PageServerLoad } from "./$types";
 import type { ChatMessage } from "#lib/domain/chat-message.ts";
 import { getPageSession } from "#lib/server/auth/session.ts";
@@ -10,10 +9,9 @@ export const load = (async ({ locals, params, depends }) => {
 	depends("data:practiceSession");
 
 	const { practiceSessionId } = params;
-
 	const { user } = getPageSession(locals);
 
-	const db = getDb(env.IELTS_WRITING_DB);
+	const db = getDatabase();
 	const practiceSession = await db.query.practiceSessions.findFirst({
 		where: (practices, { and, eq }) =>
 			and(eq(practices.id, practiceSessionId), eq(practices.userId, user.id)),
@@ -21,20 +19,10 @@ export const load = (async ({ locals, params, depends }) => {
 	});
 
 	if (!practiceSession) {
-		error(404, "Practice does not exist");
+		error(404);
 	}
 
 	const category = practiceSession.task.category;
-
-	let taskImage: string | undefined;
-	if (practiceSession.task.imageName) {
-		const image = await env.IELTS_WRITING_BUCKET.get(practiceSession.task.image);
-		if (image) {
-			const blob = await image.blob();
-			const bytes = await blob.bytes();
-			taskImage = Buffer.from(bytes).toString("base64");
-		}
-	}
 
 	return {
 		type: practiceSession.type,
@@ -44,7 +32,6 @@ export const load = (async ({ locals, params, depends }) => {
 			category: category,
 			isOwner: practiceSession.task.userId === user.id,
 			prompt: practiceSession.task.prompt,
-			image: taskImage,
 			imageName: practiceSession.task.imageName,
 			subcategory: practiceSession.task.subcategory
 		},

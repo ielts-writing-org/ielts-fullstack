@@ -1,11 +1,11 @@
-import { getApiSession } from "#lib/server/auth/session.ts";
-import { tasks } from "#lib/server/db/app.schema.ts";
-import { getDb } from "#lib/server/db/index.ts";
 import { command, getRequestEvent } from "$app/server";
 import { error } from "@sveltejs/kit";
-import { env } from "cloudflare:workers";
 import { eq } from "drizzle-orm";
 import z from "zod";
+import { getApiSession } from "#lib/server/auth/session.ts";
+import { getDatabase } from "#lib/server/db/index.ts";
+import { tasks } from "#lib/server/db/app.schema.ts";
+import { deleteObject } from "#lib/server/infrastructure/bucket.ts";
 
 export const clearTaskImage = command(
 	z.object({
@@ -15,21 +15,17 @@ export const clearTaskImage = command(
 		const { locals } = getRequestEvent();
 		const { user } = getApiSession(locals);
 
-		const db = getDb(env.IELTS_WRITING_DB);
+		const db = getDatabase();
 		const task = await db.query.tasks.findFirst({
 			where: (tasks, { eq, and }) => and(eq(tasks.id, taskId), eq(tasks.userId, user.id))
 		});
 
-		if (!task) {
-			error(404, "Task does not exist.");
+		if (!task || !task.imageName) {
+			error(404);
 		}
 
-		const oldImageName = task.image;
-		await db.update(tasks).set({ image: null }).where(eq(tasks.id, taskId));
-
-		if (oldImageName) {
-			await env.IELTS_WRITING_BUCKET.delete(oldImageName);
-		}
+		await db.update(tasks).set({ imageName: null }).where(eq(tasks.id, taskId));
+		await deleteObject(task.imageName);
 
 		return { success: true };
 	}

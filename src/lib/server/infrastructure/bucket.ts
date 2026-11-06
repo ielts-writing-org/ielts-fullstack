@@ -19,3 +19,7 @@ export async function getObjectAsStream(key: string): Promise<ReadableStream | n
 export async function putObject(key: string, blob: Blob) {
 	return await env.IELTS_WRITING_BUCKET.put(key, blob);
 }
+
+export async function deleteObject(key: string) {
+	return await env.IELTS_WRITING_BUCKET.delete(key);
+}

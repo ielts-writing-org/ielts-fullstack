@@ -1,14 +1,15 @@
-import { isValidSubcategory, taskSubcategorySchema } from "#lib/domain/task-subcategory.ts";
-import { getApiSession } from "#lib/server/auth/session.ts";
-import { tasks } from "#lib/server/db/app.schema.ts";
-import { getDb } from "#lib/server/db/index.ts";
 import { form, getRequestEvent } from "$app/server";
 import { error } from "@sveltejs/kit";
-import { env } from "cloudflare:workers";
-import { and, eq } from "drizzle-orm";
+import { eq } from "drizzle-orm";
 import { uuidv7 } from "uuidv7";
 import { z } from "zod";
+import { getApiSession } from "#lib/server/auth/session.ts";
+import { getDatabase } from "#lib/server/db/index.ts";
+import { tasks } from "#lib/server/db/app.schema.ts";
+import { taskPromptSchema } from "#lib/domain/task-prompt.ts";
 import { taskImageSchema } from "#lib/domain/task-image.ts";
+import { isValidSubcategory, taskSubcategorySchema } from "#lib/domain/task-subcategory.ts";
+import { deleteObject, putObject } from "#lib/server/infrastructure/bucket.ts";
 import { compressImageAsBlob } from "#lib/server/infrastructure/images.ts";
 
 export const updateTask = form(
@@ -18,42 +19,42 @@ export const updateTask = form(
 		subcategory: z
 			.union([taskSubcategorySchema, z.literal("")])
 			.optional()
-			.transform((value) => (value === "" ? undefined : value)),
-		prompt: z.string().trim().min(1, "The prompt is required.").max(20000),
+			.transform((value) => (value === "" ? null : value)),
+		prompt: taskPromptSchema,
 		image: taskImageSchema.optional()
 	}),
 	async ({ taskId, subcategory, prompt, image }) => {
 		const { locals } = getRequestEvent();
 		const { user } = getApiSession(locals);
 
-		const db = getDb(env.IELTS_WRITING_DB);
+		const db = getDatabase();
 		const task = await db.query.tasks.findFirst({
-			where: (fields, { and, eq }) => and(eq(fields.id, taskId), eq(fields.userId, user.id))
+			where: (tasks, { and, eq }) => and(eq(tasks.id, taskId), eq(tasks.userId, user.id))
 		});
 
 		if (!task) {
-			error(404, "Task does not exist.");
+			error(404);
 		}
 
 		if (subcategory && !isValidSubcategory(task.category, subcategory)) {
-			error(400, "The subcategory does not belong to the task category.");
+			error(400);
 		}
 
 		if (image) {
 			const newImageName = `${uuidv7()}.webp`;
 			const compressed = await compressImageAsBlob(image);
-			await env.IELTS_WRITING_BUCKET.put(newImageName, compressed);
-			await db.update(tasks).set({ image: newImageName }).where(eq(tasks.id, taskId));
+			await putObject(newImageName, compressed);
+			await db
+				.update(tasks)
+				.set({ prompt, subcategory, imageName: newImageName })
+				.where(eq(tasks.id, taskId));
 
-			if (task.image) {
-				await env.IELTS_WRITING_BUCKET.delete(task.image);
+			if (task.imageName) {
+				await deleteObject(task.imageName);
 			}
+		} else {
+			await db.update(tasks).set({ prompt, subcategory }).where(eq(tasks.id, taskId));
 		}
-
-		await db
-			.update(tasks)
-			.set({ prompt, subcategory: subcategory ?? null })
-			.where(and(eq(tasks.id, taskId), eq(tasks.userId, user.id)));
 
 		return { success: true };
 	}

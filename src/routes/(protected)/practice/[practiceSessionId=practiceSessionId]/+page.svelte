@@ -20,7 +20,6 @@
 	let category = $state<TaskCategory>(untrack(() => data.task.category));
 	let prompt = $state<string>(untrack(() => data.task.prompt));
 	let response = $state<string>(untrack(() => data.response));
-	let image = $state<File | undefined>(untrack(() => data.task.image));
 	let imageName = $state<string | undefined>(untrack(() => data.task.imageName ?? undefined));
 	let evaluation = $state<Evaluation | undefined>(untrack(() => data.evaluation));
 	let messages = $state<ChatMessage[]>(untrack(() => data.chatMessages));
@@ -124,14 +123,12 @@
 			bind:showTask
 			bind:showAssistant />
 
-		{const hasImage = category === "1"}
 		{#if showTask}
 			<AppEditor
 				class="flex-1"
 				title="Task"
-				{hasImage}
+				allowImage={category === "1"}
 				bind:this={taskEditor}
-				bind:image
 				bind:imageName
 				bind:content={prompt}
 				bind:isDirty={isPromptDirty}
@@ -163,7 +160,6 @@
 					category,
 					prompt,
 					response,
-					image,
 					imageName
 				}}
 				bind:evaluation
