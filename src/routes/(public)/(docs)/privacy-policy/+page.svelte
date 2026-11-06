@@ -7,7 +7,7 @@
 	let content = $state<string>("");
 
 	onMount(async () => {
-		content = await getStaticAsset("tos.md");
+		content = await getStaticAsset("pp.md");
 	});
 </script>
 
