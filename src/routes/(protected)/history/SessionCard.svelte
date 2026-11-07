@@ -46,7 +46,7 @@
 
 	async function handleCopyEssay() {
 		try {
-			await navigator.clipboard.writeText(session.response);
+			await navigator.clipboard.writeText(`${session.taskPrompt}\n\n\n${session.response}`);
 			copiedSessionId = session.id;
 			setTimeout(() => {
 				if (copiedSessionId === session.id) {
@@ -63,7 +63,9 @@
 	}
 
 	function handleDownloadEssay() {
-		const blob = new Blob([session.response], { type: "text/plain;charset=utf-8" });
+		const blob = new Blob([session.taskPrompt, "\n\n\n", session.response], {
+			type: "text/plain;charset=utf-8"
+		});
 		const url = URL.createObjectURL(blob);
 		const anchor = document.createElement("a");
 		anchor.href = url;
