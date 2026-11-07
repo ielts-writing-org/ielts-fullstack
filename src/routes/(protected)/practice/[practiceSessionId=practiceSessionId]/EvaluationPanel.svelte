@@ -123,6 +123,8 @@
 	}
 
 	async function handleEvaluate() {
+		let oldEvaluation;
+
 		try {
 			if (isBusy) {
 				abortController.abort();
@@ -147,6 +149,7 @@
 			}
 
 			isBusy = true;
+			oldEvaluation = evaluation;
 			evaluation = createEmptyEvaluation(props.practiceSessionContext.category);
 
 			const response = await fetch(`${page.url.pathname}/evaluate`, {
@@ -197,18 +200,17 @@
 					openCriterionKey = weakestCriterionKey(evaluation);
 				}
 			);
+
+			await saveEvaluation({ practiceSessionId: props.practiceSessionId, evaluation });
 		} catch (e) {
 			openModal({
 				title: "Unable to evaluate",
 				content: String(e),
 				primaryButton: "Close"
 			});
-			evaluation = undefined;
+			evaluation = oldEvaluation;
 		} finally {
 			isBusy = false;
-			if (evaluation) {
-				await saveEvaluation({ practiceSessionId: props.practiceSessionId, evaluation });
-			}
 		}
 	}
 
