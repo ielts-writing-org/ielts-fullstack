@@ -1,6 +1,6 @@
 import { debounce } from "#lib/utils/debounce.ts";
 
-export type SavePhase = "Not saved" | "Saved" | "Saving" | "Failed";
+type SavePhase = "Not saved" | "Saved" | "Saving" | "Failed";
 
 /** Autosave lifecycle shared by the practice editors: a debounced autosave
  *  2s behind the last keystroke, an explicit saveNow for Ctrl+S / the toolbar
@@ -27,7 +27,7 @@ export class EditorSaver {
 	}
 
 	/** Records unsaved content and reschedules the autosave. */
-	markUnsaved() {
+	scheduleSaving() {
 		if (this.current !== "Saving") {
 			this.current = "Not saved";
 		}

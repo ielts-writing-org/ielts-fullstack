@@ -33,6 +33,7 @@
 			practiceSessionId: props.practiceSessionId,
 			response: content
 		});
+		isDirty = false;
 	});
 
 	const saveState = $derived(saver.status);
@@ -60,7 +61,7 @@
 		isDirty = true;
 		// Rescheduling on every keystroke keeps the autosave 2s behind the last
 		// keystroke, even after a failed save.
-		saver.markUnsaved();
+		saver.scheduleSaving();
 	}
 
 	function handleReady() {
@@ -88,24 +89,22 @@
 			<div class="text-sm font-bold text-primary uppercase">{props.title}</div>
 		</div>
 	</div>
-	{#if props.linters.length}
-		{#if !isReady}
-			<div class="flex h-full flex-col items-center justify-center gap-2">
-				<span class="loading loading-infinity text-primary"></span>
-				<p class="text-sm">Loading editor...</p>
-			</div>
-		{/if}
-		<div class="flex flex-1 flex-col">
-			<Editor
-				linters={props.linters}
-				{content}
-				isEditable={isUnlocked}
-				wordTarget={props.wordTarget ?? 0}
-				placeholder={props.placeholder}
-				{saveState}
-				onRetrySave={saveNow}
-				onReady={handleReady}
-				onChange={handleContentChanged} />
+	{#if !isReady}
+		<div class="flex h-full flex-col items-center justify-center gap-2">
+			<span class="loading loading-infinity text-primary"></span>
+			<p class="text-sm">Loading editor...</p>
 		</div>
 	{/if}
+	<div class="flex flex-1 flex-col">
+		<Editor
+			linters={props.linters}
+			{content}
+			isEditable={isUnlocked}
+			wordTarget={props.wordTarget ?? 0}
+			placeholder={props.placeholder}
+			{saveState}
+			onRetrySave={saveNow}
+			onReady={handleReady}
+			onChange={handleContentChanged} />
+	</div>
 </div>

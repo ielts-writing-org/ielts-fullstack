@@ -133,6 +133,15 @@
 		<button popovertarget="practice-menu_file">File</button>
 		<div id="practice-menu_file" popover>
 			<ul class="menu">
+				{#if onSave}
+					<li>
+						<button disabled={!canSave} title="Save now (Ctrl+S)" onclick={onSave}>
+							<Save size="1em" />
+							Save All
+							<kbd class="kbd hidden kbd-sm lg:inline">Ctrl/Cmd S</kbd>
+						</button>
+					</li>
+				{/if}
 				<li>
 					<button onclick={() => run(handleRename)}>
 						<PenLine size="1em" />
@@ -211,18 +220,6 @@
 			</ul>
 		</div>
 	</nav>
-
-	{#if onSave}
-		<button
-			class="btn gap-1.5 btn-ghost btn-sm"
-			disabled={!canSave}
-			title="Save now (Ctrl+S)"
-			onclick={onSave}>
-			<Save class="size-4" />
-			Save
-			<kbd class="kbd hidden kbd-sm lg:inline">Ctrl S</kbd>
-		</button>
-	{/if}
 
 	<span class="flex-1"></span>
 

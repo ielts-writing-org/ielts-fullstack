@@ -67,7 +67,7 @@
 				role="progressbar">
 				{roundToNearestHalf(taskAvg).toFixed(1)}
 			</div>
-			<div class="text-xs">Task {taskCategory}</div>
+			<div class="text-xs text-base-content/75">Task {taskCategory}</div>
 		</div>
 	</div>
 {/snippet}

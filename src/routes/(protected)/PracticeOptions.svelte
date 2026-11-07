@@ -33,7 +33,7 @@
 <div class="grid grid-cols-1 gap-3 md:grid-cols-2">
 	{#each practiceOptions as option (option)}
 		<article
-			class="flex min-h-60 flex-col overflow-hidden rounded-box border border-base-content/20 bg-base-100 p-4">
+			class="flex min-h-66 flex-col overflow-hidden rounded-box border border-base-content/20 bg-base-100 p-4">
 			<div class="flex justify-between gap-1.5 text-xs">
 				<span class="badge rounded-box badge-soft badge-sm font-semibold badge-primary">
 					TASK {option.taskCategory}

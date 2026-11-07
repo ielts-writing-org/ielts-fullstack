@@ -35,6 +35,7 @@
 
 	const saver = new EditorSaver(async () => {
 		await saveTaskPrompt({ taskId: props.taskId, prompt: content });
+		isDirty = false;
 	});
 
 	const saveState = $derived(saver.status);
@@ -78,7 +79,7 @@
 		isDirty = true;
 		// Rescheduling on every keystroke keeps the autosave 2s behind the last
 		// keystroke, even after a failed save.
-		saver.markUnsaved();
+		saver.scheduleSaving();
 	}
 
 	function handleReady() {
@@ -152,29 +153,30 @@
 			</div>
 		{/if}
 	</div>
-	{#if props.linters.length}
-		{#if !isReady}
-			<div class="flex h-full flex-col items-center justify-center gap-2">
-				<span class="loading loading-infinity text-primary"></span>
-				<p class="text-sm">Loading editor...</p>
-			</div>
-		{/if}
-		<div class="flex flex-1 flex-col gap-2 lg:flex-row">
-			<Editor
-				linters={props.linters}
-				{content}
-				isEditable={isUnlocked}
-				{saveState}
-				onRetrySave={saveNow}
-				onReady={handleReady}
-				onChange={handleContentChanged} />
-
-			<!-- Image preview -->
-			{#if isReady && imageName}
-				<div class="flex min-h-fit flex-1 flex-col items-center justify-center gap-2">
-					<img src={getImageUrl(imageName)} alt={imageName} class="placeholder max-w-full" />
-				</div>
-			{/if}
+	{#if !isReady}
+		<div class="flex h-full flex-col items-center justify-center gap-2">
+			<span class="loading loading-infinity text-primary"></span>
+			<p class="text-sm">Loading editor...</p>
 		</div>
 	{/if}
+	<div class="flex flex-1 flex-col gap-2 lg:flex-row">
+		<Editor
+			linters={props.linters}
+			{content}
+			isEditable={isUnlocked}
+			{saveState}
+			onRetrySave={saveNow}
+			onReady={handleReady}
+			onChange={handleContentChanged} />
+
+		<!-- Image preview -->
+		{#if isReady && imageName}
+			<div class="flex min-h-fit flex-1 flex-col items-center justify-center gap-2">
+				<img
+					src={getImageUrl(imageName)}
+					alt={imageName}
+					class="placeholder max-w-full rounded-br-box" />
+			</div>
+		{/if}
+	</div>
 </div>
