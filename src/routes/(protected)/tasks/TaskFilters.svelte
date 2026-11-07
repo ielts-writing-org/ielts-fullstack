@@ -57,7 +57,7 @@
 </script>
 
 <section
-	class={["mt-4 rounded-box border border-base-content/20 bg-base-100 p-3", "hover:border-primary"]}
+	class="mt-4 rounded-box border border-base-content/20 bg-base-100 p-3"
 	aria-label="Filters">
 	<div class="flex flex-col gap-2.5 lg:flex-row lg:items-center lg:justify-between">
 		<label class="input w-full input-sm lg:max-w-sm">

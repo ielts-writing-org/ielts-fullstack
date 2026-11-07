@@ -27,7 +27,7 @@
 </script>
 
 <aside
-	class="flex flex-col gap-3 overflow-hidden rounded-box border border-base-content/20 bg-base-100 p-4 hover:border-primary"
+	class="flex flex-col gap-3 overflow-hidden rounded-box border border-base-content/20 bg-base-100 p-4"
 	aria-label="Progress">
 	<div>
 		<h2 class="font-semibold">Progress</h2>

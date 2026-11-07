@@ -27,7 +27,7 @@
 <article
 	class={[
 		"flex items-center gap-3 rounded-box border border-base-content/20 bg-base-100 p-3 transition-colors",
-		"hover:border-primary hover:shadow"
+		"hover:shadow"
 	]}>
 	<button
 		type="button"

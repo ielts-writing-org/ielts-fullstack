@@ -32,7 +32,6 @@
 		<label
 			class={[
 				"flex cursor-pointer items-start gap-2.5 rounded-box border p-3 transition-colors",
-				"hover:border-primary",
 				value === option.value ? "border-primary bg-primary/5" : "border-base-content/20"
 			]}>
 			<input

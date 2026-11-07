@@ -35,7 +35,7 @@
 
 {#if trendPoints.length > 1}
 	<section
-		class="mt-4 rounded-box border border-base-content/20 bg-base-100 p-3.5"
+		class="mt-4 rounded-box border border-base-content/20 bg-base-100 p-3"
 		aria-label="Progress over time">
 		<div class="flex flex-wrap items-center justify-between gap-2">
 			<div class="flex items-center gap-2">

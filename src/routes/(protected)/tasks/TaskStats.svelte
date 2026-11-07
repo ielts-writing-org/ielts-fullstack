@@ -30,7 +30,6 @@
 		<div
 			class={[
 				"flex basis-[48%] flex-col rounded-box border border-base-content/20 bg-base-100 p-3",
-				"hover:border-primary",
 				"xl:flex-1"
 			]}>
 			<div class="flex flex-1 items-center justify-between gap-2">

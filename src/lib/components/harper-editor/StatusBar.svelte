@@ -45,7 +45,7 @@
 </script>
 
 <footer
-	class="flex min-h-6.5 flex-[0_0_auto] items-center gap-3.5 overflow-x-auto rounded-br-box border-t-[0.5px] border-r-[0.5px] border-base-content/20 bg-base-300 px-2 pr-2 pl-3.5 font-mono text-[11px] text-base-content tabular-nums"
+	class="flex min-h-6.5 flex-[0_0_auto] items-center gap-3 overflow-x-auto rounded-br-box border-t-[0.5px] border-r-[0.5px] border-base-content/20 bg-base-300 px-2 pr-2 pl-3.5 font-mono text-[11px] text-base-content tabular-nums"
 	aria-label="Editor status">
 	<div class="inline-flex items-center gap-2">
 		<span class="inline-flex items-center gap-1.5">

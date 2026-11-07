@@ -75,9 +75,9 @@
 
 <article
 	class={[
-		"flex flex-col gap-3 rounded-box border border-base-content/20 bg-base-100 p-3.5 ",
+		"flex flex-col gap-3 rounded-box border border-base-content/20 bg-base-100 p-3",
 		"sm:flex-row lg:items-center",
-		"hover:border-primary hover:shadow"
+		"hover:shadow"
 	]}>
 	<div class="flex min-w-0 flex-1 flex-col">
 		<span class="badge rounded-box badge-soft badge-xs font-semibold badge-primary">

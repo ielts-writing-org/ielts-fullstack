@@ -16,7 +16,7 @@
 	const { practiceSessions }: Props = $props();
 </script>
 
-<div class="rounded-box border border-base-content/20 bg-base-100 p-3.5 hover:border-primary">
+<div class="rounded-box border border-base-content/20 bg-base-100 p-3">
 	<div class="mb-2.5 flex items-center justify-between">
 		<h2 class="text-sm font-semibold">Recent Practice Sessions</h2>
 		<a

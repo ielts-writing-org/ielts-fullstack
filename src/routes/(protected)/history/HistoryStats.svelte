@@ -39,8 +39,7 @@
 </section>
 
 {#snippet statTile(props: { icon: Component; label: string; value: string; hint?: string })}
-	<div
-		class="flex flex-col rounded-box border border-base-content/20 bg-base-100 p-3 hover:border-primary">
+	<div class="flex flex-col rounded-box border border-base-content/20 bg-base-100 p-3">
 		<div class="flex flex-1 items-center justify-between gap-2">
 			<span class="text-xs font-semibold text-base-content/75">{props.label}</span>
 			<props.icon class="size-4 shrink-0 opacity-60" />
@@ -59,8 +58,7 @@
 	average: number;
 	best: number;
 })}
-	<div
-		class="flex flex-col rounded-box border border-base-content/20 bg-base-100 p-3.5 hover:border-primary">
+	<div class="flex flex-col rounded-box border border-base-content/20 bg-base-100 p-3">
 		<div class="flex flex-1 items-center justify-between gap-2">
 			<span class="text-xs font-semibold text-base-content/75">{props.label}</span>
 			<props.icon class="size-4 shrink-0 opacity-60" />
