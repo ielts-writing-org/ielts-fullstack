@@ -23,7 +23,7 @@ export const evaluateRequestSchema = z
 	.superRefine((val, ctx) => {
 		const [min, max] = getResponseAcceptableWordCount(val.task.category);
 		const words = countWords(val.practiceSession.response);
-		if (words < min && words > max) {
+		if (words < min || words > max) {
 			ctx.addIssue(`Task prompt must be between ${min.toString()} and ${max.toString()} words`);
 		}
 	});

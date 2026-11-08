@@ -323,7 +323,9 @@
 
 		<div class="flex items-center gap-2 p-3">
 			{const isRequirementsMet = $derived(
-				isPromptWordCountMet && isResponseWordCountMet && isImageAttached
+				isPromptWordCountMet &&
+					isResponseWordCountMet &&
+					(props.practiceSessionContext.category === "2" || isImageAttached)
 			)}
 			<button
 				class="btn flex-1 btn-primary"

@@ -82,7 +82,8 @@
 			secondaryButton: {
 				text: "Cancel",
 				color: "primary"
-			}
+			},
+			bypassBusy: true
 		});
 	}
 
