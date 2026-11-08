@@ -42,5 +42,10 @@ export default defineConfig({
 				}
 			}
 		]
+	},
+	server: {
+		watch: {
+			ignored: ["src/**/*.svelte.{test,spec}.{js,ts}", "src/**/*.{test,spec}.{js,ts}"]
+		}
 	}
 });
