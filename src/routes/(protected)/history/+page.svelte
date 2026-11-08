@@ -1,6 +1,5 @@
 <script lang="ts">
 	import { goto, refreshAll } from "$app/navigation";
-	import { page } from "$app/state";
 	import { ArrowRight, PenLine, RotateCcwClock } from "@lucide/svelte";
 	import { openModal } from "#lib/components/Modal.svelte";
 	import { deletePracticeSession } from "#lib/remotes/command/delete-practice-session.remote.js";
@@ -11,11 +10,12 @@
 	import HistoryTrend from "./HistoryTrend.svelte";
 	import RenameSessionModal from "./RenameSessionModal.svelte";
 	import SessionCard from "./SessionCard.svelte";
+	import { getProfile } from "#lib/remotes/query/get-profile.remote.ts";
 
 	const { data } = $props();
 
 	const filters = $derived(data.filters);
-	const bandTarget = $derived(page.data.profile?.bandTarget ?? 0);
+	const bandTarget = $derived((await getProfile()).bandTarget ?? 0);
 	const hasFilters = $derived(
 		Boolean(filters.task || filters.subcategory || filters.type || filters.status || filters.q)
 	);
@@ -72,7 +72,7 @@
 
 	<HistoryTrend trend={data.trend} {bandTarget} />
 
-	<HistoryStats stats={data.stats} />
+	<HistoryStats stats={data.stats} {bandTarget} />
 
 	<HistoryFilters
 		{filters}
@@ -106,7 +106,7 @@
 			</div>
 		{:else}
 			{#each data.practiceSessions as session (session.id)}
-				<SessionCard {session} onRename={handleRename} onDelete={handleDelete} />
+				<SessionCard {session} {bandTarget} onRename={handleRename} onDelete={handleDelete} />
 			{/each}
 		{/if}
 	</section>

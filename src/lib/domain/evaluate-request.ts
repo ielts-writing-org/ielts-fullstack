@@ -1,32 +1,31 @@
-import { countWords } from "#lib/utils/stats.ts";
 import { z } from "zod";
 import { taskPromptSchema } from "./task-prompt";
+import { getResponseAcceptableWordCount, taskResponseSchema } from "./task-response";
+import { countWords } from "#lib/utils/stats.ts";
 
-const RESPONSE_MIN_WORDS = 125;
-const RESPONSE_MAX_WORDS = 320;
-
-const practiceSessionSchema = z.object({
-	response: z.string().refine((val) => {
-		const words = countWords(val);
-		return words >= RESPONSE_MIN_WORDS && words <= RESPONSE_MAX_WORDS;
-	}, `Task response must be between ${RESPONSE_MIN_WORDS.toString()} and ${RESPONSE_MAX_WORDS.toString()} words`)
-});
-
-const taskSchema = z.discriminatedUnion("category", [
-	z.object({
-		category: z.literal("1"),
-		prompt: taskPromptSchema,
-		imageName: z.string()
-	}),
-	z.object({
-		category: z.literal("2"),
-		prompt: taskPromptSchema
+export const evaluateRequestSchema = z
+	.object({
+		task: z.discriminatedUnion("category", [
+			z.object({
+				category: z.literal("1"),
+				prompt: taskPromptSchema,
+				imageName: z.string()
+			}),
+			z.object({
+				category: z.literal("2"),
+				prompt: taskPromptSchema
+			})
+		]),
+		practiceSession: z.object({
+			response: taskResponseSchema
+		})
 	})
-]);
-
-export const evaluateRequestSchema = z.object({
-	task: taskSchema,
-	practiceSession: practiceSessionSchema
-});
+	.superRefine((val, ctx) => {
+		const [min, max] = getResponseAcceptableWordCount(val.task.category);
+		const words = countWords(val.practiceSession.response);
+		if (words < min && words > max) {
+			ctx.addIssue(`Task prompt must be between ${min.toString()} and ${max.toString()} words`);
+		}
+	});
 
 export type EvaluateRequest = z.infer<typeof evaluateRequestSchema>;

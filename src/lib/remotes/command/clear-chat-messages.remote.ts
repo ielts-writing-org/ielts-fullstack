@@ -16,22 +16,22 @@ export const clearChatMessages = command(
 		const { user } = getApiSession(locals);
 
 		const db = getDb(env.IELTS_WRITING_DB);
-		const result = await db
-			.delete(chatMessages)
-			.where(
-				and(
-					eq(chatMessages.practiceSessionId, practiceSessionId),
-					exists(
-						db
-							.select({ id: practiceSessions.id })
-							.from(practiceSessions)
-							.where(eq(practiceSessions.userId, user.id))
+		const result = await db.delete(chatMessages).where(
+			exists(
+				db
+					.select({ id: practiceSessions.id })
+					.from(practiceSessions)
+					.where(
+						and(
+							eq(chatMessages.practiceSessionId, practiceSessionId),
+							eq(practiceSessions.userId, user.id)
+						)
 					)
-				)
-			);
+			)
+		);
 
 		if (!result.meta.changes) {
-			error(404, "Practice Session does not exist.");
+			error(404);
 		}
 
 		return { success: true };

@@ -1,13 +1,14 @@
 <script lang="ts">
-	import type { Lint, Linter } from "harper.js";
+	import { onDestroy, onMount, untrack } from "svelte";
 	import type Quill from "quill";
-	import { type EditorFontFamily, fontStackFor, normalizeFontFamily } from "./editor-display";
+	import type { Lint, Linter } from "harper.js";
+	import type { SaveState } from "#lib/domain/save-state.ts";
+	import type { IgnorableLintBox } from "./lint-framework/box";
 	import LintFramework from "./lint-framework/lint-framework";
 	import type { UnpackedLintGroups } from "./lint-framework/unpack-lint";
 	import unpackLint from "./lint-framework/unpack-lint";
+	import { type EditorFontFamily, fontStackFor, normalizeFontFamily } from "./editor-display";
 	import StatusBar from "./StatusBar.svelte";
-	import type { IgnorableLintBox } from "./lint-framework/box";
-	import { onDestroy, onMount, untrack } from "svelte";
 
 	interface Props {
 		name?: string;
@@ -17,7 +18,7 @@
 		isEditable?: boolean;
 		wordTarget?: number;
 		placeholder?: string;
-		saveState?: "unsaved" | "saving" | "saved" | "failed";
+		saveState?: SaveState;
 		onChange?: (text: string) => void;
 		onReady?: () => void;
 		onRetrySave?: () => void;

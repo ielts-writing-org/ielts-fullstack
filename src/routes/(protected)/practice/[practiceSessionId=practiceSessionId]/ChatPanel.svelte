@@ -4,8 +4,7 @@
 	import { marked } from "marked";
 	import { MessagesSquare, Send, Trash } from "@lucide/svelte";
 	import { openModal } from "#lib/components/Modal.svelte";
-	import type { ChatMessage } from "#lib/domain/chat-message.ts";
-	import { chatRequestSchema } from "#lib/domain/chat-request.ts";
+	import { chatMessageSchema, type ChatMessage } from "#lib/domain/chat-message.ts";
 	import type { Evaluation } from "#lib/domain/evaluation.ts";
 	import type { PracticeSessionContext } from "#lib/domain/task-context.ts";
 	import { getZodErrors } from "#lib/utils/error.ts";
@@ -20,7 +19,6 @@
 		evaluation: Evaluation | undefined;
 		messages: ChatMessage[];
 		isBusy: boolean;
-		/** Current draft of the chat input box, bindable so other panels can prefill it. */
 		input?: string;
 	};
 
@@ -30,6 +28,7 @@
 		input = $bindable(""),
 		...props
 	}: Props = $props();
+
 	let abortController = $state<AbortController>(new AbortController());
 
 	const CHAT_SUGGESTIONS = [
@@ -76,18 +75,7 @@
 
 			isBusy = true;
 
-			const result = chatRequestSchema.safeParse({
-				task: {
-					category: props.practiceSessionContext.category,
-					prompt: props.practiceSessionContext.prompt,
-					imageName: props.practiceSessionContext.imageName
-				},
-				practiceSession: {
-					response: props.practiceSessionContext.response
-				},
-				messages: [...messages, { from: "user", message }],
-				evaluation: props.evaluation
-			});
+			const result = chatMessageSchema.safeParse({ from: "user", message });
 
 			if (!result.success) {
 				const errors = getZodErrors(result.error);
@@ -111,20 +99,12 @@
 
 			if (!response.ok) {
 				const error = await response.json<App.Error>();
-				return openModal({
-					title: "Unable to chat",
-					content: `${error.status} - ${error.message}.`,
-					primaryButton: "Close"
-				});
+				throw new Error(`${error.status} - ${error.message}.`);
 			}
 
 			const stream = response.body;
 			if (!stream) {
-				return openModal({
-					title: "Unable to chat",
-					content: "Could not read response body.",
-					primaryButton: "Close"
-				});
+				throw new Error("Could not read response body.");
 			}
 
 			messages.push({ from: "user", message: message }, { from: "assistant", message: "" });
@@ -208,7 +188,6 @@
 							chat.from === "user" && "chat-end"
 						]}>
 						<div class="chat-header">{chat.from === "user" ? "You" : "AI Tutor"}</div>
-						<!-- Message content is sanitized with sanitize-html before rendering. -->
 						<div
 							class={[
 								"chat-bubble wrap-break-word",

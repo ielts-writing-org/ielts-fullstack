@@ -28,7 +28,7 @@
 		</button>
 	</div>
 	{#if targetReached}
-		<span class="badge self-start badge-sm font-semibold badge-success">Target reached</span>
+		<span class="badge self-start badge-xs font-semibold badge-success">Target reached</span>
 	{:else}
 		<p class="text-xs text-base-content/75">
 			{(bandTarget - overall).toFixed(1)} band away from your target

@@ -6,12 +6,13 @@ import { taskCategorySchema } from "#lib/domain/task-category.ts";
 import { practiceSessions, tasks } from "#lib/server/db/app.schema.ts";
 import { getDb } from "#lib/server/db/index.ts";
 import { getApiSession } from "#lib/server/auth/session.ts";
+import { practiceTypeSchema } from "#lib/domain/practice-type.ts";
 
 export const createPractice = command(
 	z.object({
 		taskCategory: taskCategorySchema,
 		taskId: z.uuidv7().optional(),
-		practiceSessionType: z.enum(["timed", "free"])
+		practiceSessionType: practiceTypeSchema
 	}),
 	async ({ taskCategory, taskId, practiceSessionType: practiceType }) => {
 		const { locals } = getRequestEvent();

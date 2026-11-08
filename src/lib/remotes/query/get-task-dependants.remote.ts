@@ -18,7 +18,7 @@ export const getTaskDependants = query(z.uuidv7(), async (taskId) => {
 	});
 
 	if (!task) {
-		error(404, "Task does not exist.");
+		error(404);
 	}
 
 	const rows = await db

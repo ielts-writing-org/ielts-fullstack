@@ -5,8 +5,8 @@
 	import type { Evaluation, EvaluationCriterion } from "#lib/domain/evaluation.ts";
 	import type { PracticeSessionContext } from "#lib/domain/task-context.ts";
 	import { openModal } from "#lib/components/Modal.svelte";
-	import { type EvaluateRequest, evaluateRequestSchema } from "#lib/domain/evaluate-request.ts";
-	import { convertBandToProgressValue, getBandTone, getMinWords } from "#lib/utils/ielts.ts";
+	import { convertBandToProgressValue } from "#lib/utils/ielts.ts";
+	import { getResponseAcceptableWordCount } from "#lib/domain/task-response.ts";
 	import { countWords } from "#lib/utils/stats.ts";
 	import type { Criteria } from "#lib/domain/criteria.ts";
 	import { isCriteriaKey } from "#lib/domain/criteria.ts";
@@ -15,39 +15,53 @@
 	import { saveEvaluation } from "#lib/remotes/command/save-evaluation.remote.ts";
 	import { readAiStream } from "#lib/utils/stream.ts";
 	import EvaluationCriteria from "./EvaluationCriteria.svelte";
+	import { evaluateRequestSchema, type EvaluateRequest } from "#lib/domain/evaluate-request.ts";
+	import { getPromptAcceptableWordCount } from "#lib/domain/task-prompt.ts";
 
 	type Props = {
 		practiceSessionId: string;
 		practiceSessionContext: PracticeSessionContext;
 		evaluation: Evaluation | undefined;
 		isBusy: boolean;
-		/** Asks the tutor panel to open with a prefilled question. */
+		bandTarget: number | null;
 		onAskTutor: (question: string) => void;
 	};
 
 	let { evaluation = $bindable(), isBusy = $bindable(), ...props }: Props = $props();
 
 	let abortController = $state<AbortController>(new AbortController());
-
-	/** Key of the criterion detail that should start out expanded. */
 	let openCriterionKey = $state<Criteria | null>(null);
 
 	const estimatedBand = $derived(evaluation?.estimatedBand);
-	const minWords = $derived(getMinWords(props.practiceSessionContext.category));
-	const wordCount = $derived(countWords(props.practiceSessionContext.response));
+	const promptWC = $derived(countWords(props.practiceSessionContext.prompt));
+	const responseWC = $derived(countWords(props.practiceSessionContext.response));
+	const [minPromptWC, maxPromptWC] = $derived(getPromptAcceptableWordCount());
+	const [minResponseWC, maxResponseWC] = $derived(
+		getResponseAcceptableWordCount(props.practiceSessionContext.category)
+	);
+	const isPromptWordCountMet = $derived(promptWC >= minPromptWC && promptWC <= maxPromptWC);
+	const isResponseWordCountMet = $derived.by(() => {
+		return responseWC >= minResponseWC && responseWC <= maxResponseWC;
+	});
+	const isImageAttached = $derived(Boolean(props.practiceSessionContext.imageName));
 	const readiness = $derived.by(() => {
 		const items = [
 			{
-				label: `Write at least ${minWords} words`,
-				done: wordCount >= minWords,
-				hint: `${wordCount} / ${minWords}`
+				label: `Write prompt between ${minPromptWC} and ${maxPromptWC} words`,
+				done: isPromptWordCountMet,
+				hint: `${promptWC} / ${minPromptWC}`
+			},
+			{
+				label: `Write response between ${minResponseWC} and ${maxResponseWC} words`,
+				done: isResponseWordCountMet,
+				hint: `${responseWC} / ${minResponseWC}`
 			}
 		];
 
 		if (props.practiceSessionContext.category === "1") {
 			items.push({
 				label: "Attach the task image",
-				done: Boolean(props.practiceSessionContext.imageName),
+				done: isImageAttached,
 				hint: props.practiceSessionContext.imageName ? "Attached" : "Required"
 			});
 		}
@@ -61,38 +75,36 @@
 			estimatedBand: 0
 		};
 
-		const emptyCriterion = {
+		const emptyCriterion: EvaluationCriterion = {
 			band: 0,
 			checks: [],
 			strengths: [],
 			weaknesses: [],
 			why: "",
 			nextBandGap: ""
-		} satisfies EvaluationCriterion;
-
-		if (category === "1") {
-			return {
-				...common,
-				taskCategory: "1",
-				criteria: {
-					taskAchievement: { ...emptyCriterion },
-					coherenceAndCohesion: { ...emptyCriterion },
-					lexicalResource: { ...emptyCriterion },
-					grammaticalRangeAndAccuracy: { ...emptyCriterion }
-				}
-			};
-		}
-
-		return {
-			...common,
-			taskCategory: "2",
-			criteria: {
-				taskResponse: { ...emptyCriterion },
-				coherenceAndCohesion: { ...emptyCriterion },
-				lexicalResource: { ...emptyCriterion },
-				grammaticalRangeAndAccuracy: { ...emptyCriterion }
-			}
 		};
+
+		return category === "1"
+			? {
+					...common,
+					taskCategory: "1",
+					criteria: {
+						taskAchievement: { ...emptyCriterion },
+						coherenceAndCohesion: { ...emptyCriterion },
+						lexicalResource: { ...emptyCriterion },
+						grammaticalRangeAndAccuracy: { ...emptyCriterion }
+					}
+				}
+			: {
+					...common,
+					taskCategory: "2",
+					criteria: {
+						taskResponse: { ...emptyCriterion },
+						coherenceAndCohesion: { ...emptyCriterion },
+						lexicalResource: { ...emptyCriterion },
+						grammaticalRangeAndAccuracy: { ...emptyCriterion }
+					}
+				};
 	}
 
 	function assignCriterion(target: Evaluation, key: Criteria, criterion: EvaluationCriterion) {
@@ -103,7 +115,6 @@
 		}
 	}
 
-	/** The criterion with the lowest band, used to pre-open its details. */
 	function weakestCriterionKey(current: Evaluation | undefined): Criteria | null {
 		if (!current) {
 			return null;
@@ -153,28 +164,19 @@
 			evaluation = createEmptyEvaluation(props.practiceSessionContext.category);
 
 			const response = await fetch(`${page.url.pathname}/evaluate`, {
-				body: JSON.stringify(result.data),
-				credentials: "include",
 				method: "POST",
+				credentials: "include",
 				signal: abortController.signal
 			});
 
 			if (!response.ok) {
 				const error = await response.json<App.Error>();
-				return openModal({
-					title: "Unable to evaluate",
-					content: `${error.status} - ${error.message}.`,
-					primaryButton: "Close"
-				});
+				throw new Error(`${error.status} - ${error.message}.`);
 			}
 
 			const stream = response.body;
 			if (!stream) {
-				return openModal({
-					title: "Unable to evaluate",
-					content: "Could not read response body",
-					primaryButton: "Close"
-				});
+				throw new Error("Could not read response body");
 			}
 
 			const parser = new JSONParser({ paths: ["$", "$.*", "$.criteria.*"] });
@@ -281,7 +283,12 @@
 					]}>
 					{#if estimatedBand}
 						<div
-							class={["radial-progress text-3xl font-bold", getBandTone(estimatedBand)]}
+							class={[
+								"radial-progress text-3xl font-bold",
+								props.bandTarget && estimatedBand >= props.bandTarget
+									? "text-success"
+									: "text-warning"
+							]}
 							style:--value={convertBandToProgressValue(estimatedBand)}
 							role="progressbar"
 							aria-label="Estimated band"
@@ -315,8 +322,14 @@
 		</div>
 
 		<div class="flex items-center gap-2 p-3">
-			<button class="group btn flex-1 btn-primary" onclick={handleEvaluate} disabled={isBusy}>
-				<span class="loading loading-infinity not-group-disabled:hidden"></span>
+			{const isRequirementsMet = $derived(
+				isPromptWordCountMet && isResponseWordCountMet && isImageAttached
+			)}
+			<button
+				class="btn flex-1 btn-primary"
+				onclick={handleEvaluate}
+				disabled={isBusy || !isRequirementsMet}>
+				<span class={["loading hidden loading-infinity", isBusy && "inline-block"]}></span>
 				{#if isBusy}
 					Evaluating...
 				{:else if evaluation}

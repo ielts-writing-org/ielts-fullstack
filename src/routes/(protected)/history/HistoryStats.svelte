@@ -3,10 +3,9 @@
 	import { CircleCheck, FileText, PenLine, PieChart } from "@lucide/svelte";
 	import { roundToNearestHalf } from "#lib/utils/math.ts";
 	import { type HistoryStats } from "./utils.ts";
-	import { getBandTone } from "#lib/utils/ielts.ts";
 
-	type Props = { stats: HistoryStats };
-	let { stats }: Props = $props();
+	type Props = { stats: HistoryStats; bandTarget: number | null };
+	let { stats, bandTarget }: Props = $props();
 </script>
 
 <section class="mt-4 grid grid-cols-2 gap-3 xl:grid-cols-4" aria-label="Practice summary">
@@ -60,20 +59,32 @@
 })}
 	<div class="flex flex-col rounded-box border border-base-content/20 bg-base-100 p-3">
 		<div class="flex flex-1 items-center justify-between gap-2">
-			<span class="text-xs font-semibold text-base-content/75">{props.label}</span>
+			<span class="text-xs font-semibold text-base-content/75">
+				{props.label} (Highest/Average)
+			</span>
 			<props.icon class="size-4 shrink-0 opacity-60" />
 		</div>
 		<div class="mt-1.5 text-2xl font-bold">
 			{#if props.evaluated > 0}
-				<span class={getBandTone(props.best)}>{props.best.toFixed(1)}</span>
+				<span class={[bandTarget && props.best >= bandTarget ? "text-success" : "text-warning"]}>
+					{props.best.toFixed(1)}
+				</span>
+				<span class="text-base-content/75">/</span>
+				<span
+					class={[
+						bandTarget && roundToNearestHalf(props.average) >= bandTarget
+							? "text-success"
+							: "text-warning"
+					]}>
+					{roundToNearestHalf(props.average).toFixed(1)}
+				</span>
 			{:else}
-				–
+				-
 			{/if}
 		</div>
 		<p class="text-xs text-base-content/75">
 			{#if props.evaluated > 0}
-				Average {roundToNearestHalf(props.average).toFixed(1)} · {props.evaluated}
-				{props.evaluated === 1 ? "session" : "sessions"}
+				{props.evaluated} {props.evaluated === 1 ? "session" : "sessions"}
 			{:else}
 				No evaluated sessions yet
 			{/if}

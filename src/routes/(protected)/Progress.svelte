@@ -1,7 +1,6 @@
 <script lang="ts">
 	import { Target } from "@lucide/svelte";
-	import { roundToNearestHalf } from "#lib/utils/math.ts";
-	import { getBandTone, convertBandToProgressValue } from "#lib/utils/ielts.ts";
+	import { convertBandToProgressValue } from "#lib/utils/ielts.ts";
 	import BandTarget from "./BandTarget.svelte";
 	import BandTrend from "./BandTrend.svelte";
 	import CriteriaBreakdown from "./CriteriaBreakdown.svelte";
@@ -16,13 +15,11 @@
 			estimatedBand: number;
 		};
 		bandTarget: number;
-		/** Overall bands of the most recent evaluated sessions, oldest first. */
 		trend: number[];
 		evaluatedCount: number;
 	};
 	let { statistics, bandTarget, trend, evaluatedCount }: Props = $props();
 
-	const overall = $derived(roundToNearestHalf(statistics.estimatedBand));
 	const hasEvaluations = $derived(evaluatedCount > 0);
 </script>
 
@@ -49,21 +46,24 @@
 		<div class="flex items-center gap-4">
 			<div class="flex flex-col items-center">
 				<div
-					class={["radial-progress font-bold", getBandTone(overall)]}
-					style:--value={convertBandToProgressValue(overall)}
+					class={[
+						"radial-progress font-bold",
+						statistics.estimatedBand >= bandTarget ? "text-success" : "text-warning"
+					]}
+					style:--value={convertBandToProgressValue(statistics.estimatedBand)}
 					style:--size="4.75em"
 					role="progressbar"
 					aria-label="Overall average band"
-					aria-valuenow={overall}
+					aria-valuenow={statistics.estimatedBand}
 					aria-valuemin={0}
 					aria-valuemax={9}>
-					{overall.toFixed(1)}
+					{statistics.estimatedBand.toFixed(1)}
 				</div>
 				<span class="mt-1 text-xs text-base-content/75">Overall</span>
 			</div>
 
 			<div class="flex min-w-0 flex-1 flex-col gap-2">
-				<BandTarget {bandTarget} {overall} />
+				<BandTarget {bandTarget} overall={statistics.estimatedBand} />
 				<BandTrend {trend} />
 			</div>
 		</div>

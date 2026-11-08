@@ -13,7 +13,8 @@
 		TriangleAlert
 	} from "@lucide/svelte";
 	import { openModal } from "#lib/components/Modal.svelte";
-	import { getBandTone, getMinWords, getTimeLimitInMinutes } from "#lib/utils/ielts.js";
+	import { getTimeLimitInMinutes } from "#lib/utils/ielts.js";
+	import { getResponseIdealWordCount } from "#lib/domain/task-response.ts";
 	import { getTaskSubcategoryLabel } from "#lib/domain/task-subcategory.ts";
 	import { CRITERIA_LABELS } from "#lib/domain/criteria.js";
 	import { formatRelativeTime } from "#lib/utils/time.js";
@@ -21,10 +22,11 @@
 
 	type Props = {
 		session: SessionItem;
+		bandTarget: number | null;
 		onRename: (session: SessionItem) => void;
 		onDelete: (session: SessionItem) => void;
 	};
-	let { session, onRename, onDelete }: Props = $props();
+	let { session, bandTarget, onRename, onDelete }: Props = $props();
 
 	let copiedSessionId = $state<string | null>(null);
 
@@ -111,16 +113,18 @@
 			</span>
 			<span
 				class="tooltip tooltip-top"
-				data-tip={session.words >= getMinWords(session.taskCategory)
-					? `Meets the ${getMinWords(session.taskCategory)}-word minimum`
-					: `Below the ${getMinWords(session.taskCategory)}-word minimum`}>
+				data-tip={session.words >= getResponseIdealWordCount(session.taskCategory)
+					? `Meets the ${getResponseIdealWordCount(session.taskCategory)}-word minimum`
+					: `Below the ${getResponseIdealWordCount(session.taskCategory)}-word minimum`}>
 				<span class="flex items-center gap-1">
 					<FileText size="1em" />
 					<span
-						class={session.words < getMinWords(session.taskCategory) ? "text-warning" : undefined}>
+						class={session.words < getResponseIdealWordCount(session.taskCategory)
+							? "text-warning"
+							: undefined}>
 						{session.words} words
 					</span>
-					{#if session.words >= getMinWords(session.taskCategory)}
+					{#if session.words >= getResponseIdealWordCount(session.taskCategory)}
 						<Check class="size-3 text-success" />
 					{:else}
 						<TriangleAlert class="size-3 text-warning" />
@@ -135,7 +139,10 @@
 			<div class="flex items-center gap-3">
 				<div class="flex flex-col items-center">
 					<div
-						class={["radial-progress font-semibold", getBandTone(session.estimatedBand)]}
+						class={[
+							"radial-progress font-semibold",
+							bandTarget && session.estimatedBand >= bandTarget ? "text-success" : "text-warning"
+						]}
 						style:--value={(session.estimatedBand / 9) * 100}
 						style:--size="3.25em"
 						role="progressbar"
@@ -152,7 +159,10 @@
 					{#each rings as ring (ring.key)}
 						<div class="tooltip tooltip-top" data-tip={`${ring.label}: ${ring.band}`}>
 							<div
-								class={["radial-progress text-xs", getBandTone(ring.band)]}
+								class={[
+									"radial-progress text-xs",
+									bandTarget && ring.band >= bandTarget ? "text-success" : "text-warning"
+								]}
 								style:--value={(ring.band / 9) * 100}
 								style:--size="2.25em"
 								role="progressbar"

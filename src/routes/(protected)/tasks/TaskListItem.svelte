@@ -8,7 +8,6 @@
 		PenLine,
 		Trash
 	} from "@lucide/svelte";
-	import { getBandBadgeTone } from "#lib/utils/ielts.js";
 	import { formatRelativeTime } from "#lib/utils/time.js";
 	import { getTaskSubcategoryLabel } from "#lib/domain/task-subcategory.ts";
 	import { type TaskItem } from "./links.ts";
@@ -16,12 +15,13 @@
 
 	type Props = {
 		task: TaskItem;
+		bandTarget: number | null;
 		onDetails: () => void;
 		onPractice: () => void;
 		onEdit: () => void;
 		onDelete: () => void;
 	};
-	let { task, onDetails, onPractice, onEdit, onDelete }: Props = $props();
+	let { task, bandTarget, onDetails, onPractice, onEdit, onDelete }: Props = $props();
 </script>
 
 <article
@@ -73,7 +73,11 @@
 				<span class="badge badge-soft badge-xs">{getTaskSubcategoryLabel(task.subcategory)}</span>
 			{/if}
 			{#if task.bestBand !== null}
-				<span class={["badge badge-soft badge-xs", getBandBadgeTone(task.bestBand)]}>
+				<span
+					class={[
+						"badge badge-soft badge-xs",
+						bandTarget && task.bestBand >= bandTarget ? "badge-success" : "badge-warning"
+					]}>
 					Best band {task.bestBand.toFixed(1)}
 				</span>
 			{/if}

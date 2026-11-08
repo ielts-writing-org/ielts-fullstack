@@ -1,7 +1,6 @@
 <script lang="ts">
 	import { resolve } from "$app/paths";
 	import { ChevronRight, RotateCcwClock } from "@lucide/svelte";
-	import { getBandTone } from "#lib/utils/ielts.js";
 
 	type Props = {
 		practiceSessions: {
@@ -11,9 +10,10 @@
 			meta: string;
 			name: string;
 		}[];
+		bandTarget: number | null;
 	};
 
-	const { practiceSessions }: Props = $props();
+	const { practiceSessions, bandTarget = 0 }: Props = $props();
 </script>
 
 <div class="rounded-box border border-base-content/20 bg-base-100 p-3">
@@ -49,11 +49,13 @@
 				<span
 					class={[
 						"text-right text-xs",
-						practiceSession.band ? getBandTone(practiceSession.band) : ""
+						practiceSession.band && bandTarget
+							? practiceSession.band >= bandTarget
+								? "text-success"
+								: "text-warning"
+							: "text-base-content/75"
 					]}>
-					{practiceSession.band
-						? `Overall band ${practiceSession.band.toFixed(1)}`
-						: "No evaluation"}
+					{practiceSession.band ? `Band ${practiceSession.band.toFixed(1)}` : "No evaluation"}
 				</span>
 			</a>
 		{/each}

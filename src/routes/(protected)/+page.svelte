@@ -66,7 +66,7 @@
 	</section>
 
 	<section class="mt-4 grid w-full grid-cols-1 gap-4 lg:grid-cols-[1.55fr_1fr]">
-		<RecentPracticeSessions practiceSessions={data.practices} />
+		<RecentPracticeSessions practiceSessions={data.practices} bandTarget={profile.bandTarget} />
 		<About />
 	</section>
 </main>

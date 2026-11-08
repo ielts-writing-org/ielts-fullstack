@@ -13,6 +13,7 @@
 	import TaskFilters from "./TaskFilters.svelte";
 	import TaskPagination from "./TaskPagination.svelte";
 	import TaskPracticeSetup from "./TaskPracticeSetup.svelte";
+	import { getProfile } from "#lib/remotes/query/get-profile.remote.ts";
 
 	const { data } = $props();
 
@@ -132,6 +133,7 @@
 			{#each data.tasks as task (task.id)}
 				<TaskListItem
 					{task}
+					bandTarget={(await getProfile()).bandTarget}
 					onDetails={() => openDetailsModal(task)}
 					onPractice={() => openPracticeModal(task)}
 					onEdit={() => openEditModal(task)}

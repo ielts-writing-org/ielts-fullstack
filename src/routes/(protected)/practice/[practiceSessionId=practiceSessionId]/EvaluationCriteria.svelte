@@ -7,9 +7,7 @@
 	type Props = {
 		evaluation: Evaluation;
 		isBusy: boolean;
-		/** Key of the criterion detail that should be expanded. */
 		openCriterionKey: Criteria | null;
-		/** Asks the tutor panel to open with a prefilled question. */
 		onAskTutor: (question: string) => void;
 	};
 
@@ -76,20 +74,19 @@
 					<span class="font-semibold">Summary:</span>
 					{criterion.why}
 				</p>
-				<p class="text-base-content/75">
-					<span class="font-semibold">Advice:</span>
-					{criterion.nextBandGap}
-				</p>
-				<button
-					type="button"
-					class="btn mt-1 self-start btn-ghost text-primary btn-xs"
-					onclick={() =>
-						onAskTutor(
-							`How can I improve my ${CRITERIA_LABELS[key]} band? The evaluation says: "${criterion.nextBandGap}"`
-						)}>
-					<MessagesSquare class="size-3.5" />
-					Ask the tutor how to get there
-				</button>
+				{#if criterion.nextBandGap}
+					<p class="text-base-content/75">
+						<span class="font-semibold">Advice:</span>
+						{criterion.nextBandGap}
+					</p>
+					<button
+						type="button"
+						class="btn mt-1 self-start btn-ghost text-primary btn-xs"
+						onclick={() => onAskTutor(`How can I improve my ${CRITERIA_LABELS[key]} band?"`)}>
+						<MessagesSquare class="size-3.5" />
+						Ask the tutor how to get there
+					</button>
+				{/if}
 
 				{const checks = $state(criterion.checks)}
 				{#if checks && checks.length > 0}

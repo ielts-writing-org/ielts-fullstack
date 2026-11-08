@@ -3,7 +3,7 @@ import { error } from "@sveltejs/kit";
 import { env } from "cloudflare:workers";
 import { and, eq } from "drizzle-orm";
 import { z } from "zod";
-import { practiceSessions, tasks } from "#lib/server/db/app.schema.ts";
+import { tasks } from "#lib/server/db/app.schema.ts";
 import { getDb } from "#lib/server/db/index.ts";
 import { getApiSession } from "#lib/server/auth/session.ts";
 
@@ -20,11 +20,10 @@ export const saveTaskPrompt = command(
 		const result = await db
 			.update(tasks)
 			.set({ prompt })
-			.from(practiceSessions)
 			.where(and(eq(tasks.id, taskId), eq(tasks.userId, user.id)));
 
 		if (!result.meta.changes) {
-			error(404, "Task does not exist");
+			error(404);
 		}
 
 		return { success: true };

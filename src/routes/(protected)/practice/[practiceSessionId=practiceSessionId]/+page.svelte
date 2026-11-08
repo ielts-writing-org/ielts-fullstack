@@ -5,7 +5,7 @@
 	import type { TaskCategory } from "#lib/domain/task-category.js";
 	import PreventLeaving from "#lib/components/PreventLeaving.svelte";
 	import { openModal } from "#lib/components/Modal.svelte";
-	import { getMinWords } from "#lib/utils/ielts.ts";
+	import { getResponseIdealWordCount } from "#lib/domain/task-response.js";
 	import { setTimedUpAction } from "#lib/remotes/command/set-timed-up-action.remote.js";
 	import { getLinters } from "#lib/components/harper-editor/linters.js";
 	import DocumentBar from "./DocumentBar.svelte";
@@ -40,7 +40,7 @@
 
 	let timedUpAction = $derived(data.timedUpAction);
 
-	const minWords = $derived(getMinWords(category));
+	const minWords = $derived(getResponseIdealWordCount(category));
 
 	const responsePlaceholder = $derived(
 		category === "1"
@@ -85,7 +85,7 @@
 	<meta name="description" content={data.title} />
 </svelte:head>
 
-<PreventLeaving by={isPromptDirty || isResponseDirty || isEvaluationBusy || isChatBusy} />
+<PreventLeaving canLeave={!isPromptDirty && !isResponseDirty && !isEvaluationBusy && !isChatBusy} />
 
 <main
 	id="main-content"
