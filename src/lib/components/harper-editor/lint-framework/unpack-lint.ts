@@ -1,5 +1,4 @@
-import { type Lint, type Linter, SuggestionKind } from "harper.js";
-import type { LintKind } from "./lint-kind-color";
+import { type Lint, type Linter, type LintKind, SuggestionKind } from "harper.js";
 
 export type UnpackedSpan = {
 	start: number;

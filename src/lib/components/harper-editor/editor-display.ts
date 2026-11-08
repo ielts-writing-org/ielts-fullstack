@@ -1,12 +1,3 @@
-/**
- * Shared display configuration and helpers for the Harper editor UI.
- *
- * This module keeps editor-only presentation choices, such as lint-kind styles,
- * lint-kind ordering, font options, and small formatting helpers, out of Svelte
- * components. Canonical linting concepts still come from `harper.js` and
- * `lint-framework`; this file only describes how those values should appear in
- * the editor.
- */
 export type EditorFontFamily = "sans" | "serif" | "mono";
 
 export const FONT_OPTIONS: {
@@ -25,7 +16,7 @@ export const FONT_OPTIONS: {
 		value: "serif",
 		label: "Serif",
 		sample: "Aa",
-		stack: "'Iowan Old Style', 'New York', Georgia, serif"
+		stack: "'Iowan Old Style', 'New York', 'Times New Roman', Georgia, serif"
 	},
 	{
 		value: "mono",
@@ -35,12 +26,6 @@ export const FONT_OPTIONS: {
 	}
 ];
 
-/**
- * Convert persisted or caller-provided font family values to a supported option.
- *
- * This keeps the editor resilient to stale settings or arbitrary input while
- * preserving a predictable default.
- */
 export function normalizeFontFamily(value: string): EditorFontFamily {
 	if (value === "serif" || value === "mono") {
 		return value;
@@ -49,12 +34,6 @@ export function normalizeFontFamily(value: string): EditorFontFamily {
 	return "sans";
 }
 
-/**
- * Resolve an editor font family option to the CSS stack used by the editor.
- *
- * Components call this instead of duplicating font-stack strings or fallback
- * behavior.
- */
 export function fontStackFor(value: EditorFontFamily): string {
 	return FONT_OPTIONS.find((option) => option.value === value)?.stack ?? FONT_OPTIONS[0].stack;
 }

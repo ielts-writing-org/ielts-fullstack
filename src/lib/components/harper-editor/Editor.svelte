@@ -7,171 +7,55 @@
 	import unpackLint from "./lint-framework/unpack-lint";
 	import StatusBar from "./StatusBar.svelte";
 	import type { IgnorableLintBox } from "./lint-framework/box";
-	import { onDestroy, onMount, tick, untrack } from "svelte";
+	import { onDestroy, onMount, untrack } from "svelte";
 
 	interface Props {
+		name?: string;
 		content?: string;
 		linters: Linter[];
-		onReady?: () => void;
 		defaultFontFamily?: EditorFontFamily;
-		onChange?: (text: string) => void;
 		isEditable?: boolean;
-		/** Minimum acceptable word count, surfaced in the status bar. */
 		wordTarget?: number;
-		/** Quill placeholder shown while the document is empty. */
 		placeholder?: string;
-		/** Document save state, surfaced in the status bar when provided. */
 		saveState?: "unsaved" | "saving" | "saved" | "failed";
-		/** Retries the save after a failure. */
+		onChange?: (text: string) => void;
+		onReady?: () => void;
 		onRetrySave?: () => void;
 	}
 
 	let {
-		content = "",
+		name,
 		linters,
-		onReady = () => null,
+		content = "",
 		defaultFontFamily = "serif",
-		onChange = () => {},
 		isEditable = true,
 		wordTarget = 0,
 		placeholder = "Start writing...",
 		saveState,
-		onRetrySave = () => {}
+		onChange,
+		onReady,
+		onRetrySave
 	}: Props = $props();
 
 	let editor = $state<HTMLDivElement>();
 	let quill = $state<Quill>();
-	let lintBoxes: IgnorableLintBox[] = $state([]);
-	let activeLintId = $state<string | null>(null);
-	let documentText = $derived(content);
-	let fontFamily = $state<EditorFontFamily>(untrack(() => normalizeFontFamily(defaultFontFamily)));
-	let readySent = $state(false);
+	let lintBoxes = $state<IgnorableLintBox[]>([]);
+	let documentText = $derived<string>(content);
+	let fontFamily = $derived<EditorFontFamily>(defaultFontFamily);
 
 	let lfw = $state<LintFramework>();
-	let mutationObserver = $state<MutationObserver>();
 	let quillTextChangeHandler: (() => void) | null = null;
-
-	function merge<T extends UnpackedLintGroups>(o1: T, o2: T): T {
-		return Object.fromEntries(
-			Object.keys(o1).map((key) => [
-				key,
-				["SpellCheck", "Regionalisms"].includes(key)
-					? o1[key].filter((x) => o2[key].map((m) => m.context_hash).includes(x.context_hash))
-					: [
-							...o1[key],
-							...o2[key].filter((x) => !o1[key].map((m) => m.context_hash).includes(x.context_hash))
-						]
-			])
-		) as T;
-	}
-
-	onMount(async () => {
-		lfw = new LintFramework(
-			async (text) => {
-				const raws = await Promise.all(linters.map((l) => l.organizedLints(text)));
-
-				const groupedByLinters: UnpackedLintGroups[] = await Promise.all(
-					raws.map(async (raw, i) => {
-						// The framework expects grouped lints keyed by source
-						const entries = await Promise.all(
-							// Convert internal Harper.js Lint to custom UnpackedLint (avoid depending on external library)
-							Object.entries(raw).map(async ([source, lintGroup]: [string, Lint[]]) => {
-								const unpacked = await Promise.all(
-									lintGroup.map((lint) => unpackLint(text, lint, linters[i]))
-								);
-								lintGroup.forEach((l) => {
-									l.free();
-								});
-
-								return [source, unpacked] as const;
-							})
-						);
-
-						return Object.fromEntries(entries);
-					})
-				);
-
-				// TODO: Support more linters
-				return merge(groupedByLinters[0], groupedByLinters[1]);
-			},
-			{
-				ignoreLint: async (hash: string) => {
-					try {
-						if (!lfw) {
-							return;
-						}
-
-						await Promise.all(linters.map((l) => l.ignoreLintHash(BigInt(hash))));
-						console.log(`Ignored ${hash}`);
-						// Re-run linting to hide ignored lint immediately
-						lfw.update();
-						scheduleLintBoxSync();
-					} catch (e) {
-						console.error("Failed to ignore lint", e);
-					}
-				},
-				getDelay: async () => 250
-			}
-		);
-
-		lintBoxes = [];
-
-		await tick();
-		await Promise.all(linters.map((l) => l.setup()));
-		await Promise.all(linters.map((l) => l.lint(content)));
-
-		if (!editor) {
-			throw new Error("Editor element not found");
-		}
-
-		mutationObserver = new MutationObserver(updateLintFrameworkElements);
-		mutationObserver.observe(editor, { childList: true, subtree: true });
-		await updateLintFrameworkElements();
-
-		if (quill != null && !readySent) {
-			readySent = true;
-			onReady();
-		}
-	});
-
-	onDestroy(() => {
-		if (quill != null && quillTextChangeHandler != null) {
-			quill.off("text-change", quillTextChangeHandler);
-			quillTextChangeHandler = null;
-		}
-
-		mutationObserver?.disconnect();
-		mutationObserver = undefined;
-
-		lfw?.removeAllEventListeners();
-		lfw = undefined;
-	});
 
 	async function updateLintFrameworkElements() {
 		if (!editor || !lfw) {
 			return;
 		}
 
-		if (quill == null) {
-			let { default: Quill } = await import("quill");
-			quill = new Quill(editor, { placeholder });
-			const container = quill.container ?? quill.root?.parentElement;
-			container?.classList.add("harper-editor-quill-container");
-
-			quill.root?.classList.add("harper-editor-surface");
-			quill.root?.setAttribute("data-enable-grammarly", "false");
-			quill.root?.setAttribute("spellcheck", "false");
-			setQuillText(content, false);
-			quillTextChangeHandler = () => {
-				syncDocumentText(true);
-				scheduleLintFrameworkUpdate();
-			};
-			quill.on("text-change", quillTextChangeHandler);
-		}
-
 		for (let el of editor.getElementsByTagName("p")) {
 			lfw.addTarget(el);
 		}
+
+		lfw.update();
 	}
 
 	// Quill always keeps a trailing document newline; callers expect plain text.
@@ -203,54 +87,141 @@
 
 		documentText = next;
 		if (notify) {
-			onChange(next);
+			onChange?.(next);
 		}
 	}
 
-	// The lint framework owns highlight DOM, so copy its latest boxes into Svelte state.
-	function syncLintBoxes() {
-		if (!lfw) {
-			return;
-		}
-
-		lintBoxes = [...lfw.getLastIgnorableLintBoxes()];
-		if (
-			activeLintId != null &&
-			!lintBoxes.some((lintBox) => lintBox.lint.context_hash === activeLintId)
-		) {
-			activeLintId = null;
-		}
-	}
-
-	function scheduleLintBoxSync() {
-		requestAnimationFrame(syncLintBoxes);
-	}
-
-	// Refresh target elements, ask the framework to lint, then mirror its current boxes.
 	function scheduleLintFrameworkUpdate() {
-		if (!lfw) {
-			return;
-		}
-		updateLintFrameworkElements();
-		lfw.update();
-		scheduleLintBoxSync();
+		requestAnimationFrame(updateLintFrameworkElements);
 	}
 
-	$effect(() => {
-		if (isEditable) {
-			quill?.enable();
-		} else {
-			quill?.disable();
+	function getEditorName() {
+		return name ? name : "default";
+	}
+
+	function loadFontFamily() {
+		const savedFontFamily = localStorage.getItem(`font-family-${getEditorName()}`);
+		if (savedFontFamily) {
+			fontFamily = normalizeFontFamily(savedFontFamily);
+		}
+	}
+
+	onMount(async () => {
+		lfw = new LintFramework(
+			async (text) => {
+				function merge(o1: UnpackedLintGroups, o2: UnpackedLintGroups): UnpackedLintGroups {
+					return Object.fromEntries(
+						Object.keys(o1).map((key) => [
+							key,
+							["SpellCheck", "Regionalisms"].includes(key)
+								? o1[key].filter((x) => o2[key].map((m) => m.context_hash).includes(x.context_hash))
+								: [
+										...o1[key],
+										...o2[key].filter(
+											(x) => !o1[key].map((m) => m.context_hash).includes(x.context_hash)
+										)
+									]
+						])
+					);
+				}
+
+				const raws = await Promise.all(linters.map((l) => l.organizedLints(text)));
+
+				const groupedByLinters: UnpackedLintGroups[] = await Promise.all(
+					raws.map(async (raw, i) => {
+						// The framework expects grouped lints keyed by source
+						const entries = await Promise.all(
+							Object.entries(raw).map(async ([source, lintGroup]: [string, Lint[]]) => {
+								const unpacked = await Promise.all(
+									lintGroup.map((lint) => unpackLint(text, lint, linters[i]))
+								);
+								lintGroup.forEach((l) => l.free());
+
+								return [source, unpacked];
+							})
+						);
+
+						return Object.fromEntries(entries);
+					})
+				);
+
+				// TODO: Support more linters
+				return merge(groupedByLinters[0], groupedByLinters[1]);
+			},
+			{
+				ignoreLint: async (hash: string) => {
+					try {
+						if (!lfw) {
+							return;
+						}
+
+						await Promise.all(linters.map((l) => l.ignoreLintHash(BigInt(hash))));
+
+						lfw.update();
+					} catch (e) {
+						console.error("Failed to ignore lint", e);
+					}
+				},
+				afterLinting: (value) => {
+					lintBoxes = value;
+				},
+				getDelay: async () => 150
+			}
+		);
+
+		if (editor && !quill) {
+			let { default: Quill } = await import("quill");
+			quill = new Quill(editor, { placeholder });
+			const container = quill.container ?? quill.root?.parentElement;
+			container?.classList.add("harper-editor-quill-container");
+
+			quill.root?.classList.add("harper-editor-surface");
+			quill.root?.setAttribute("data-enable-grammarly", "false");
+			quill.root?.setAttribute("spellcheck", "false");
+			setQuillText(content, false);
+			quillTextChangeHandler = () => {
+				syncDocumentText(true);
+				scheduleLintFrameworkUpdate();
+			};
+			quill.on("text-change", quillTextChangeHandler);
+
+			loadFontFamily();
+			onReady?.();
+		}
+
+		if (linters.length > 0) {
+			scheduleLintFrameworkUpdate();
 		}
 	});
 
-	let fontStack = $derived(fontStackFor(fontFamily));
-	let editorStyle = $derived(`--harper-editor-font-family: ${fontStack};`);
+	onDestroy(() => {
+		if (quill != null && quillTextChangeHandler != null) {
+			quill.off("text-change", quillTextChangeHandler);
+			quillTextChangeHandler = null;
+		}
+
+		if (lfw) {
+			lfw.removeAllEventListeners();
+			lfw = undefined;
+		}
+	});
+
+	$effect(() => {
+		if (isEditable) {
+			untrack(() => quill)?.enable();
+		} else {
+			untrack(() => quill)?.disable();
+		}
+
+		if (linters.length > 0) {
+			scheduleLintFrameworkUpdate();
+		}
+	});
 </script>
 
 <div
 	class="harper-editor @container flex w-full flex-1 flex-col overflow-hidden rounded-box bg-base-100 text-base-content"
-	style={editorStyle}>
+	style:--harper-editor-font-family={fontStackFor(fontFamily)}>
 	<div class="flex min-h-0 min-w-0 flex-1">
 		<section class="relative flex-1 bg-base-100" aria-label="Document editor">
 			<div class="h-full min-w-0 overflow-auto px-8">
@@ -272,5 +243,8 @@
 		{wordTarget}
 		{saveState}
 		{onRetrySave}
-		onFontFamilyChange={(next) => (fontFamily = next)} />
+		onFontFamilyChange={(value) => {
+			fontFamily = value;
+			localStorage.setItem(`font-family-${getEditorName()}`, value);
+		}} />
 </div>

@@ -1,12 +1,13 @@
 <script lang="ts">
 	import { page } from "$app/state";
-	import { Dialect, WorkerLinter } from "harper.js";
-	import { onDestroy, onMount, untrack } from "svelte";
+	import { WorkerLinter } from "harper.js";
+	import { onMount, untrack } from "svelte";
 	import type { TaskCategory } from "#lib/domain/task-category.js";
 	import PreventLeaving from "#lib/components/PreventLeaving.svelte";
 	import { openModal } from "#lib/components/Modal.svelte";
 	import { getMinWords } from "#lib/utils/ielts.ts";
 	import { setTimedUpAction } from "#lib/remotes/command/set-timed-up-action.remote.js";
+	import { getLinters } from "#lib/components/harper-editor/linters.js";
 	import DocumentBar from "./DocumentBar.svelte";
 	import ResponseEditor from "./ResponseEditor.svelte";
 	import TaskEditor from "./TaskEditor.svelte";
@@ -19,7 +20,7 @@
 	let response = $state<string>(untrack(() => data.response));
 	let imageName = $state<string | undefined>(untrack(() => data.task.imageName ?? undefined));
 
-	const linters = $state<Array<WorkerLinter>>([]);
+	let linters = $state<WorkerLinter[]>([]);
 	let isPromptDirty = $state<boolean>(false);
 	let isResponseDirty = $state<boolean>(false);
 	let isChatBusy = $state<boolean>(false);
@@ -33,7 +34,6 @@
 
 	const canSave = $derived(isPromptDirty || isResponseDirty);
 
-	/** Explicit save of everything that is dirty (toolbar button / Ctrl+S). */
 	async function handleSaveAll() {
 		await Promise.all([taskEditor?.saveNow(), responseEditor?.saveNow()]);
 	}
@@ -76,16 +76,7 @@
 	}
 
 	onMount(async () => {
-		// @ts-expect-error - CDN module has no bundled type declarations
-		// prettier-ignore
-		const { slimBinary: binary } = await import("https://cdn.jsdelivr.net/npm/harper.js@3.0.0/dist/slimBinary.js");
-		linters.push(new WorkerLinter({ binary, dialect: Dialect.American }));
-		linters.push(new WorkerLinter({ binary, dialect: Dialect.British }));
-	});
-
-	onDestroy(() => {
-		linters.forEach((l) => l.dispose());
-		linters.length = 0;
+		linters = await getLinters();
 	});
 </script>
 

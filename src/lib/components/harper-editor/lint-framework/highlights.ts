@@ -1,9 +1,10 @@
 import type { LintBox, SourceElement } from "./box";
 import { getQuillJsRoot } from "./dom-utils";
 import h from "./dom";
-import { type LintKind, lintKindColor } from "./lint-kind-color";
+import { lintKindColor } from "./lint-kind-color";
 import RenderBox from "./render-box";
 import type { UnpackedLint } from "./unpack-lint";
+import type { LintKind } from "harper.js";
 
 /** A class that renders highlights to a page and nothing else. Uses direct DOM updates to minimize jitter. Require CSS Highlights API*/
 export default class Highlights {
@@ -31,12 +32,10 @@ export default class Highlights {
 
 		const style = document.createElement("style");
 		style.id = styleId;
-		style.textContent = `
-      ::highlight(${tag}) {
-        text-decoration: ${textDecor};
-        background-color: ${backgroundColor};
-      }
-    `;
+		style.textContent = `::highlight(${tag}) {
+        		text-decoration: ${textDecor};
+        		background-color: ${backgroundColor};
+      		}`;
 		document.head.appendChild(style);
 		this.styleIds.add(styleId);
 	}
@@ -85,18 +84,10 @@ export default class Highlights {
 			const value = sourceToBoxes.get(box.source);
 			const icr = getInitialContainingRect(renderBox.getShadowHost());
 
-			let cpa = null;
-
-			if (cpa == null) {
-				if (icr != null) {
-					cpa = icr;
-				}
-			}
-
 			if (value == null) {
-				sourceToBoxes.set(box.source, { boxes: [box], cpa });
+				sourceToBoxes.set(box.source, { boxes: [box], cpa: icr });
 			} else {
-				sourceToBoxes.set(box.source, { boxes: [...value.boxes, box], cpa });
+				sourceToBoxes.set(box.source, { boxes: [...value.boxes, box], cpa: icr });
 			}
 		}
 

@@ -25,6 +25,7 @@ type FrameworkActions = {
 	addToUserDictionary?: (words: string[]) => Promise<void>;
 	reportError?: (lint: UnpackedLint, ruleId: string) => Promise<void>;
 	setRuleEnabled?: (ruleId: string, enabled: boolean) => Promise<void> | void;
+	afterLinting?: (lastBoxes: IgnorableLintBox[]) => Promise<void> | void;
 };
 
 /** Events on an input (any kind) that can trigger a re-render. */
@@ -81,14 +82,7 @@ export default class LintFramework {
 		this.lastLints = [];
 
 		this.updateEventCallback = () => {
-			if (this.updateEventCallbackRequested) return;
-
-			this.updateEventCallbackRequested = true;
-			requestAnimationFrame(() => {
-				this.requestRender();
-				this.requestLintUpdate();
-				this.updateEventCallbackRequested = false;
-			});
+			this.update();
 		};
 
 		this.attachWindowListeners();
@@ -108,8 +102,14 @@ export default class LintFramework {
 	}
 
 	async update() {
-		this.requestRender();
-		this.requestLintUpdate();
+		if (this.updateEventCallbackRequested) return;
+
+		this.updateEventCallbackRequested = true;
+		requestAnimationFrame(() => {
+			this.requestRender();
+			this.requestLintUpdate();
+			this.updateEventCallbackRequested = false;
+		});
 	}
 
 	async requestLintUpdate(immediate = false): Promise<void> {
@@ -126,6 +126,7 @@ export default class LintFramework {
 				this.lintDelayTimer = null;
 				this.requestLintUpdate();
 			}, remainingDelay);
+
 			return;
 		}
 
@@ -250,11 +251,6 @@ export default class LintFramework {
 		}
 	}
 
-	/** Return the last known ignorable lint boxes rendered on-screen. */
-	public getLastIgnorableLintBoxes(): IgnorableLintBox[] {
-		return this.lastBoxes;
-	}
-
 	private attachTargetListeners(target: Node) {
 		for (const event of INPUT_EVENTS) {
 			target.addEventListener(event, this.updateEventCallback);
@@ -288,25 +284,13 @@ export default class LintFramework {
 
 	private getTargetText(target: Node): {
 		text: string | null;
-		newLineIndices: number[];
 	} {
 		const text: string =
 			target instanceof HTMLTextAreaElement || target instanceof HTMLInputElement
 				? target.value
 				: (target as HTMLElement).innerText;
 
-		// Check if it is a CodeMirror instance, which needs to be handled in a specific way.
-
-		const newLineIndices: number[] = [];
-		let i = 0;
-		for (const c of text ?? "") {
-			if (c == "\n") {
-				newLineIndices.push(i);
-			}
-			i++;
-		}
-
-		return { text, newLineIndices };
+		return { text };
 	}
 
 	private requestRender() {
@@ -352,6 +336,8 @@ export default class LintFramework {
 			this.popupHandler.updateLintBoxes(boxes);
 
 			this.renderRequested = false;
+
+			this.actions.afterLinting?.(this.lastBoxes);
 		});
 	}
 

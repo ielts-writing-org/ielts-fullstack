@@ -2,18 +2,14 @@
 	import { countCharacters, countWords } from "#lib/utils/stats.ts";
 	import { Check, RotateCcw, TriangleAlert } from "@lucide/svelte";
 	import { type EditorFontFamily, FONT_OPTIONS } from "./editor-display.ts";
-
-	type SaveState = "unsaved" | "saving" | "saved" | "failed";
+	import { getSaveStateLabel, type SaveState } from "#lib/domain/save-state.ts";
 
 	interface Props {
 		text?: string;
 		problemCount?: number;
 		fontFamily?: EditorFontFamily;
-		/** Minimum acceptable word count (IELTS task requirement). */
 		wordTarget?: number;
-		/** Document save state; rendered with a Retry action when it failed. */
 		saveState?: SaveState;
-		/** Retries the save after a failure. */
 		onRetrySave?: () => void;
 		onFontFamilyChange?: (fontFamily: EditorFontFamily) => void;
 	}
@@ -35,29 +31,20 @@
 	const goalProgress = $derived(
 		hasTarget ? Math.min(100, Math.round((words / wordTarget) * 100)) : 0
 	);
-
-	const saveLabels: Record<SaveState, string> = {
-		unsaved: "Not saved",
-		saving: "Saving",
-		saved: "Saved",
-		failed: "Save failed"
-	};
 </script>
 
 <footer
 	class="flex min-h-6.5 flex-[0_0_auto] items-center gap-3 overflow-x-auto rounded-br-box border-t-[0.5px] border-r-[0.5px] border-base-content/20 bg-base-300 px-2 pr-2 pl-3.5 font-mono text-[11px] text-base-content tabular-nums"
 	aria-label="Editor status">
-	<div class="inline-flex items-center gap-2">
-		<span class="inline-flex items-center gap-1.5">
-			<span class={["status", problemCount === 0 ? "status-success" : "status-error"]}></span>
-			{#if problemCount === 0}
-				<span class="@md:hidden">Clear</span>
-				<span class="hidden @md:inline">All clear</span>
-			{:else}
-				{problemCount} problem{problemCount === 1 ? "" : "s"}
-			{/if}
-		</span>
-	</div>
+	<span class="inline-flex items-center gap-1.5">
+		<span class={["status", problemCount === 0 ? "status-success" : "status-error"]}></span>
+		{#if problemCount === 0}
+			<span class="@md:hidden">Clear</span>
+			<span class="hidden @md:inline">All clear</span>
+		{:else}
+			{problemCount} problem{problemCount === 1 ? "" : "s"}
+		{/if}
+	</span>
 
 	{#if saveState}
 		<span class="inline-flex items-center gap-1.5">
@@ -75,7 +62,7 @@
 					saveState === "saving" && "text-warning",
 					(saveState === "unsaved" || saveState === "failed") && "text-error"
 				]}>
-				{saveLabels[saveState]}
+				{getSaveStateLabel(saveState)}
 			</span>
 			{#if saveState === "failed"}
 				<button

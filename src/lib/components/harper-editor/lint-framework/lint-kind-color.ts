@@ -1,7 +1,5 @@
 import type { LintKind } from "harper.js";
 
-export type { LintKind } from "harper.js";
-
 // First, define the color map as a constant
 const LINT_KIND_COLORS = {
 	Agreement: "#228B22", // Forest green
@@ -26,9 +24,6 @@ const LINT_KIND_COLORS = {
 	WordChoice: "#228B22", // Forest green
 	WordOrder: "#4D4DFF" // Royal blue
 } as const satisfies Record<LintKind, string>;
-
-// Export the array of all lint kind names
-export const LINT_KINDS = Object.keys(LINT_KIND_COLORS) as LintKind[];
 
 // The main function that uses the map
 export function lintKindColor(lintKindKey: string): string {

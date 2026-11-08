@@ -40,7 +40,6 @@
 
 	const saveState = $derived(saver.status);
 
-	/** Force an immediate save, bypassing the autosave debounce (Ctrl/Cmd + S or the toolbar button). */
 	export async function saveNow() {
 		if (!isDirty) {
 			return;
@@ -77,8 +76,6 @@
 	function handleContentChanged(newContent: string) {
 		content = newContent;
 		isDirty = true;
-		// Rescheduling on every keystroke keeps the autosave 2s behind the last
-		// keystroke, even after a failed save.
 		saver.scheduleSaving();
 	}
 
@@ -161,6 +158,7 @@
 	{/if}
 	<div class="flex flex-1 flex-col gap-2 lg:flex-row">
 		<Editor
+			name="task-editor"
 			linters={props.linters}
 			{content}
 			isEditable={isUnlocked}

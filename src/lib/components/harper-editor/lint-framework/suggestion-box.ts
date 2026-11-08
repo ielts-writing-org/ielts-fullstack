@@ -1,7 +1,7 @@
-import { SuggestionKind } from "harper.js";
+import { SuggestionKind, type LintKind } from "harper.js";
 import h from "./dom";
 import type { IgnorableLintBox, LintBox } from "./box";
-import { type LintKind, lintKindColor, lintKindTextColor } from "./lint-kind-color";
+import { lintKindColor, lintKindTextColor } from "./lint-kind-color";
 import type { UnpackedLint, UnpackedSuggestion } from "./unpack-lint";
 
 /** Inline Lucide icon path data (https://lucide.dev), rendered as inline SVG. */
