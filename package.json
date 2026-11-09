@@ -4,7 +4,7 @@
 	"type": "module",
 	"private": true,
 	"scripts": {
-		"dev": "concurrently \"npm run dev:app\" \"npm run dev:redis\" \"npm run dev:urs\" -n \"App,Redis,URS\"",
+		"dev": "concurrently -k \"npm run dev:redis\" \"npm run dev:urs\" \"npm run dev:app\" -n \"Redis,URS,App\"",
 		"dev:urs": "SET URS_TOKEN=local&& SET PORT=6378&& npx @humanwhocodes/upstash-redis-server",
 		"dev:redis": "SET REDISMS_PORT=6379&& redis-memory-server",
 		"dev:app": "vite dev",
@@ -15,8 +15,8 @@
 		"lint": "eslint .",
 		"lint:fix": "eslint . --fix",
 		"format": "prettier --write .",
-		"test:unit": "vitest",
 		"test": "npm run test:unit -- --run && npm run test:e2e",
+		"test:unit": "vitest",
 		"test:e2e": "playwright install && playwright test",
 		"build": "wrangler types --check && vite build",
 		"preview": "wrangler dev .svelte-kit/cloudflare/_worker.js --port 5173",
