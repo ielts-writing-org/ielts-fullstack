@@ -25,7 +25,7 @@
 
 <div
 	class={[
-		"flex h-dvh w-full flex-col overflow-y-auto bg-base-100 text-base-content",
+		"flex h-dvh w-full flex-col bg-base-100 text-base-content",
 		showTabBar && "not-lg:pb-16"
 	]}>
 	<header

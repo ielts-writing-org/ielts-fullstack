@@ -33,7 +33,7 @@
 	<meta name="description" content="IELTS Writing Practice Platform Dashboard" />
 </svelte:head>
 
-<main id="main-content" class="w-full flex-1 px-3 py-3 sm:px-4 sm:py-4 lg:px-9">
+<main id="main-content" class="w-full flex-1 overflow-y-auto px-3 py-3 sm:px-4 sm:py-4 lg:px-9">
 	<div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
 		<div class="min-w-0">
 			<p class="text-xs font-semibold text-base-content/75">
