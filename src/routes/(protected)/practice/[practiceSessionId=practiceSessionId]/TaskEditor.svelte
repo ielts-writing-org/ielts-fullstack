@@ -5,11 +5,11 @@
 	import { openModal } from "#lib/components/Modal.svelte";
 	import Editor from "#lib/components/harper-editor/Editor.svelte";
 	import { getAllowedImageMimeTypes } from "#lib/domain/task-image.ts";
-	import { getImageUrl } from "#lib/utils/links.ts";
 	import { saveTaskPrompt } from "#lib/remotes/command/save-task-prompt.remote.js";
 	import { saveTaskImage } from "#lib/remotes/form/save-task-image.remote.ts";
 	import { clearTaskImage } from "#lib/remotes/command/clear-task-image.remote.ts";
 	import { EditorSaver } from "./save-state.svelte.ts";
+	import { getImageUrl } from "#lib/utils/paths.ts";
 
 	type Props = {
 		class?: string;

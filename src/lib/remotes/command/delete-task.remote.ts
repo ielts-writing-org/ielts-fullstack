@@ -6,6 +6,7 @@ import { getApiSession } from "#lib/server/auth/session.ts";
 import { getDatabase } from "#lib/server/db/index.ts";
 import { practiceSessions, tasks } from "#lib/server/db/app.schema.ts";
 import { deleteObject } from "#lib/server/infrastructure/bucket.ts";
+import { getImagePath } from "#lib/utils/paths.ts";
 
 export const deleteTask = command(
 	z.object({
@@ -31,7 +32,7 @@ export const deleteTask = command(
 		]);
 
 		if (task.imageName) {
-			await deleteObject(task.imageName);
+			await deleteObject(getImagePath(task.imageName));
 		}
 
 		return { success: true };

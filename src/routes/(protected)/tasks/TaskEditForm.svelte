@@ -6,7 +6,7 @@
 	import { clearTaskImage } from "#lib/remotes/command/clear-task-image.remote.js";
 	import { updateTask } from "#lib/remotes/form/update-task.remote.js";
 	import { type TaskItem } from "./links.ts";
-	import { getImageUrl } from "#lib/utils/links.ts";
+	import { getImageUrl } from "#lib/utils/paths.ts";
 
 	type Props = { task: TaskItem; onSaved?: () => void | Promise<void> };
 	let { task, onSaved }: Props = $props();
@@ -46,8 +46,8 @@
 	<form
 		{...updateTask.enhance(async (f) => {
 			if (await f.submit()) {
-				await closeModal();
 				await onSaved?.();
+				await closeModal();
 			}
 		})}
 		class="flex flex-col gap-3"

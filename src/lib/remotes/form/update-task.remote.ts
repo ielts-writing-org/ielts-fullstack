@@ -11,6 +11,7 @@ import { taskImageSchema } from "#lib/domain/task-image.ts";
 import { isValidSubcategory, taskSubcategorySchema } from "#lib/domain/task-subcategory.ts";
 import { deleteObject, putObject } from "#lib/server/infrastructure/bucket.ts";
 import { compressImageAsBlob } from "#lib/server/infrastructure/images.ts";
+import { getImagePath } from "#lib/utils/paths.ts";
 
 export const updateTask = form(
 	z.object({
@@ -43,14 +44,14 @@ export const updateTask = form(
 		if (image) {
 			const newImageName = `${uuidv7()}.webp`;
 			const compressed = await compressImageAsBlob(image);
-			await putObject(newImageName, compressed);
+			await putObject(getImagePath(newImageName), compressed);
 			await db
 				.update(tasks)
 				.set({ prompt, subcategory, imageName: newImageName })
 				.where(eq(tasks.id, taskId));
 
 			if (task.imageName) {
-				await deleteObject(task.imageName);
+				await deleteObject(getImagePath(task.imageName));
 			}
 		} else {
 			await db.update(tasks).set({ prompt, subcategory }).where(eq(tasks.id, taskId));

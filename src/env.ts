@@ -42,8 +42,8 @@ export const variables = defineEnvVars({
 			})
 			.transform((val) => val as Parameters<typeof Ratelimit.slidingWindow>[1])
 	},
-	R2_IMAGES_PATH: {
-		description: "Public path to the Cloudflare R2 bucket used for images.",
+	R2_ENDPOINT: {
+		description: "Public endpoint to the Cloudflare R2 bucket.",
 		public: true
 	}
 });

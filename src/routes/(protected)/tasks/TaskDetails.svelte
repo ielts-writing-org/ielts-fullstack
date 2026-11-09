@@ -1,7 +1,6 @@
 <script lang="ts">
-	import { closeModal } from "#lib/components/Modal.svelte";
+	import { getImageUrl } from "#lib/utils/paths.ts";
 	import { type TaskItem } from "./links.ts";
-	import { getImageUrl } from "#lib/utils/links.ts";
 
 	type Props = {
 		task: TaskItem;
@@ -48,7 +47,6 @@
 				type="button"
 				class="btn btn-outline"
 				onclick={async () => {
-					await closeModal();
 					await onEdit();
 				}}>
 				Edit
@@ -59,7 +57,6 @@
 			type="button"
 			class="btn btn-primary"
 			onclick={async () => {
-				await closeModal();
 				await onPractice();
 			}}>
 			Practice

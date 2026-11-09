@@ -11,7 +11,7 @@
 	import { formatRelativeTime } from "#lib/utils/time.js";
 	import { getTaskSubcategoryLabel } from "#lib/domain/task-subcategory.ts";
 	import { type TaskItem } from "./links.ts";
-	import { getImageUrl } from "#lib/utils/links.ts";
+	import { getImageUrl } from "#lib/utils/paths.ts";
 
 	type Props = {
 		task: TaskItem;

@@ -6,7 +6,7 @@ import { getObjectAsStream } from "#lib/server/infrastructure/bucket.ts";
 export const GET: RequestHandler = async ({ locals, params }) => {
 	getApiSession(locals);
 
-	const stream = await getObjectAsStream(params.imageName);
+	const stream = await getObjectAsStream(`images/${params.imageName}`);
 	if (!stream) {
 		error(404);
 	}

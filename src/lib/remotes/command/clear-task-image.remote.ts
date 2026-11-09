@@ -6,6 +6,7 @@ import { getApiSession } from "#lib/server/auth/session.ts";
 import { getDatabase } from "#lib/server/db/index.ts";
 import { tasks } from "#lib/server/db/app.schema.ts";
 import { deleteObject } from "#lib/server/infrastructure/bucket.ts";
+import { getImagePath } from "#lib/utils/paths.ts";
 
 export const clearTaskImage = command(
 	z.object({
@@ -25,7 +26,7 @@ export const clearTaskImage = command(
 		}
 
 		await db.update(tasks).set({ imageName: null }).where(eq(tasks.id, taskId));
-		await deleteObject(task.imageName);
+		await deleteObject(getImagePath(task.imageName));
 
 		return { success: true };
 	}

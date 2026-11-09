@@ -9,6 +9,7 @@ import { tasks } from "#lib/server/db/app.schema.ts";
 import { taskImageSchema } from "#lib/domain/task-image.ts";
 import { deleteObject, putObject } from "#lib/server/infrastructure/bucket.ts";
 import { compressImageAsBlob } from "#lib/server/infrastructure/images.ts";
+import { getImagePath } from "#lib/utils/paths.ts";
 
 export const saveTaskImage = form(
 	z.object({
@@ -32,11 +33,11 @@ export const saveTaskImage = form(
 
 		const newImageName = `${uuidv7()}.webp`;
 		const compressed = await compressImageAsBlob(image);
-		await putObject(newImageName, compressed);
+		await putObject(getImagePath(newImageName), compressed);
 		await db.update(tasks).set({ imageName: newImageName }).where(eq(tasks.id, taskId));
 
 		if (oldImageName) {
-			await deleteObject(oldImageName);
+			await deleteObject(getImagePath(oldImageName));
 		}
 
 		return { success: true, imageName: newImageName };

@@ -2,8 +2,8 @@ import { EventSourceParserStream, type EventSourceMessage } from "eventsource-pa
 
 export async function readAiStream(
 	stream: ReadableStream<Uint8Array<ArrayBuffer>>,
-	onContent: (value: string) => void,
-	onDone: () => void | Promise<void>
+	onContent: (value: string) => unknown,
+	onDone: () => unknown | Promise<unknown>
 ) {
 	const reader = stream
 		.pipeThrough(new TextDecoderStream())

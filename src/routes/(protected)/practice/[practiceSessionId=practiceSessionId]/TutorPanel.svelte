@@ -6,6 +6,7 @@
 	import { ListCheck, MessagesSquare } from "@lucide/svelte";
 	import ChatPanel from "./ChatPanel.svelte";
 	import EvaluationPanel from "./EvaluationPanel.svelte";
+	import { getProfile } from "#lib/remotes/query/get-profile.remote.ts";
 
 	type Props = {
 		practiceSessionId: string;
@@ -95,6 +96,7 @@
 	</label>
 	<div class="tab-content border-base-content/20">
 		<EvaluationPanel
+			bandTarget={(await getProfile()).bandTarget}
 			{practiceSessionId}
 			{practiceSessionContext}
 			bind:evaluation

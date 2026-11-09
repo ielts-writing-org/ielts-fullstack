@@ -31,6 +31,16 @@ export default defineConfig({
 					},
 					include: ["src/**/*.svelte.{test,spec}.{js,ts}"],
 					exclude: ["src/lib/server/**"]
+				},
+				optimizeDeps: {
+					include: [
+						"@lucide/svelte",
+						"@streamparser/json/jsonparser.js",
+						"eventsource-parser/stream",
+						"marked",
+						"sanitize-html",
+						"zod"
+					]
 				}
 			},
 			{
