@@ -140,7 +140,7 @@
 					<div class="my-4 max-h-[75dvh] overflow-y-auto">
 						{@render current.content.snippet(current.content.args)}
 					</div>
-				{:else}
+				{:else if "component" in current.content}
 					<current.content.component {...current.content.props} />
 				{/if}
 			{/if}
