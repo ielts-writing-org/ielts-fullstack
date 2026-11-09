@@ -13,7 +13,16 @@
 			"better-auth": {
 				"type": "remote",
 				"url": "https://mcp.better-auth.com/mcp"
-    		}
+    		},
+			/**
+			* npx -y @bytebase/dbhub@latest
+			* --transport http --port 8080
+			* --dsn sqlite:///<absolute-path>/<db-file-name>.sqlite
+			*/
+			"dbhub": {
+      			"type": "remote",
+      			"url": "http://localhost:8080/mcp"
+    		},
 		}
 	}
 }
