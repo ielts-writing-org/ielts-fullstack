@@ -22,7 +22,7 @@
 
 	type Props = {
 		session: SessionItem;
-		bandTarget: number | null;
+		bandTarget: number;
 		onRename: (session: SessionItem) => void;
 		onDelete: (session: SessionItem) => void;
 	};
@@ -134,17 +134,17 @@
 		</div>
 	</div>
 
-	<div class="flex items-center justify-between gap-3 lg:shrink-0 lg:justify-end">
+	<div class="flex min-w-80 items-center justify-between gap-3 lg:shrink-0 lg:justify-end">
 		{#if session.estimatedBand !== undefined && session.criteria}
 			<div class="flex items-center gap-3">
 				<div class="flex flex-col items-center">
 					<div
 						class={[
-							"radial-progress font-semibold",
-							bandTarget && session.estimatedBand >= bandTarget ? "text-success" : "text-warning"
+							"radial-progress font-semibold [--size:2.25em]",
+							session.estimatedBand < bandTarget ? "text-warning" : "text-success",
+							"sm:[--size:3.25em]"
 						]}
 						style:--value={(session.estimatedBand / 9) * 100}
-						style:--size="3.25em"
 						role="progressbar"
 						aria-label="Overall band"
 						aria-valuenow={session.estimatedBand}
@@ -161,7 +161,7 @@
 							<div
 								class={[
 									"radial-progress text-xs",
-									bandTarget && ring.band >= bandTarget ? "text-success" : "text-warning"
+									ring.band < bandTarget ? "text-warning" : "text-success"
 								]}
 								style:--value={(ring.band / 9) * 100}
 								style:--size="2.25em"

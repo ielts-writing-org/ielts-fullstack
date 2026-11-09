@@ -48,7 +48,7 @@
 				<div
 					class={[
 						"radial-progress font-bold",
-						statistics.estimatedBand >= bandTarget ? "text-success" : "text-warning"
+						statistics.estimatedBand < bandTarget ? "text-warning" : "text-success"
 					]}
 					style:--value={convertBandToProgressValue(statistics.estimatedBand)}
 					style:--size="3.75em"

@@ -23,7 +23,7 @@
 	}
 </script>
 
-<p class="mb-3 line-clamp-2 rounded-box bg-base-200/50 p-2.5 text-xs text-base-content/75">
+<p class="mb-3 line-clamp-3 rounded-box bg-base-200/50 p-2.5 text-xs text-base-content/75">
 	{task.prompt || "No prompt yet — you can add one while practicing."}
 </p>
 <p class="mb-2 text-sm font-semibold">How do you want to practice?</p>

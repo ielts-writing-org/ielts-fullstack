@@ -6,7 +6,7 @@ import { getDb } from "#lib/server/db/index.ts";
 import { getPageSession } from "#lib/server/auth/session.ts";
 import type { PageServerLoad } from "./$types";
 
-const PER_PAGE = 9;
+const PER_PAGE = 5;
 const SORTS = ["recent", "oldest", "name", "practiced"] as const;
 const TASK_CATEGORIES = ["1", "2"] as const;
 const SOURCES = ["mine", "example"] as const;
