@@ -88,7 +88,10 @@
 			style="anchor-name: --avatar"
 			popovertarget="avatar-popover"
 			title="Open Menu">
-			<img class="w-10 rounded-full ring ring-base-content/20" src={user.image} alt={user.name} />
+			<img
+				class="aspect-square w-10 rounded-full ring ring-base-content/20"
+				src={user.image}
+				alt={user.name} />
 		</button>
 
 		<ul
