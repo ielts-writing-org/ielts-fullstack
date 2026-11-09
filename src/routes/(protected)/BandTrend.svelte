@@ -44,7 +44,12 @@
 </script>
 
 {#if trendSummary}
-	<div class="mt-0.5 border-t border-base-content/10 pt-2">
+	<div
+		class={[
+			"flex-1 border-base-content/10",
+			"not-sm:mt-0.5 not-sm:basis-full not-sm:border-t not-sm:pt-2",
+			"sm:ml-0.5 sm:border-l sm:pl-2"
+		]}>
 		<div class="flex items-center gap-1.5 text-xs">
 			<trendSummary.icon class={["size-3.5 shrink-0", trendSummary.tone]} />
 			<span class="font-semibold">{trendSummary.label}</span>

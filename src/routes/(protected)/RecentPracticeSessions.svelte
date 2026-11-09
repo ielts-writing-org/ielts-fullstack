@@ -10,10 +10,10 @@
 			meta: string;
 			name: string;
 		}[];
-		bandTarget: number | null;
+		bandTarget: number;
 	};
 
-	const { practiceSessions, bandTarget = 0 }: Props = $props();
+	const { practiceSessions, bandTarget }: Props = $props();
 </script>
 
 <div class="rounded-box border border-base-content/20 bg-base-100 p-3">
@@ -49,11 +49,8 @@
 				<span
 					class={[
 						"text-right text-xs",
-						practiceSession.band && bandTarget
-							? practiceSession.band >= bandTarget
-								? "text-success"
-								: "text-warning"
-							: "text-base-content/75"
+						practiceSession.band &&
+							(practiceSession.band < bandTarget ? "text-warning" : "text-success")
 					]}>
 					{practiceSession.band ? `Band ${practiceSession.band.toFixed(1)}` : "No evaluation"}
 				</span>

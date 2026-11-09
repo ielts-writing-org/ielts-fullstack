@@ -51,7 +51,7 @@
 						statistics.estimatedBand >= bandTarget ? "text-success" : "text-warning"
 					]}
 					style:--value={convertBandToProgressValue(statistics.estimatedBand)}
-					style:--size="4.75em"
+					style:--size="3.75em"
 					role="progressbar"
 					aria-label="Overall average band"
 					aria-valuenow={statistics.estimatedBand}
@@ -62,12 +62,12 @@
 				<span class="mt-1 text-xs text-base-content/75">Overall</span>
 			</div>
 
-			<div class="flex min-w-0 flex-1 flex-col gap-2">
+			<div class=" flex min-w-0 flex-1 flex-wrap gap-2">
 				<BandTarget {bandTarget} overall={statistics.estimatedBand} />
 				<BandTrend {trend} />
 			</div>
 		</div>
 
-		<CriteriaBreakdown criteria={statistics.criteria} />
+		<CriteriaBreakdown criteria={statistics.criteria} {bandTarget} />
 	{/if}
 </aside>

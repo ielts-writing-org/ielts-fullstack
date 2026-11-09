@@ -78,7 +78,7 @@
 			class="badge cursor-pointer badge-soft badge-xs font-semibold hover:bg-primary hover:text-primary-content"
 			onclick={openTargetModal}
 			title="Change target">
-			Target: Band {profile.bandTarget ?? 0}
+			Target Band: {profile.bandTarget ?? 0}
 		</button>
 	</div>
 
