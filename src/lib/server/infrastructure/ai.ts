@@ -17,8 +17,8 @@ export async function getAiCompletionAsStream(
 		env.IELTS_WRITING_AI.run(model, {
 			messages: messages,
 			...(options?.seed ? { seed: options.seed } : {}),
-			...(options?.temperature ? { seed: options.temperature } : {}),
-			...(options?.maxCompletionToken ? { seed: options.maxCompletionToken } : {}),
+			...(options?.temperature ? { temperature: options.temperature } : {}),
+			...(options?.maxCompletionToken ? { maxCompletionToken: options.maxCompletionToken } : {}),
 			...(options?.thinking ? { chat_template_kwargs: { enable_thinking: options.thinking } } : {}),
 			...(options?.responseSchema
 				? {
