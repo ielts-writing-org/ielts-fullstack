@@ -1,0 +1,25 @@
+@startuml Xem thống kê luyện tập SEQ
+
+skinparam DefaultFontName Segoe UI
+
+hide footbox
+autonumber
+
+actor "Người dùng" as User
+boundary "Trình duyệt" as Browser
+control "Hệ thống" as App
+database "Cơ sở dữ liệu" as DB
+
+User -> Browser++: Chọn "History" từ thanh điều hướng
+Browser -> App++: GET /history
+App -> DB++: Truy vấn thống kê luyện tập: tổng số phiên luyện tập,\nsố phiên đã đánh giá, điểm cao nhất/trung bình\ncủa Task 1 và Task 2, tiến độ luyện tập
+DB --> App--: Dữ liệu thống kê
+App --> Browser--: Trả về trang thống kê luyện tập (200)
+
+opt#Gold Có dữ liệu tiến độ luyện tập
+	Browser --> User: Hiển thị biểu đồ tiến độ luyện tập
+end
+Browser --> User: Hiển thị thẻ thống kê luyện tập
+deactivate Browser
+
+@enduml

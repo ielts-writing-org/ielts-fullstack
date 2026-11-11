@@ -1,0 +1,16 @@
+@startuml Tải phiên luyện tập dạng txt SEQ
+
+skinparam DefaultFontName Segoe UI
+
+hide footbox
+autonumber
+
+actor "Người dùng" as User
+boundary "Trình duyệt" as Browser
+
+User -> Browser++: Chọn "Download .txt" trong menu tác vụ\ncủa phiên luyện tập trên trang History
+Browser -> Browser: Tạo tệp txt chứa đề bài và nội dung bài viết
+Browser --> User: Tải xuống tệp txt về máy người dùng
+deactivate Browser
+
+@enduml

@@ -1,0 +1,18 @@
+@startuml Tìm kiếm phiên luyện tập theo từ khóa ACT
+
+skinparam DefaultFontName Segoe UI
+
+|Tác nhân chính|
+start
+:Nhập từ khóa vào ô tìm kiếm trên trang History;
+
+|Hệ thống|
+if (Có phiên luyện tập nào khớp từ khóa?) then (Có)
+	:Hiển thị danh sách các phiên luyện tập khớp từ khóa\n(theo tên, đề bài, nội dung bài viết) có phân trang;
+	stop
+else (Không)
+	:Hiển thị thông báo không có phiên luyện tập khớp\nkèm nút xóa bộ lọc;
+	stop
+endif
+
+@enduml

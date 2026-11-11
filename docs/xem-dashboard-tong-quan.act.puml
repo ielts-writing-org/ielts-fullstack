@@ -7,7 +7,20 @@ start
 :Truy cập trang trang chủ;
 
 |Hệ thống|
-:Hiển thị dashboard;
+if (Người dùng chưa đặt mục tiêu?) then (Có)
+	:Hiển thị hộp thoại bật lên có thanh\ntrượt lựa chọn điểm số và nút lưu;
+
+	|Tác nhân chính|
+	:Chọn điểm số phù hợp và nhấn "Save";
+
+	|Hệ thống|
+	:Lưu lại điểm số;
+	:Cập nhật dữ liệu lên giao diện;
+	:Đóng hộp thoại;
+else (Không)
+endif
+
+:Hiển thị trang chủ;
 stop
 
 @enduml

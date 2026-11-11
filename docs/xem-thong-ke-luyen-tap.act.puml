@@ -1,0 +1,18 @@
+@startuml Xem thống kê luyện tập ACT
+
+skinparam DefaultFontName Segoe UI
+
+|Tác nhân chính|
+start
+:Chọn "History" từ thanh điều hướng;
+
+|Hệ thống|
+if (Người dùng chưa có dữ liệu tiến độ luyện tập?) then (Có)
+	:Hiển thị thẻ thống kê luyện tập;
+	stop
+else (Không)
+	:Hiển thị thẻ thống kê\nvà biểu đồ tiến độ luyện tập;
+	stop
+endif
+
+@enduml

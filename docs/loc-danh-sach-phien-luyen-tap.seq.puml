@@ -1,0 +1,26 @@
+@startuml Lọc danh sách phiên luyện tập SEQ
+
+skinparam DefaultFontName Segoe UI
+
+hide footbox
+autonumber
+
+actor "Người dùng" as User
+boundary "Trình duyệt" as Browser
+control "Hệ thống" as App
+database "Cơ sở dữ liệu" as DB
+
+User -> Browser++: Chọn tiêu chí lọc trên trang History
+Browser -> App++: GET /history?task=...&subcategory=...&status=...&type=...
+App -> DB++: Truy vấn các phiên luyện tập khớp tiêu chí đã chọn
+DB --> App--: Danh sách phiên luyện tập khớp và tổng số trang
+App --> Browser--: Trả về kết quả lọc (200)
+
+alt#Gold #LightPink Không có phiên luyện tập nào khớp tiêu chí đã chọn
+	Browser --> User: Hiển thị thông báo không có phiên luyện tập khớp\nkèm nút xóa bộ lọc
+else #LightGreen Có phiên luyện tập khớp tiêu chí đã chọn
+	Browser --> User: Hiển thị các phiên luyện tập khớp tiêu chí\nđã chọn, được phân trang
+end
+deactivate Browser
+
+@enduml

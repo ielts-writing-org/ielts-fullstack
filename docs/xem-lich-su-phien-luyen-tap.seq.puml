@@ -1,0 +1,26 @@
+@startuml Xem lịch sử phiên luyện tập SEQ
+
+skinparam DefaultFontName Segoe UI
+
+hide footbox
+autonumber
+
+actor "Người dùng" as User
+boundary "Trình duyệt" as Browser
+control "Hệ thống" as App
+database "Cơ sở dữ liệu" as DB
+
+User -> Browser++: Chọn "History" từ thanh điều hướng
+Browser -> App++: GET /history
+App -> DB++: Truy vấn danh sách phiên luyện tập của người dùng\ntheo trang hiện tại (thông tin phiên, đề bài,\nđiểm đánh giá nếu có)
+DB --> App--: Danh sách phiên luyện tập và tổng số trang
+App --> Browser--: Trả về trang lịch sử phiên luyện tập (200)
+
+alt#Gold #LightPink Người dùng chưa có phiên luyện tập nào
+	Browser --> User: Hiển thị thông báo chưa có phiên luyện tập\nkèm nút bắt đầu luyện tập mới
+else #LightGreen Người dùng có phiên luyện tập
+	Browser --> User: Hiển thị danh sách lịch sử các phiên luyện tập\ncó phân trang
+end
+deactivate Browser
+
+@enduml

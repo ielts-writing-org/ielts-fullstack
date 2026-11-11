@@ -1,0 +1,46 @@
+@startuml Tạo phiên luyện tập tùy chọn SEQ
+
+skinparam DefaultFontName Segoe UI
+
+hide footbox
+autonumber
+
+actor "Người dùng" as User
+boundary "Trình duyệt" as Browser
+control "Hệ thống" as App
+entity "tasks" as Tasks
+entity "practice_sessions" as PracticeSessions
+database "Cơ sở dữ liệu" as DB
+
+User -> Browser++: Chọn "Start Task x Practice" trên trang chủ
+Browser --> User: Hiển thị hộp thoại tạo phiên luyện tập
+User -> Browser: Nhập đề bài, chọn thể loại phụ (và ảnh minh họa\nnếu Task 1) và kiểu luyện tập
+
+alt#Gold #LightPink Người dùng hủy tạo phiên luyện tập
+	User -> Browser: Chọn "Cancel"
+	Browser --> User: Đóng hộp thoại
+else #LightGreen Người dùng nhấn "Start practice"
+	Browser -> App++: Gửi form tạo đề bài
+	App -> App: Kiểm tra dữ liệu đề bài nhập
+
+	alt#Gold #LightPink Dữ liệu đề bài không hợp lệ
+		App --> Browser--: Trả về thông báo lỗi nhập liệu
+		Browser --> User: Hiển thị thông báo lỗi dưới các trường nhập
+	else #LightGreen Dữ liệu đề bài hợp lệ
+		App -> Tasks++: Lưu đề bài mới
+		Tasks -> DB++: Lưu đề bài vào danh sách đề bài
+		DB --> Tasks--: Đề bài đã được lưu
+		Tasks --> App--: Đề bài đã được tạo
+		App --> Browser--: Trả về đề bài đã được tạo
+		Browser -> App++: Gọi create-practice(taskId, loại luyện tập)
+		App -> PracticeSessions++: Tạo phiên luyện tập mới
+		PracticeSessions -> DB++: Lưu phiên luyện tập mới
+		DB --> PracticeSessions--: Phiên đã được lưu
+		PracticeSessions --> App--: Phiên luyện tập đã được tạo
+		App --> Browser--: Trả về đường dẫn trang luyện tập
+		Browser --> User: Chuyển hướng người dùng đến trang luyện tập
+	end
+end
+deactivate Browser
+
+@enduml

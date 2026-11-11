@@ -1,0 +1,21 @@
+@startuml Sắp xếp danh sách phiên luyện tập SEQ
+
+skinparam DefaultFontName Segoe UI
+
+hide footbox
+autonumber
+
+actor "Người dùng" as User
+boundary "Trình duyệt" as Browser
+control "Hệ thống" as App
+database "Cơ sở dữ liệu" as DB
+
+User -> Browser++: Chọn thứ tự sắp xếp trên trang History
+Browser -> App++: GET /history?sort={thứ tự}
+App -> DB++: Truy vấn danh sách phiên luyện tập\nsắp xếp theo thứ tự đã chọn
+DB --> App--: Danh sách phiên luyện tập đã sắp xếp và tổng số trang
+App --> Browser--: Trả về kết quả (200)
+Browser --> User: Hiển thị danh sách phiên luyện tập\nđã sắp xếp, được phân trang
+deactivate Browser
+
+@enduml

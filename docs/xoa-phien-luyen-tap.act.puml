@@ -1,0 +1,23 @@
+@startuml Xóa phiên luyện tập ACT
+
+skinparam DefaultFontName Segoe UI
+
+|Tác nhân chính|
+start
+:Chọn "Delete" trong menu tác vụ\ncủa phiên luyện tập trên trang History;
+
+|Hệ thống|
+:Hiển thị hộp thoại xác nhận xóa;
+
+|Tác nhân chính|
+if (Nhấn "Delete" trong hộp thoại xác nhận?) then (Có)
+	|Hệ thống|
+	:Xóa phiên luyện tập cùng đánh giá\nvà tin nhắn liên quan (nếu có);
+	:Cập nhật danh sách phiên luyện tập;
+else (Không)
+endif
+
+:Đóng hộp thoại;
+stop
+
+@enduml

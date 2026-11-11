@@ -1,0 +1,13 @@
+@startuml Sắp xếp danh sách phiên luyện tập ACT
+
+skinparam DefaultFontName Segoe UI
+
+|Tác nhân chính|
+start
+:Chọn thứ tự sắp xếp trên trang History\n(mới nhất, cũ nhất, cao điểm nhất\nhoặc nhiều từ nhất);
+
+|Hệ thống|
+:Hiển thị danh sách phiên luyện tập\nđã sắp xếp theo thứ tự đã chọn, được phân trang;
+stop
+
+@enduml

@@ -11,16 +11,14 @@ control "Hệ thống" as App
 entity "profiles" as Profiles
 database "Cơ sở dữ liệu" as DB
 
-User -> Browser++: Chọn vào nút "Target: Band x"
+User -> Browser++: Chọn vào nút "Target Band x"
 Browser --> User: Hiển thị hộp thoại bật lên có thanh trượt\nlựa chọn điểm số, nút lưu và hủy
 
 alt#Gold #LightPink Người dùng hủy thay đổi
 	User -> Browser: Chọn "Cancel"
-	Browser --> User: Đóng hộp thoại
 else #LightGreen Người dùng nhấn "Save"
 	User -> Browser: Chọn điểm số phù hợp và nhấn "Save"
 	Browser -> App++: Gọi remote save-band-target(bandTarget)
-	App -> App: Kiểm tra phiên đăng nhập\nvà xác thực dữ liệu đầu vào
 	App -> Profiles++: Cập nhật mục tiêu điểm số
 	Profiles -> DB++: Lưu bandTarget của hồ sơ người dùng
 	DB --> Profiles--: bandTarget đã được lưu
@@ -28,6 +26,7 @@ else #LightGreen Người dùng nhấn "Save"
 	App --> Browser--: Trả về kết quả thành công
 	Browser --> User: Cập nhật dữ liệu lên giao diện
 end
+Browser --> User: Đóng hộp thoại
 deactivate Browser
 
 @enduml

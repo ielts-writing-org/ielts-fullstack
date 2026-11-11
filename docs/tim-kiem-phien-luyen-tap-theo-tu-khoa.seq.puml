@@ -1,0 +1,26 @@
+@startuml Tìm kiếm phiên luyện tập theo từ khóa SEQ
+
+skinparam DefaultFontName Segoe UI
+
+hide footbox
+autonumber
+
+actor "Người dùng" as User
+boundary "Trình duyệt" as Browser
+control "Hệ thống" as App
+database "Cơ sở dữ liệu" as DB
+
+User -> Browser++: Nhập từ khóa vào ô tìm kiếm trên trang History
+Browser -> App++: GET /history?q={từ khóa}
+App -> DB++: Truy vấn các phiên luyện tập khớp từ khóa\n(theo tên, đề bài, nội dung bài viết)
+DB --> App--: Danh sách phiên luyện tập khớp và tổng số trang
+App --> Browser--: Trả về kết quả tìm kiếm (200)
+
+alt#Gold #LightPink Không có phiên luyện tập nào khớp từ khóa
+	Browser --> User: Hiển thị thông báo không có phiên luyện tập khớp\nkèm nút xóa bộ lọc
+else #LightGreen Có phiên luyện tập khớp từ khóa
+	Browser --> User: Hiển thị danh sách các phiên luyện tập khớp\ntừ khóa có phân trang
+end
+deactivate Browser
+
+@enduml

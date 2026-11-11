@@ -1,0 +1,18 @@
+@startuml Lọc danh sách phiên luyện tập ACT
+
+skinparam DefaultFontName Segoe UI
+
+|Tác nhân chính|
+start
+:Chọn tiêu chí lọc trên trang History\n(Task 1 hoặc Task 2, thể loại phụ đề bài,\ntrạng thái đánh giá, loại phiên luyện tập);
+
+|Hệ thống|
+if (Có phiên luyện tập nào khớp tiêu chí đã chọn?) then (Có)
+	:Hiển thị các phiên luyện tập khớp tiêu chí\nđã chọn, được phân trang;
+	stop
+else (Không)
+	:Hiển thị thông báo không có phiên luyện tập khớp\nkèm nút xóa bộ lọc;
+	stop
+endif
+
+@enduml

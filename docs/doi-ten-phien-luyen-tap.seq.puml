@@ -1,0 +1,39 @@
+@startuml Đổi tên phiên luyện tập SEQ
+
+skinparam DefaultFontName Segoe UI
+
+hide footbox
+autonumber
+
+actor "Người dùng" as User
+boundary "Trình duyệt" as Browser
+control "Hệ thống" as App
+entity "practice_sessions" as PracticeSessions
+database "Cơ sở dữ liệu" as DB
+
+User -> Browser++: Chọn "Rename" trong menu tác vụ\ncủa phiên luyện tập trên trang History
+Browser --> User: Hiển thị hộp thoại đổi tên
+User -> Browser: Nhập tên mới
+
+alt#Gold #LightPink Người dùng hủy đổi tên
+	User -> Browser: Chọn "Cancel"
+else #LightGreen Người dùng nhấn "Save"
+	Browser -> App++: Gọi change-session-name(practiceSessionId, newName)
+	App -> App: Kiểm tra dữ liệu tên mới nhập
+
+	alt#Gold #LightPink Tên mới không hợp lệ
+		App --> Browser--: Trả về thông báo dữ liệu không hợp lệ
+		Browser --> User: Ở lại hộp thoại đổi tên
+	else #LightGreen Tên mới hợp lệ
+		App -> PracticeSessions++: Đổi tên phiên luyện tập
+		PracticeSessions -> DB++: Cập nhật tên mới\n(kèm kiểm tra quyền sở hữu)
+		DB --> PracticeSessions--: Tên mới đã được lưu
+		PracticeSessions --> App--: Đổi tên thành công
+		App --> Browser--: Trả về kết quả thành công
+		Browser --> User: Cập nhật danh sách phiên luyện tập
+	end
+end
+Browser --> User: Đóng hộp thoại
+deactivate Browser
+
+@enduml

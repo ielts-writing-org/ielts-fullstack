@@ -1,0 +1,31 @@
+@startuml Tạo phiên luyện tập tùy chọn ACT
+
+skinparam DefaultFontName Segoe UI
+
+|Tác nhân chính|
+start
+:Chọn "Start Task x Practice" trên trang chủ;
+
+|Hệ thống|
+:Hiển thị hộp thoại tạo phiên luyện tập;
+
+|Tác nhân chính|
+:Nhập đề bài, chọn thể loại phụ (và ảnh minh họa\nnếu Task 1) và kiểu luyện tập;
+
+if (Nhấn "Start practice"?) then (Có)
+	|Hệ thống|
+	if (Dữ liệu đề bài nhập hợp lệ?) then (Có)
+		:Lưu đề bài mới vào danh sách đề bài;
+		:Tạo phiên luyện tập mới;
+		:Chuyển hướng người dùng đến trang luyện tập;
+		stop
+	else (Không)
+		:Hiển thị thông báo lỗi nhập liệu;
+		stop
+	endif
+else (Không)
+	:Đóng hộp thoại;
+	stop
+endif
+
+@enduml

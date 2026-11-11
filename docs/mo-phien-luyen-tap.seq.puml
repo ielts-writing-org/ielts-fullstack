@@ -1,0 +1,21 @@
+@startuml Mở phiên luyện tập SEQ
+
+skinparam DefaultFontName Segoe UI
+
+hide footbox
+autonumber
+
+actor "Người dùng" as User
+boundary "Trình duyệt" as Browser
+control "Hệ thống" as App
+database "Cơ sở dữ liệu" as DB
+
+User -> Browser++: Chọn "Continue" hoặc "Review"\ntrên phiên luyện tập trong trang History
+Browser -> App++: GET /practice/{practiceSessionId}
+App -> DB++: Truy vấn phiên luyện tập đã chọn của người dùng\n(kèm đề bài, đánh giá và tin nhắn nếu có)
+DB --> App--: Phiên luyện tập
+App --> Browser--: Trả về trang luyện tập (200)
+Browser --> User: Hiển thị trang luyện tập của phiên luyện tập đã chọn
+deactivate Browser
+
+@enduml

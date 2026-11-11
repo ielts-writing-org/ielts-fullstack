@@ -1,0 +1,21 @@
+@startuml Sao chép phiên luyện tập SEQ
+
+skinparam DefaultFontName Segoe UI
+
+hide footbox
+autonumber
+
+actor "Người dùng" as User
+boundary "Trình duyệt" as Browser
+
+User -> Browser++: Chọn "Copy essay" trong menu tác vụ\ncủa phiên luyện tập trên trang History
+
+alt#Gold #LightPink Trình duyệt chặn truy cập bộ nhớ tạm
+	Browser --> User: Hiển thị hộp thoại lỗi sao chép\nvà gợi ý dùng "Download .txt"
+else #LightGreen Trình duyệt cho phép truy cập bộ nhớ tạm
+	Browser -> Browser: Sao chép đề bài và nội dung bài viết\nvào bộ nhớ tạm của thiết bị
+	Browser --> User: Hiển thị xác nhận đã sao chép ("Copied!")
+end
+deactivate Browser
+
+@enduml

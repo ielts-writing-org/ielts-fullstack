@@ -1,0 +1,13 @@
+@startuml Mở phiên luyện tập ACT
+
+skinparam DefaultFontName Segoe UI
+
+|Tác nhân chính|
+start
+:Chọn "Continue" hoặc "Review"\ntrên phiên luyện tập trong trang History;
+
+|Hệ thống|
+:Hiển thị trang luyện tập của phiên luyện tập đã chọn;
+stop
+
+@enduml

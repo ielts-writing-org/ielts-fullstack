@@ -1,0 +1,32 @@
+@startuml Xóa phiên luyện tập SEQ
+
+skinparam DefaultFontName Segoe UI
+
+hide footbox
+autonumber
+
+actor "Người dùng" as User
+boundary "Trình duyệt" as Browser
+control "Hệ thống" as App
+entity "practice_sessions" as PracticeSessions
+database "Cơ sở dữ liệu" as DB
+
+User -> Browser++: Chọn "Delete" trong menu tác vụ\ncủa phiên luyện tập trên trang History
+Browser --> User: Hiển thị hộp thoại xác nhận xóa
+
+alt#Gold #LightPink Người dùng hủy xóa
+	User -> Browser: Chọn "Cancel"
+else #LightGreen Người dùng xác nhận xóa
+	User -> Browser: Nhấn "Delete" trong hộp thoại xác nhận
+	Browser -> App++: Gọi delete-practice-session(practiceSessionId)
+	App -> PracticeSessions++: Xóa phiên luyện tập
+	PracticeSessions -> DB++: Xóa phiên luyện tập của chính người dùng\nkhỏi cơ sở dữ liệu (đánh giá và tin nhắn liên quan\nbị xóa theo cascade nếu có)
+	DB --> PracticeSessions--: Phiên đã được xóa
+	PracticeSessions --> App--: Xóa thành công
+	App --> Browser--: Trả về kết quả thành công
+	Browser --> User: Cập nhật danh sách phiên luyện tập
+end
+Browser --> User: Đóng hộp thoại
+deactivate Browser
+
+@enduml

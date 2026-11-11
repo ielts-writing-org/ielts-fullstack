@@ -1,0 +1,30 @@
+@startuml Đổi tên phiên luyện tập ACT
+
+skinparam DefaultFontName Segoe UI
+
+|Tác nhân chính|
+start
+:Chọn "Rename" trong menu tác vụ\ncủa phiên luyện tập trên trang History;
+
+|Hệ thống|
+:Hiển thị hộp thoại đổi tên;
+
+|Tác nhân chính|
+:Nhập tên mới;
+
+if (Nhấn "Save"?) then (Có)
+	|Hệ thống|
+	if (Dữ liệu tên mới nhập hợp lệ?) then (Có)
+		:Lưu lại tên mới của phiên luyện tập;
+		:Cập nhật danh sách phiên luyện tập;
+	else (Không)
+		:Hiển thị thông báo dữ liệu không hợp lệ;
+		stop
+	endif
+else (Không)
+endif
+
+:Đóng hộp thoại;
+stop
+
+@enduml

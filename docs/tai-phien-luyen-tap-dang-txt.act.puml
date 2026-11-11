@@ -1,0 +1,14 @@
+@startuml Tải phiên luyện tập dạng txt ACT
+
+skinparam DefaultFontName Segoe UI
+
+|Tác nhân chính|
+start
+:Chọn "Download .txt" trong menu tác vụ\ncủa phiên luyện tập trên trang History;
+
+|Hệ thống|
+:Tạo tệp txt chứa đề bài và nội dung bài viết;
+:Tải xuống tệp txt về máy người dùng;
+stop
+
+@enduml

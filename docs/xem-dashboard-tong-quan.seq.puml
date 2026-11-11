@@ -8,15 +8,32 @@ autonumber
 actor "Người dùng" as User
 boundary "Trình duyệt" as Browser
 control "Hệ thống" as App
+entity "profiles" as Profiles
 database "Cơ sở dữ liệu" as DB
 
 User -> Browser++: Truy cập trang trang chủ
 Browser -> App++: GET /
-App -> App: Lấy session (yêu cầu phiên đăng nhập hợp lệ)
-App -> DB++: Truy vấn thống kê: số từ đã viết, số bài luyện tập\ntrong tuần, số ngày luyện tập liên tiếp, tổng số phiên\nluyện tập, tiến trình luyện tập và lịch sử luyện tập gần đây
-DB --> App--: Dữ liệu thống kê
-App --> Browser--: Trả về trang dashboard (200)
-Browser --> User: Hiển thị dashboard
+App -> Profiles++: Đọc mục tiêu điểm số
+Profiles -> DB++: Truy vấn bandTarget của hồ sơ người dùng
+DB --> Profiles--: bandTarget
+Profiles --> App--: Mục tiêu điểm số
+App --> Browser--: Trả về trang chủ (200)
+
+opt#Gold Người dùng chưa đặt mục tiêu
+	Browser --> User: Hiển thị hộp thoại bật lên có thanh\ntrượt lựa chọn điểm số và nút lưu
+	User -> Browser: Chọn điểm số phù hợp và nhấn "Save"
+	Browser -> App++: Gọi remote save-band-target(bandTarget)
+	App -> App: Kiểm tra phiên đăng nhập\nvà xác thực dữ liệu đầu vào
+	App -> Profiles++: Cập nhật mục tiêu điểm số
+	Profiles -> DB++: Lưu bandTarget của hồ sơ người dùng
+	DB --> Profiles--: bandTarget đã được lưu
+	Profiles --> App--: Cập nhật thành công
+	App --> Browser--: Trả về kết quả thành công
+	Browser --> User: Cập nhật dữ liệu lên giao diện
+	Browser --> User: Đóng hộp thoại
+end
+
+Browser --> User: Hiển thị trang chủ (dashboard)
 deactivate Browser
 
 @enduml

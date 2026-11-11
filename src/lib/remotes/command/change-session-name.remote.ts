@@ -1,6 +1,7 @@
 import { getApiSession } from "#lib/server/auth/session.ts";
 import { practiceSessions } from "#lib/server/db/app.schema.ts";
 import { getDb } from "#lib/server/db/index.ts";
+import { countWords } from "#lib/utils/stats.ts";
 import { command, getRequestEvent } from "$app/server";
 import { error } from "@sveltejs/kit";
 import { env } from "cloudflare:workers";
@@ -10,7 +11,13 @@ import z from "zod";
 export const changeSessionName = command(
 	z.object({
 		practiceSessionId: z.uuidv7(),
-		newName: z.string().min(1).max(64)
+		newName: z.string().refine(
+			(value) => {
+				const count = countWords(value);
+				return count >= 1 && count <= 24;
+			},
+			{ error: "Practice Session Name must be between 1 and 24 words." }
+		)
 	}),
 	async ({ practiceSessionId, newName }) => {
 		const { locals } = getRequestEvent();

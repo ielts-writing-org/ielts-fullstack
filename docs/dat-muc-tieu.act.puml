@@ -4,7 +4,7 @@ skinparam DefaultFontName Segoe UI
 
 |Tác nhân chính|
 start
-:Chọn vào nút "Target: Band x",\nvới x là mục tiêu điểm số hiện tại;
+:Chọn vào nút "Target Band x",\nvới x là mục tiêu điểm số hiện tại;
 
 |Hệ thống|
 :Hiển thị hộp thoại bật lên có thanh\ntrượt lựa chọn điểm số, nút lưu và hủy;
@@ -14,10 +14,10 @@ if (Chọn điểm số phù hợp và nhấn "Save"?) then (Có)
 	|Hệ thống|
 	:Lưu lại điểm số;
 	:Cập nhật dữ liệu lên giao diện;
-	stop
 else (Không)
-	:Đóng hộp thoại;
-	stop
 endif
+
+:Đóng hộp thoại;
+stop
 
 @enduml
