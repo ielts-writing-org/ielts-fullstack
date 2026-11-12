@@ -9,8 +9,8 @@ import { tasks } from "#lib/server/db/app.schema.ts";
 import { taskPromptSchema } from "#lib/domain/task-prompt.ts";
 import { taskImageSchema } from "#lib/domain/task-image.ts";
 import { isValidSubcategory, taskSubcategorySchema } from "#lib/domain/task-subcategory.ts";
-import { deleteObject, putObject } from "#lib/server/infrastructure/bucket.ts";
-import { compressImageAsBlob } from "#lib/server/infrastructure/images.ts";
+import { deleteObject, putObject } from "#lib/server/bindings/bucket.ts";
+import { compressImageAsBlob } from "#lib/server/bindings/images.ts";
 import { getImagePath } from "#lib/utils/paths.ts";
 
 export const updateTask = form(

@@ -8,18 +8,19 @@ export const CONFIGS = {
 };
 
 export function getChatPrompt(taskCategory: TaskCategory): Promise<string> {
-	return getPrompt(taskCategory, CONFIGS.chatPromptPrefix);
+	return getKVConfigValue(CONFIGS.chatPromptPrefix + taskCategory);
 }
 
 export function getEvaluationPrompt(taskCategory: TaskCategory): Promise<string> {
-	return getPrompt(taskCategory, CONFIGS.evaluationPromptPrefix);
+	return getKVConfigValue(CONFIGS.evaluationPromptPrefix + taskCategory);
 }
 
-async function getPrompt(taskCategory: TaskCategory, key: string): Promise<string> {
-	const value = await env.IELTS_WRITING_KV.get(key + taskCategory, { cacheTtl: CONFIGS.cacheTtl });
+export async function getKVConfigValue(key: string): Promise<string> {
+	const value = await env.IELTS_WRITING_KV.get(key, { cacheTtl: CONFIGS.cacheTtl });
 
-	if (value === null)
-		throw new Error(`Config value not found for key: ${key}, category: ${taskCategory}`);
+	if (value === null) {
+		throw new Error(`Config value not found for key: ${key}`);
+	}
 
 	return value;
 }

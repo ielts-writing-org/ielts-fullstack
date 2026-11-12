@@ -7,8 +7,8 @@ import { getApiSession } from "#lib/server/auth/session.ts";
 import { getDatabase } from "#lib/server/db/index.ts";
 import { tasks } from "#lib/server/db/app.schema.ts";
 import { taskImageSchema } from "#lib/domain/task-image.ts";
-import { deleteObject, putObject } from "#lib/server/infrastructure/bucket.ts";
-import { compressImageAsBlob } from "#lib/server/infrastructure/images.ts";
+import { deleteObject, putObject } from "#lib/server/bindings/bucket.ts";
+import { compressImageAsBlob } from "#lib/server/bindings/images.ts";
 import { getImagePath } from "#lib/utils/paths.ts";
 
 export const saveTaskImage = form(

@@ -1,7 +1,7 @@
 import type { RequestHandler } from "./$types";
 import { error } from "@sveltejs/kit";
 import { getApiSession } from "#lib/server/auth/session.ts";
-import { getObjectAsStream } from "#lib/server/infrastructure/bucket.ts";
+import { getObjectAsStream } from "#lib/server/bindings/bucket.ts";
 
 export const GET: RequestHandler = async ({ locals, params }) => {
 	getApiSession(locals);

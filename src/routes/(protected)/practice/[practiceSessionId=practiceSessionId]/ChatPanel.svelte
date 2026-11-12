@@ -210,7 +210,7 @@
 					bind:value={input} />
 			</label>
 			<button class="btn join-item btn-primary" disabled={isBusy} onclick={handleChat}>
-				<span class="loading loading-sm loading-dots" hidden={!isBusy}></span>
+				<span class="loading loading-sm loading-infinity" hidden={!isBusy}></span>
 				<span class="hidden sm:inline" hidden={isBusy}>Send</span>
 				<Send class={["size-4", isBusy && "hidden"]} />
 			</button>

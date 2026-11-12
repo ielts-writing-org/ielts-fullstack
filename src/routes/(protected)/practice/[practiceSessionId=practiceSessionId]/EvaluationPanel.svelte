@@ -143,6 +143,9 @@
 				return;
 			}
 
+			isBusy = true;
+			oldEvaluation = evaluation;
+
 			const request = buildEvaluateRequest(props.practiceSessionContext);
 			if (!request) return;
 
@@ -159,10 +162,6 @@
 				});
 			}
 
-			isBusy = true;
-			oldEvaluation = evaluation;
-			evaluation = createEmptyEvaluation(props.practiceSessionContext.category);
-
 			const response = await fetch(`${page.url.pathname}/evaluate`, {
 				method: "POST",
 				credentials: "include",
@@ -178,6 +177,8 @@
 			if (!stream) {
 				throw new Error("Could not read response body");
 			}
+
+			evaluation = createEmptyEvaluation(props.practiceSessionContext.category);
 
 			const parser = new JSONParser({ paths: ["$", "$.*", "$.criteria.*"] });
 			parser.onValue = ({ key, stack, value }) => {
@@ -282,20 +283,23 @@
 						!estimatedBand && "items-center"
 					]}>
 					{#if estimatedBand}
-						<div
-							class={[
-								"radial-progress text-3xl font-bold",
-								props.bandTarget && estimatedBand >= props.bandTarget
-									? "text-success"
-									: "text-warning"
-							]}
-							style:--value={convertBandToProgressValue(estimatedBand)}
-							role="progressbar"
-							aria-label="Estimated band"
-							aria-valuenow={estimatedBand}
-							aria-valuemin={0}
-							aria-valuemax={9}>
-							{estimatedBand.toFixed(1)}
+						<div class="flex flex-col items-center gap-1">
+							<div
+								class={[
+									"radial-progress text-3xl font-bold",
+									props.bandTarget && estimatedBand >= props.bandTarget
+										? "text-success"
+										: "text-warning"
+								]}
+								style:--value={convertBandToProgressValue(estimatedBand)}
+								role="progressbar"
+								aria-label="Estimated band"
+								aria-valuenow={estimatedBand}
+								aria-valuemin={0}
+								aria-valuemax={9}>
+								{estimatedBand.toFixed(1)}
+							</div>
+							<span class="text-xs text-base-content/75">Overall</span>
 						</div>
 						<div class="min-w-0">
 							<p class="truncate text-sm font-semibold">AI Evaluator</p>

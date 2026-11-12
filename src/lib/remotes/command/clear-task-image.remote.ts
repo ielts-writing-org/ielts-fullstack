@@ -5,7 +5,7 @@ import z from "zod";
 import { getApiSession } from "#lib/server/auth/session.ts";
 import { getDatabase } from "#lib/server/db/index.ts";
 import { tasks } from "#lib/server/db/app.schema.ts";
-import { deleteObject } from "#lib/server/infrastructure/bucket.ts";
+import { deleteObject } from "#lib/server/bindings/bucket.ts";
 import { getImagePath } from "#lib/utils/paths.ts";
 
 export const clearTaskImage = command(

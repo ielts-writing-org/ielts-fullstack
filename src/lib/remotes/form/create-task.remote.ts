@@ -11,9 +11,9 @@ import { z } from "zod";
 import { taskCategorySchema } from "#lib/domain/task-category.ts";
 import { taskImageSchema } from "#lib/domain/task-image.ts";
 import { taskSubcategorySchema } from "#lib/domain/task-subcategory.ts";
-import { compressImageAsBlob } from "#lib/server/infrastructure/images.ts";
+import { compressImageAsBlob } from "#lib/server/bindings/images.ts";
 import { taskPromptSchema } from "#lib/domain/task-prompt.ts";
-import { putObject } from "#lib/server/infrastructure/bucket.ts";
+import { putObject } from "#lib/server/bindings/bucket.ts";
 import { getImagePath } from "#lib/utils/paths.ts";
 
 export const createTask = form(

@@ -34,13 +34,13 @@ Use the `package.json` scripts; never call the `wrangler` or `svelte-kit` CLIs d
 - Import alias `#lib/*` -> `src/lib/*` (root `package.json` `imports`). Bare `#lib` maps to a nonexistent `src/lib/index.js`; always use a subpath.
 - Cloudflare bindings are read at runtime via `import { env } from "cloudflare:workers"` (`IELTS_WRITING_DB`, `_KV`, `_BUCKET`, `_AI`, `_IMAGES`). `worker-configuration.d.ts` is generated; never edit it. The AI binding is `"remote": true` (Workers AI runs remotely even in local dev).
 - App env vars are declared in `src/env.ts` (`defineEnvVars` with zod schemas) and imported from `$app/env/private` or `$app/env/public`, not `$env/static/*`.
-- Server layering is ports-and-adapters: `src/lib/server/infrastructure/*` defines `*.port.ts` interfaces plus `*.cf.ts` Cloudflare adapters; AI routes construct the `Cf*` clients and pass them into handler classes.
+- Server layering is ports-and-adapters: `src/lib/server/bindings/*` defines `*.port.ts` interfaces plus `*.cf.ts` Cloudflare adapters; AI routes construct the `Cf*` clients and pass them into handler classes.
 - Auth (`src/lib/server/auth/`): `hooks.server.ts` builds a per-request instance with `createAuth(env.IELTS_WRITING_DB)` and sets `event.locals.auth` plus `locals.session/user/profile` (the hook fetches the `profiles` row; missing -> 500). Use `getPageSession(locals)` (307 redirect to sign-in) in loads and `getApiSession(locals)` (401) in API/remote handlers. `sveltekitCookies(getRequestEvent)` must stay the LAST auth plugin. `auth/cli.ts` exports `auth` for CLI schema generation only.
 - Redis (`src/lib/server/redis.ts`): dev uses the local URS REST server, prod uses `RedisCF.fromEnv()`. Better Auth `secondaryStorage` is Redis only in production (`dev ? undefined : redisSecondaryStorage`); Better Auth's own rate limiting stores in secondary storage. App-level `rateLimit(identifier)` (`rate-limit.ts`, Upstash sliding window) throws 429.
 - Mutations use SvelteKit remote functions organized by kind in `src/lib/remotes/command|form|query/*.remote.ts` (`command`/`form`/`query` + `getRequestEvent` from `$app/server`, zod input schemas) with an ownership check - not form actions. Query remotes can push cache updates (`getProfile().set(...)`).
 - AI chat/evaluate are POST `+server.ts` handlers returning `text/event-stream`; order: `rateLimit(getClientAddress())` -> `getApiSession(locals)` -> zod parse -> construct clients -> handler class.
 - Routes: `(protected)` requires a session, `(public)` is open. Typed route params are in `src/params.ts` (`practiceSessionId`, `taskId` must be UUIDv7; `taskCategory` is `1|2`).
-- AI prompts come from KV keyed `chat-prompt-<category>` / `evaluation-prompt-<category>` (`src/lib/server/infrastructure/config-provider/`), where `<category>` is `1` or `2`. Missing keys throw `ConfigMissingError`.
+- AI prompts come from KV keyed `chat-prompt-<category>` / `evaluation-prompt-<category>` (`src/lib/server/bindings/config-provider/`), where `<category>` is `1` or `2`. Missing keys throw `ConfigMissingError`.
 
 ## D1 / Drizzle gotchas
 

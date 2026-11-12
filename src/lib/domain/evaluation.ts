@@ -36,33 +36,34 @@ const criterionSchema = z
 	})
 	.meta({ id: "Criterion" });
 
-const task1EvaluationSchema = z.object({
-	taskCategory: z.literal("1"),
-	criteria: z.object({
-		taskAchievement: criterionSchema,
-		coherenceAndCohesion: criterionSchema,
-		lexicalResource: criterionSchema,
-		grammaticalRangeAndAccuracy: criterionSchema
-	})
+const task1Criteria = z.object({
+	taskAchievement: criterionSchema,
+	coherenceAndCohesion: criterionSchema,
+	lexicalResource: criterionSchema,
+	grammaticalRangeAndAccuracy: criterionSchema
 });
 
-const task2EvaluationSchema = z.object({
-	taskCategory: z.literal("2"),
-	criteria: z.object({
-		taskResponse: criterionSchema,
-		coherenceAndCohesion: criterionSchema,
-		lexicalResource: criterionSchema,
-		grammaticalRangeAndAccuracy: criterionSchema
-	})
+const task2Criteria = z.object({
+	taskResponse: criterionSchema,
+	coherenceAndCohesion: criterionSchema,
+	lexicalResource: criterionSchema,
+	grammaticalRangeAndAccuracy: criterionSchema
 });
 
-export const evaluationSchema = z.intersection(
-	z.discriminatedUnion("taskCategory", [task1EvaluationSchema, task2EvaluationSchema]),
+export const evaluationSchema = z.discriminatedUnion("taskCategory", [
 	z.object({
+		taskCategory: z.literal("1"),
+		criteria: task1Criteria,
+		summary: z.string(),
+		estimatedBand: bandSchema
+	}),
+	z.object({
+		taskCategory: z.literal("2"),
+		criteria: task2Criteria,
 		summary: z.string(),
 		estimatedBand: bandSchema
 	})
-);
+]);
 
 export type EvaluationCriterion = z.infer<typeof criterionSchema>;
 export type Evaluation = z.infer<typeof evaluationSchema>;

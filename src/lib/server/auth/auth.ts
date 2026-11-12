@@ -14,7 +14,6 @@ import { sveltekitCookies } from "better-auth/svelte-kit";
 import { env } from "cloudflare:workers";
 import { getDb } from "../db";
 import { profiles } from "../db/app.schema";
-import { redisSecondaryStorage } from "./secondary-storage";
 
 export const createAuth = (d1: D1Database) => {
 	return betterAuth({
@@ -58,10 +57,6 @@ export const createAuth = (d1: D1Database) => {
 				}
 			}
 		},
-		session: { storeSessionInDatabase: true },
-		verification: { storeInDatabase: true },
-		onAPIError: { errorURL: "/sign-in" },
-		rateLimit: { storage: "secondary-storage" },
-		secondaryStorage: redisSecondaryStorage
+		onAPIError: { errorURL: "/sign-in" }
 	});
 };
