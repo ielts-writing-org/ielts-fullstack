@@ -11,15 +11,41 @@ import { drizzleAdapter } from "better-auth/adapters/drizzle";
 import { betterAuth } from "better-auth/minimal";
 import { admin } from "better-auth/plugins";
 import { sveltekitCookies } from "better-auth/svelte-kit";
-import { env } from "cloudflare:workers";
+import { env, waitUntil } from "cloudflare:workers";
 import { getDb } from "../db";
 import { profiles } from "../db/app.schema";
+import { sendEmail } from "../bindings/email";
 
 export const createAuth = (d1: D1Database) => {
 	return betterAuth({
 		appName: "IELTS Writing Practice Platform",
 		baseURL: ORIGIN,
 		secret: BETTER_AUTH_SECRET,
+		emailAndPassword: {
+			enabled: true,
+			requireEmailVerification: true,
+			onExistingUserSignUp: async ({ user }) => {
+				waitUntil(
+					sendEmail(
+						user.email,
+						"Sign-up attempt with your email",
+						"Someone tried to create an account using your email address. If this was you, try signing in instead. If not, you can safely ignore this email."
+					)
+				);
+			},
+			sendResetPassword: async ({ user, url }) => {
+				waitUntil(
+					sendEmail(
+						user.email,
+						"Reset your password",
+						`Click the link to reset your password: ${url}`
+					)
+				);
+				console.log(`Click the link to reset your password: ${url}`);
+			},
+			resetPasswordTokenExpiresIn: 10 * 60,
+			revokeSessionsOnPasswordReset: true
+		},
 		socialProviders: {
 			github: {
 				clientId: GITHUB_CLIENT_ID,
@@ -57,6 +83,20 @@ export const createAuth = (d1: D1Database) => {
 				}
 			}
 		},
-		onAPIError: { errorURL: "/sign-in" }
+		onAPIError: { errorURL: "/sign-in" },
+		emailVerification: {
+			sendVerificationEmail: async ({ user, url }) => {
+				waitUntil(
+					sendEmail(
+						user.email,
+						"Verify your email address",
+						`Click the link to verify your email: ${url}`
+					)
+				);
+			},
+			sendOnSignIn: true,
+			expiresIn: 10 * 60,
+			autoSignInAfterVerification: true
+		}
 	});
 };

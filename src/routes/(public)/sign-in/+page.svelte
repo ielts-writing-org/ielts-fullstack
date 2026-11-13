@@ -1,43 +1,33 @@
+<!-- TODO: Rate limit -->
+
 <script lang="ts">
-	import { resolve } from "$app/paths";
+	import { onMount } from "svelte";
 	import { page } from "$app/state";
-	import { onMount, untrack } from "svelte";
-	import { Sparkles } from "@lucide/svelte";
-	import { authClient } from "#lib/auth/auth-client.js";
 	import AppLogo from "#lib/components/AppLogo.svelte";
-	import GitHub from "#lib/components/icons/GitHub.svelte";
+	import WatermarkBackground from "#lib/components/WatermarkBackground.svelte";
+	import LegacySignInMethods from "./LegacySignInMethods.svelte";
+	import PlatformOverview from "./PlatformOverview.svelte";
+	import AuthForm from "./AuthForm.svelte";
 	import { openModal } from "#lib/components/Modal.svelte";
+	import { getAllAuthModes, getAuthModeLabel, type AuthMode } from "./auth-mode";
+	import { Info } from "@lucide/svelte";
+	import { goto } from "$app/navigation";
+	import { resolve } from "$app/paths";
 
-	const { data } = $props();
+	let mode = $state<AuthMode>("sign-in");
+	let registeredEmail = $derived(page.url.searchParams.get("registered-email") ?? "");
 
-	let signingIn = $state<boolean>(false);
-
-	async function handleSignInSocial(provider: "github") {
-		const result = await authClient.signIn.social({
-			provider: provider,
-			callbackURL: page.url.origin
+	async function handleAccountCreated(email: string) {
+		await goto(`${resolve("/(public)/sign-in")}?registered-email=${email}`, {
+			replace: true
 		});
+		mode = "sign-in";
 
-		if (result.error) {
-			untrack(() => {
-				openModal({
-					title: {
-						text: `Unable to Sign in`,
-						color: "error"
-					},
-					content: {
-						snippet: signInErrorSnippet,
-						args: {
-							errorMessage: result.error.message,
-							errorCode: result.error.code,
-							statusCode: result.error.status,
-							status: result.error.statusText
-						}
-					},
-					primaryButton: "Close"
-				});
-			});
-		}
+		openModal({
+			title: "Email verification",
+			content: { snippet: pendingVerification },
+			primaryButton: "Close"
+		});
 	}
 
 	onMount(() => {
@@ -50,20 +40,35 @@
 		let title: string;
 		let content: string;
 
-		if (error === "access_denied") {
-			title = "Access Denied";
-			content = "You have denied access to your third-party account.";
-		} else if (error === "state_mismatch") {
-			title = "State Mismatch";
-			content =
-				"The state returned by your OAuth provider is not match any record saved in the system. Please try again.";
-		} else if (error === "BANNED_USER") {
-			title = "You have been banned";
-			content =
-				"You have been banned from this platform. Please contact support if you believe this is a mistake.";
-		} else {
-			title = "Unhandled Sign in error";
-			content = "Please try again.";
+		switch (error) {
+			// TODO: Planned to remove
+			case "access_denied":
+				title = "Access Denied";
+				content = "You have denied access to your third-party account.";
+				break;
+
+			// TODO: Planned to remove
+			case "state_mismatch":
+				title = "State Mismatch";
+				content =
+					"The state returned by your OAuth provider is not match any record saved in the system. Please try again.";
+				break;
+
+			case "BANNED_USER":
+				title = "You have been banned";
+				content =
+					"You have been banned from this platform. Please contact support if you believe this is a mistake.";
+				break;
+
+			case "INVALID_TOKEN":
+				title = "Email verification failed";
+				content = "The email verification link has been expired or contains invalid token.";
+				break;
+
+			default:
+				title = "Unhandled Sign in error";
+				content = "Please try again.";
+				break;
 		}
 
 		openModal({ title, content, primaryButton: "Close" });
@@ -75,120 +80,64 @@
 	<meta name="description" content="IELTS Writing Practice Platform Sign In" />
 </svelte:head>
 
-{#snippet signInErrorSnippet(props: {
-	errorMessage: string | undefined;
-	errorCode: string | undefined;
-	status: string;
-	statusCode: number;
-})}
-	<p class="font-semibold text-error">
-		{props.errorMessage ?? "There was an unexpected error while signing you in"}
-	</p>
-	<p class="mt-4">
-		{#if props.errorCode}
-			<span class="font-semibold">Error Code:</span>
-			{props.errorCode}
-			<br />
-		{/if}
-		<span class="font-semibold">Status:</span>
-		{props.statusCode} - {props.status}
-	</p>
-{/snippet}
+<!-- TODO: Planned to remove -->
+<LegacySignInMethods />
 
 <main
 	id="main-content"
-	class="relative flex w-full items-center justify-center p-6 [--glass-blur:4px] lg:h-full lg:p-16"
+	class="relative flex w-full items-center justify-center px-6 py-2 [--glass-blur:4px] lg:h-full lg:px-16"
 	data-theme="light">
-	<!-- Watermark background -->
-	<div
-		class="pointer-events-none absolute inset-0 animate-watermark bg-primary-content mask-[url('/watermark.svg')]">
-	</div>
+	<WatermarkBackground />
 
 	<!-- Hero Flex Layout -->
 	<section
 		class="z-1 flex w-full max-w-6xl flex-col items-center justify-between gap-12 lg:flex-row">
-		<!-- Left: Platform Overview / Landing Highlights -->
-		<div class="flex flex-col gap-8 lg:max-w-xl">
-			<div
-				class="badge rounded-full badge-xs font-semibold tracking-wider uppercase badge-warning sm:text-xs sm:badge-md">
-				<Sparkles class="h-4 w-4" />
-				AI-Powered IELTS Academic Writing Tutor
-			</div>
-
-			<div class="flex flex-col gap-4">
-				<h1
-					class="text-3xl leading-tight font-black tracking-tight text-neutral sm:text-4xl lg:text-5xl">
-					Achieve Your Target <div class="text-primary">
-						IELTS Writing <span class="text-rotate">
-							<span>
-								<span class="text-warning">Band Score</span>
-								<span class="bg-warning text-warning-content">Band Score</span>
-							</span>
-						</span>
-					</div>
-				</h1>
-				<p class="leading-relaxed text-neutral/75 sm:text-lg">
-					Practice IELTS Writing Task 1 and Task 2 with conversational AI feedback that helps you
-					evaluate your responses, understand your mistakes, and improve your writing through
-					targeted guidance.
-				</p>
-			</div>
-
-			<!-- Feature List (Flexbox) -->
-			<div class="flex flex-col flex-wrap gap-4 sm:flex-row">
-				{#each data.features as feature (feature.title)}
-					<div
-						class="flex min-w-60 flex-1 items-start gap-4 rounded-box glass p-5 shadow-sm transition-shadow hover:shadow-md sm:w-[calc(50%-0.5rem)]">
-						<div
-							class="grid h-10 w-10 shrink-0 place-items-center rounded-box bg-primary/10 font-bold text-primary">
-							<feature.icon class="h-5 w-5" />
-						</div>
-						<div class="flex flex-col gap-1">
-							<h3 class="text-sm font-bold text-primary">{feature.title}</h3>
-							<p class="text-xs leading-relaxed text-neutral/65">{feature.description}</p>
-						</div>
-					</div>
-				{/each}
-			</div>
-		</div>
+		<PlatformOverview />
 
 		<!-- Right: Authentication Card -->
 		<section
-			class="flex w-full max-w-md flex-col items-center gap-8 rounded-box glass p-8 shadow-md sm:p-10">
+			class="flex w-full max-w-md flex-col items-center gap-2 rounded-box glass p-3 shadow-md">
 			<div class="flex flex-col items-center gap-3 text-center">
 				<AppLogo class="h-14 w-14 text-xl" />
 				<div class="flex flex-col gap-1">
-					<h2 class="text-2xl font-semibold text-neutral">Welcome Learner!</h2>
-					<p class="text-sm text-neutral/65">Sign in to start your IELTS writing session</p>
+					<h2 class="text-2xl font-semibold text-neutral">
+						{mode === "sign-in" ? "Welcome back!" : "Welcome new Learner!"}
+					</h2>
+					<p class="text-sm text-neutral/65">
+						{mode === "sign-in"
+							? "Sign in to continue your IELTS writing practice"
+							: "Start your IELTS writing journey today"}
+					</p>
 				</div>
 			</div>
 
-			<div class="flex w-full flex-col items-center gap-4">
-				<button
-					class="btn btn-wide btn-outline btn-neutral hover:shadow-md"
-					disabled={signingIn}
-					onclick={() => handleSignInSocial("github")}>
-					<GitHub class="h-5 w-5" />
-					Continue with GitHub
-				</button>
+			<div class="tabs tabs-border" role="tablist">
+				{#each getAllAuthModes() as authMode (authMode)}
+					<input
+						type="radio"
+						name="auth_tabs"
+						class="tab checked:text-primary"
+						value={authMode}
+						role="tab"
+						aria-label={getAuthModeLabel(authMode)}
+						bind:group={mode} />
+					<div class="tab-content px-6 py-3">
+						<AuthForm {mode} {registeredEmail} onAccountCreated={handleAccountCreated} />
+					</div>
+				{/each}
 			</div>
-
-			<p class="text-center text-xs text-neutral/60">
-				By signing in, you agree to our
-				<span class="mt-1 block">
-					<a
-						class="link font-medium link-primary"
-						href={resolve("/(public)/(docs)/terms-of-service")}>
-						Terms of Service
-					</a>
-					and
-					<a
-						class="link font-medium link-primary"
-						href={resolve("/(public)/(docs)/privacy-policy")}>
-						Privacy Policy
-					</a>
-				</span>
-			</p>
 		</section>
 	</section>
 </main>
+
+{#snippet pendingVerification()}
+	<p class="leading-relaxed">
+		We've sent a verification link to
+		<span class="font-semibold text-neutral">{registeredEmail}</span>. Open the link to activate
+		your account, then sign in to start practicing.
+	</p>
+	<p class="mt-3 text-sm text-base-content/75">
+		<Info class="inline" size="1em" />
+		Didn't get the email? Check your spam folder or send a new link above.
+	</p>
+{/snippet}
