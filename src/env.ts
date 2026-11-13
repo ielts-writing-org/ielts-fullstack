@@ -24,5 +24,8 @@ export const variables = defineEnvVars({
 	R2_ENDPOINT: {
 		description: "Public endpoint to the Cloudflare R2 bucket.",
 		public: true
-	}
+	},
+	SMTP_SERVER: {},
+	SMTP_USER: {},
+	SMTP_PASSWORD: {}
 });
