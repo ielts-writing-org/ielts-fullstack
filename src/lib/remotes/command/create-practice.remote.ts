@@ -7,6 +7,7 @@ import { practiceSessions, tasks } from "#lib/server/db/app.schema.ts";
 import { getDb } from "#lib/server/db/index.ts";
 import { getApiSession } from "#lib/server/auth/session.ts";
 import { practiceTypeSchema } from "#lib/domain/practice-type.ts";
+import { error } from "@sveltejs/kit";
 
 export const createPractice = command(
 	z.object({
@@ -30,6 +31,21 @@ export const createPractice = command(
 				.returning({ id: tasks.id });
 
 			taskId = createdTask.id;
+		} else {
+			const task = await db.query.tasks.findFirst({
+				where: (fields, { and, eq, isNull, or }) =>
+					and(
+						eq(fields.id, taskId!),
+						isNull(fields.deletedAt),
+						or(
+							eq(fields.userId, user.id),
+							and(isNull(fields.userId), eq(fields.published, true))
+						)
+					),
+				columns: { category: true }
+			});
+			if (!task) error(404, "Task does not exist.");
+			if (task.category !== taskCategory) error(400, "Task category does not match the selected task.");
 		}
 
 		const [createdPracticeSession] = await db
