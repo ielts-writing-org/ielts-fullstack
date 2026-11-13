@@ -10,6 +10,5 @@
 		}
 	],
 	"tailwindStylesheet": "src/routes/layout.css",
-	"bracketSameLine": true,
-	"htmlWhitespaceSensitivity": "ignore"
+	"bracketSameLine": true
 }
