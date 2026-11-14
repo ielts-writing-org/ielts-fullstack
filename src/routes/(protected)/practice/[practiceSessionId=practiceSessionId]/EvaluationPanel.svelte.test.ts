@@ -214,7 +214,7 @@ describe("EvaluationPanel", () => {
 		expect(fetchMock).not.toHaveBeenCalled();
 	});
 
-	test("SPEC: a Task 2 essay within the word range is evaluable without an image", async () => {
+	test("evaluates a Task 2 essay from text alone (no image required)", async () => {
 		const fetchMock = vi.fn(async () => sseResponse([JSON.stringify(task2Evaluation)]));
 		vi.stubGlobal("fetch", fetchMock);
 

@@ -12,7 +12,7 @@ export class EditorSaver {
 
 	constructor(save: () => Promise<void>) {
 		this.#save = save;
-		this.#debouncedSave = debounce(() => void this.saveNow(), 2000);
+		this.#debouncedSave = debounce(() => void this.saveNow(), 5000);
 	}
 
 	/** Save state surfaced in the editor status bar. */

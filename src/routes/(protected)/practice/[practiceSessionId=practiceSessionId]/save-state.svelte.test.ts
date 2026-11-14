@@ -48,7 +48,7 @@ describe("EditorSaver", () => {
 		const saver = new EditorSaver(save);
 
 		saver.scheduleSaving();
-		await vi.advanceTimersByTimeAsync(2000);
+		await vi.advanceTimersByTimeAsync(5000);
 		expect(saver.status).toBe("saving");
 
 		// Typing while saving must not flip the label back to unsaved.
@@ -88,7 +88,7 @@ describe("EditorSaver", () => {
 		const saver = new EditorSaver(save);
 
 		saver.scheduleSaving();
-		await vi.advanceTimersByTimeAsync(2000);
+		await vi.advanceTimersByTimeAsync(5000);
 
 		expect(saver.status).toBe("failed");
 	});
@@ -103,7 +103,7 @@ describe("EditorSaver", () => {
 		const saver = new EditorSaver(save);
 
 		saver.scheduleSaving();
-		await vi.advanceTimersByTimeAsync(2000);
+		await vi.advanceTimersByTimeAsync(5000);
 		expect(saver.status).toBe("failed");
 
 		await saver.saveNow();

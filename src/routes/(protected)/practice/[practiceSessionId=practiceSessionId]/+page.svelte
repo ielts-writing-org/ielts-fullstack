@@ -106,6 +106,7 @@
 				class="flex-1"
 				title="Task"
 				taskId={data.task.id}
+				allowImage={category === "1"}
 				bind:this={taskEditor}
 				bind:content={prompt}
 				bind:imageName

@@ -16,6 +16,7 @@
 		title: string;
 		taskId: string;
 		content: string;
+		allowImage?: boolean;
 		imageName?: string;
 		isDirty?: boolean;
 		canUnlock?: boolean;
@@ -123,7 +124,7 @@
 		</div>
 
 		<!-- Image controls -->
-		{#if isUnlocked}
+		{#if isUnlocked && props.allowImage}
 			<div class="flex items-center gap-1">
 				<form {...saveTaskImage} class="contents" enctype="multipart/form-data">
 					<input {...saveTaskImage.fields.taskId.as("hidden", props.taskId)} />
