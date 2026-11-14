@@ -16,7 +16,9 @@ export type TaskFiltersData = {
 	sort: "recent" | "oldest" | "name" | "practiced";
 };
 
-export const tasksHref = resolve("/(protected)/tasks");
+export function buildTasksHref(query?: string) {
+	return resolve(`/(protected)/tasks?${query}`);
+}
 
 /** Builds a query string for the given filter state with optional overrides. */
 export function buildQuery(
@@ -43,7 +45,7 @@ export function buildQuery(
 	if (state.page !== "1") params.set("page", state.page);
 
 	const query = params.toString();
-	return query ? `?${query}` : "";
+	return query ? `${query}` : "";
 }
 
 export function practiceHref(practiceSessionId: string) {

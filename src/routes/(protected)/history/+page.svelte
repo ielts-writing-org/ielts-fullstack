@@ -3,7 +3,7 @@
 	import { ArrowRight, PenLine, RotateCcwClock } from "@lucide/svelte";
 	import { openModal } from "#lib/components/Modal.svelte";
 	import { deletePracticeSession } from "#lib/remotes/command/delete-practice-session.remote.js";
-	import { historyHref, newPracticeHref, type SessionItem } from "./utils.ts";
+	import { buildHistoryHref, newPracticeHref, type SessionItem } from "./utils.ts";
 	import HistoryFilters from "./HistoryFilters.svelte";
 	import HistoryPagination from "./HistoryPagination.svelte";
 	import HistoryStats from "./HistoryStats.svelte";
@@ -89,7 +89,7 @@
 				<p class="text-xs">Try a different search term or clear the filters.</p>
 				<button
 					class="btn mt-2 btn-outline btn-primary btn-sm"
-					onclick={() => goto(historyHref, { reset: false })}>
+					onclick={() => goto(buildHistoryHref(), { reset: false })}>
 					Clear filters
 				</button>
 			</div>

@@ -3,7 +3,7 @@
 	import { goto } from "$app/navigation";
 	import { Search, X } from "@lucide/svelte";
 	import { getTaskSubcategories, getTaskSubcategoryLabel } from "#lib/domain/task-subcategory.ts";
-	import { buildQuery, tasksHref, type FilterKey, type TaskFiltersData } from "./links.ts";
+	import { buildQuery, buildTasksHref, type FilterKey, type TaskFiltersData } from "./links.ts";
 
 	type Props = { filters: TaskFiltersData; resultCount: number; total: number };
 	let { filters, resultCount, total }: Props = $props();
@@ -32,7 +32,7 @@
 	});
 
 	function update(overrides: Partial<Record<FilterKey, string>>) {
-		goto(tasksHref + buildQuery(filters, 1, { page: "1", ...overrides }), { reset: false });
+		goto(buildTasksHref(buildQuery(filters, 1, { page: "1", ...overrides })), { reset: false });
 	}
 
 	function onSearchInput(value: string) {
@@ -164,7 +164,9 @@
 						<X class="size-3" />
 					</button>
 				{/each}
-				<button class="btn btn-ghost btn-xs" onclick={() => goto(tasksHref, { reset: false })}>
+				<button
+					class="btn btn-ghost btn-xs"
+					onclick={() => goto(buildTasksHref(), { reset: false })}>
 					Clear all
 				</button>
 			</div>

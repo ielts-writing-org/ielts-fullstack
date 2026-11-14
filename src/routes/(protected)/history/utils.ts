@@ -19,7 +19,9 @@ export type HistoryFiltersData = {
 	sort: "recent" | "oldest" | "band" | "words";
 };
 
-export const historyHref = resolve("/(protected)/history");
+export function buildHistoryHref(query?: string) {
+	return resolve(`/(protected)/history?${query}`);
+}
 
 export const newPracticeHref = resolve("/(protected)");
 
@@ -58,7 +60,7 @@ export function buildHref(
 	if (state.page !== "1") params.set("page", state.page);
 
 	const query = params.toString();
-	return query ? `?${query}` : "";
+	return query ? `${query}` : "";
 }
 
 /**
