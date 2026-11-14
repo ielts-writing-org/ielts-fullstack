@@ -1,6 +1,7 @@
 <script lang="ts">
+	import { resolve } from "$app/paths";
 	import { refreshAll } from "$app/navigation";
-	import { LogOut, Palette } from "@lucide/svelte";
+	import { LogOut, Palette, Shield } from "@lucide/svelte";
 	import { authClient } from "#lib/auth/auth-client.ts";
 	import { openModal } from "#lib/components/Modal.svelte";
 	import { resetTheme } from "#lib/components/ThemeController.svelte";
@@ -99,6 +100,14 @@
 			style="position-anchor: --avatar"
 			id="avatar-popover"
 			popover="auto">
+			{#if user.role === "admin"}
+				<li>
+					<a class="justify-end" href={resolve("/admin")}>
+						Admin
+						<Shield class="size-[1em]" />
+					</a>
+				</li>
+			{/if}
 			<li>
 				<button
 					class="justify-end active:bg-primary active:text-primary-content"

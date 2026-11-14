@@ -11,21 +11,25 @@ export function getAiCompletionAsStream(
 		responseSchema?: Record<string, unknown>;
 		temperature?: number;
 		instantMode?: boolean;
+		enableThinking?: boolean;
 		sessionAffinity?: string;
 	}
 ): Promise<ReadableStream> {
+	const enableThinking =
+		options?.enableThinking ??
+		(options?.instantMode !== undefined ? !options.instantMode : undefined);
 	return abortableStream(
 		env.IELTS_WRITING_AI.run(
 			model,
 			{
 				messages: messages,
-				...(options?.seed ? { seed: options.seed } : {}),
-				...(options?.temperature ? { temperature: options.temperature } : {}),
-				...(options?.maxCompletionToken
+				...(options?.seed !== undefined ? { seed: options.seed } : {}),
+				...(options?.temperature !== undefined ? { temperature: options.temperature } : {}),
+				...(options?.maxCompletionToken !== undefined
 					? { max_completion_tokens: options.maxCompletionToken }
 					: {}),
-				...(options?.instantMode
-					? { chat_template_kwargs: { enable_thinking: !options.instantMode } }
+				...(enableThinking !== undefined
+					? { chat_template_kwargs: { enable_thinking: enableThinking } }
 					: {}),
 				...(options?.responseSchema
 					? {
