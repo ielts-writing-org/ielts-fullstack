@@ -1,0 +1,26 @@
+@startuml Viết bài trong trình soạn thảo ACT
+
+skinparam DefaultFontName Segoe UI
+
+|Tác nhân chính|
+start
+:Nhập hoặc sửa nội dung trong trình soạn thảo;
+
+|Hệ thống|
+:Hiển thị thống kê: thời gian đếm ngược,\nlỗi chính tả/ngữ pháp, số từ, số ký tự,\ntrạng thái số từ tối thiểu và trạng thái lưu trữ;
+
+if (Hết thời gian làm bài?) then (Có)
+	:Hiển thị hộp thoại "Time's Up!"\nvà khóa trình soạn thảo;
+	stop
+else (Không)
+	:Tự động lưu nội dung sau 5 giây ngừng nhập;
+	if (Lưu nội dung thành công?) then (Có)
+		:Hiển thị trạng thái đã lưu;
+		stop
+	else (Không)
+		:Hiển thị trạng thái lưu thất bại kèm nút thử lại;
+		stop
+	endif
+endif
+
+@enduml

@@ -1,0 +1,37 @@
+@startuml Thêm ảnh đề bài SEQ
+
+skinparam DefaultFontName Segoe UI
+
+hide footbox
+autonumber
+
+actor "Người dùng" as User
+boundary "Trình duyệt" as Browser
+control "Hệ thống" as App
+entity "tasks" as Tasks
+database "Cơ sở dữ liệu" as DB
+database "Kho lưu trữ ảnh" as Bucket
+
+User -> Browser++: Chọn "Add an image" trong ô đề bài\ncủa phiên luyện tập
+Browser --> User: Hiển thị hộp chọn tệp ảnh
+User -> Browser: Chọn tệp ảnh từ máy người dùng
+Browser -> App++: Gửi tệp ảnh đến hệ thống
+App -> App: Kiểm tra định dạng và kích thước ảnh
+
+alt#Gold #LightPink Tệp ảnh không hợp lệ
+	App --> Browser--: Trả về thông báo ảnh không hợp lệ
+	Browser --> User: Hiển thị hộp thoại "Cannot upload image"\nkèm thông báo lỗi
+else #LightGreen Tệp ảnh hợp lệ
+	App -> App: Nén ảnh sang định dạng webp
+	App -> Bucket++: Lưu ảnh đã nén vào kho lưu trữ
+	Bucket --> App--: Ảnh đã được lưu
+	App -> Tasks++: Cập nhật tên ảnh mới của đề bài
+	Tasks -> DB++: Lưu tên ảnh mới vào cơ sở dữ liệu\n(kèm kiểm tra quyền sở hữu)
+	DB --> Tasks--: Tên ảnh đã được lưu
+	Tasks --> App--: Cập nhật thành công
+	App --> Browser--: Trả về tên ảnh mới
+	Browser --> User: Hiển thị ảnh trong trang luyện tập
+end
+deactivate Browser
+
+@enduml

@@ -1,0 +1,26 @@
+@startuml Thêm ảnh đề bài ACT
+
+skinparam DefaultFontName Segoe UI
+
+|Tác nhân chính|
+start
+:Chọn "Add an image" trong ô đề bài\ncủa phiên luyện tập;
+
+|Hệ thống|
+:Hiển thị hộp chọn tệp ảnh;
+
+|Tác nhân chính|
+:Chọn tệp ảnh từ máy người dùng;
+
+|Hệ thống|
+if (Tệp ảnh hợp lệ?) then (Có)
+	:Nén ảnh và lưu ảnh vào kho lưu trữ;
+	:Cập nhật dữ liệu đề bài với tên ảnh mới;
+	:Hiển thị ảnh trong trang luyện tập;
+	stop
+else (Không)
+	:Hiển thị hộp thoại "Cannot upload image"\nkèm thông báo lỗi;
+	stop
+endif
+
+@enduml

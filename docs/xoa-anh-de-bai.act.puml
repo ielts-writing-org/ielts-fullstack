@@ -1,0 +1,15 @@
+@startuml Xóa ảnh đề bài ACT
+
+skinparam DefaultFontName Segoe UI
+
+|Tác nhân chính|
+start
+:Chọn "Remove image" trong ô đề bài\ncủa phiên luyện tập;
+
+|Hệ thống|
+:Cập nhật dữ liệu đề bài: xóa tên ảnh;
+:Xóa ảnh khỏi kho lưu trữ;
+:Ẩn ảnh trong trang luyện tập;
+stop
+
+@enduml

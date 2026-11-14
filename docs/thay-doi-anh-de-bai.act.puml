@@ -1,0 +1,27 @@
+@startuml Thay đổi ảnh đề bài ACT
+
+skinparam DefaultFontName Segoe UI
+
+|Tác nhân chính|
+start
+:Chọn "Change image" trong ô đề bài\ncủa phiên luyện tập;
+
+|Hệ thống|
+:Hiển thị hộp chọn tệp ảnh;
+
+|Tác nhân chính|
+:Chọn tệp ảnh mới từ máy người dùng;
+
+|Hệ thống|
+if (Tệp ảnh hợp lệ?) then (Có)
+	:Nén ảnh mới và lưu ảnh mới vào kho lưu trữ;
+	:Cập nhật dữ liệu đề bài với tên ảnh mới;
+	:Xóa ảnh cũ khỏi kho lưu trữ;
+	:Hiển thị ảnh mới trong trang luyện tập;
+	stop
+else (Không)
+	:Hiển thị hộp thoại "Cannot upload image"\nkèm thông báo lỗi;
+	stop
+endif
+
+@enduml

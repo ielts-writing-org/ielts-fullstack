@@ -1,0 +1,27 @@
+@startuml Xóa ảnh đề bài SEQ
+
+skinparam DefaultFontName Segoe UI
+
+hide footbox
+autonumber
+
+actor "Người dùng" as User
+boundary "Trình duyệt" as Browser
+control "Hệ thống" as App
+entity "tasks" as Tasks
+database "Cơ sở dữ liệu" as DB
+database "Kho lưu trữ ảnh" as Bucket
+
+User -> Browser++: Chọn "Remove image" trong ô đề bài\ncủa phiên luyện tập
+Browser -> App++: Gọi clear-task-image(taskId)
+App -> Tasks++: Xóa tên ảnh của đề bài
+Tasks -> DB++: Cập nhật đề bài không còn ảnh\n(kèm kiểm tra quyền sở hữu)
+DB --> Tasks--: Đã cập nhật
+Tasks --> App--: Cập nhật thành công
+App -> Bucket++: Xóa ảnh khỏi kho lưu trữ
+Bucket --> App--: Ảnh đã được xóa
+App --> Browser--: Trả về kết quả thành công
+Browser --> User: Ẩn ảnh trong trang luyện tập
+deactivate Browser
+
+@enduml

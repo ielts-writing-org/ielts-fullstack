@@ -1,0 +1,33 @@
+@startuml Sửa lỗi chính tả SEQ
+
+skinparam DefaultFontName Segoe UI
+
+hide footbox
+autonumber
+
+actor "Người dùng" as User
+boundary "Trình duyệt" as Browser
+control "Hệ thống" as App
+entity "practice_sessions" as PracticeSessions
+database "Cơ sở dữ liệu" as DB
+
+User -> Browser++: Chọn lỗi chính tả/ngữ pháp\nđang được đánh dấu trong trình soạn thảo
+Browser --> User: Hiển thị gợi ý sửa lỗi của hệ thống
+
+alt#Gold #LightPink Người dùng bỏ qua lỗi chính tả
+	User -> Browser: Chọn bỏ qua lỗi
+	Browser --> User: Xóa đánh dấu lỗi, không thay đổi nội dung
+else #LightGreen Người dùng áp dụng gợi ý sửa lỗi
+	User -> Browser: Chọn áp dụng gợi ý sửa lỗi
+	Browser -> Browser: Sửa nội dung theo gợi ý và xóa đánh dấu lỗi
+	Browser -> App++: Gửi yêu cầu lưu nội dung đã sửa
+	App -> PracticeSessions++: Cập nhật nội dung bài viết
+	PracticeSessions -> DB++: Lưu nội dung vào cơ sở dữ liệu\n(kèm kiểm tra quyền sở hữu)
+	DB --> PracticeSessions--: Nội dung đã được lưu
+	PracticeSessions --> App--: Cập nhật thành công
+	App --> Browser--: Trả về kết quả thành công
+	Browser --> User: Hiển thị trạng thái đã lưu
+end
+deactivate Browser
+
+@enduml

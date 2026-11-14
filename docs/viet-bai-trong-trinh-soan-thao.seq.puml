@@ -1,0 +1,47 @@
+@startuml Viết bài trong trình soạn thảo SEQ
+
+skinparam DefaultFontName Segoe UI
+
+hide footbox
+autonumber
+
+actor "Người dùng" as User
+boundary "Trình duyệt" as Browser
+control "Hệ thống" as App
+entity "practice_sessions" as PracticeSessions
+database "Cơ sở dữ liệu" as DB
+
+User -> Browser++: Nhập hoặc sửa nội dung trong trình soạn thảo
+Browser -> Browser: Cập nhật thống kê: lỗi chính tả/ngữ pháp,\nsố từ, số ký tự và trạng thái số từ tối thiểu
+
+opt#Gold Phiên luyện tập tính thời gian
+	Browser -> Browser: Đếm ngược thời gian còn lại
+end
+
+alt#Gold #LightPink Hết thời gian làm bài
+	Browser --> User: Hiển thị hộp thoại "Time's Up!"\nvà khóa trình soạn thảo
+	User -> Browser: Nhấn "I got it!"
+	Browser -> App++: Gọi set-timed-up-action(practiceSessionId, "stop")
+	App -> PracticeSessions++: Ghi nhận trạng thái dừng làm bài
+	PracticeSessions -> DB++: Lưu trạng thái dừng vào cơ sở dữ liệu
+	DB --> PracticeSessions--: Trạng thái đã được lưu
+	PracticeSessions --> App--: Ghi nhận thành công
+	App --> Browser--: Trả về kết quả
+else #LightGreen Tiếp tục làm bài
+	Browser -> App++: Gửi yêu cầu lưu nội dung\n(tự động sau 5 giây ngừng nhập)
+
+	alt#Gold #LightPink Lưu nội dung thất bại
+		App --> Browser--: Trả về lỗi lưu nội dung
+		Browser --> User: Hiển thị trạng thái lưu thất bại\nkèm nút thử lại
+	else #LightGreen Lưu nội dung thành công
+		App -> PracticeSessions++: Cập nhật nội dung bài viết
+		PracticeSessions -> DB++: Lưu nội dung vào cơ sở dữ liệu\n(kèm kiểm tra quyền sở hữu)
+		DB --> PracticeSessions--: Nội dung đã được lưu
+		PracticeSessions --> App--: Cập nhật thành công
+		App --> Browser--: Trả về kết quả thành công
+		Browser --> User: Hiển thị trạng thái đã lưu
+	end
+end
+deactivate Browser
+
+@enduml

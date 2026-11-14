@@ -1,0 +1,24 @@
+@startuml Sửa lỗi chính tả ACT
+
+skinparam DefaultFontName Segoe UI
+
+|Tác nhân chính|
+start
+:Chọn lỗi chính tả/ngữ pháp\nđang được đánh dấu trong trình soạn thảo;
+
+|Hệ thống|
+:Hiển thị gợi ý sửa lỗi của hệ thống;
+
+|Tác nhân chính|
+if (Áp dụng gợi ý sửa lỗi?) then (Có)
+	|Hệ thống|
+	:Sửa nội dung theo gợi ý và xóa đánh dấu lỗi;
+	:Lưu nội dung đã sửa;
+	stop
+else (Không)
+	|Hệ thống|
+	:Xóa đánh dấu lỗi, không thay đổi nội dung;
+	stop
+endif
+
+@enduml
