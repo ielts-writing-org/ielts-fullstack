@@ -191,13 +191,14 @@
 			disabled={isBusy || (source.disabled ?? false)}
 			onclick={async () => {
 				isBusy = true;
+
+				if (!source.explicitClose) closeModal();
+
 				try {
 					await source.onclick?.();
 				} finally {
 					isBusy = false;
 				}
-
-				if (!source.explicitClose) closeModal();
 			}}>
 			{source.text}
 		</button>
