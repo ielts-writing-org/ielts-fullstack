@@ -134,12 +134,6 @@ export const aiSettings = sqliteTable("ai_settings", {
 	updatedAt: integer("updated_at", { mode: "timestamp_ms" }).notNull().default(now)
 });
 
-export type ProfileEntity = typeof profiles.$inferSelect;
-export type TaskEntity = typeof tasks.$inferSelect;
-export type PracticeSessionEntity = typeof practiceSessions.$inferSelect;
-export type ChatMessageEntity = typeof chatMessages.$inferSelect;
-export type EvaluationEntity = typeof evaluations.$inferSelect;
-
 /******************************************************************************
  *                                                                            *
  *                                RELATIONS                                   *
