@@ -11,10 +11,11 @@ import { drizzleAdapter } from "better-auth/adapters/drizzle";
 import { betterAuth } from "better-auth/minimal";
 import { admin } from "better-auth/plugins";
 import { sveltekitCookies } from "better-auth/svelte-kit";
-import { env, waitUntil } from "cloudflare:workers";
+import { waitUntil } from "cloudflare:workers";
 import { getDb } from "../db";
 import { profiles } from "../db/app.schema";
 import { sendEmail } from "../bindings/email";
+import { getKVConfigValue } from "../bindings/kv";
 
 export const createAuth = (d1: D1Database) => {
 	return betterAuth({
@@ -41,7 +42,6 @@ export const createAuth = (d1: D1Database) => {
 						`Click the link to reset your password: ${url}`
 					)
 				);
-				console.log(`Click the link to reset your password: ${url}`);
 			},
 			resetPasswordTokenExpiresIn: 10 * 60,
 			revokeSessionsOnPasswordReset: true
@@ -76,8 +76,17 @@ export const createAuth = (d1: D1Database) => {
 		databaseHooks: {
 			user: {
 				create: {
+					before: async (user) => {
+						const rootAdminEmail = await getKVConfigValue("root-admin-email");
+
+						if (rootAdminEmail === user.email) {
+							return { data: { ...user, role: "admin" } };
+						}
+
+						return { data: user };
+					},
 					after: async (user) => {
-						const db = getDb(env.IELTS_WRITING_DB);
+						const db = getDb(d1);
 						await db.insert(profiles).values({ userId: user.id });
 					}
 				}
