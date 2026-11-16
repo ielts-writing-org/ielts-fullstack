@@ -7,7 +7,9 @@ const schema = { ...authSchema, ...appSchema };
 
 export type AppDb = DrizzleD1Database<typeof schema>;
 
-export const getDb = (d1: D1Database): AppDb => drizzleD1(d1, { schema });
+type D1Binding = D1Database | D1DatabaseSession;
+
+export const getDb = (d1: D1Binding): AppDb => drizzleD1(d1 as D1Database, { schema });
 
 export function getDatabase(): AppDb {
 	return getDb(env.IELTS_WRITING_DB);

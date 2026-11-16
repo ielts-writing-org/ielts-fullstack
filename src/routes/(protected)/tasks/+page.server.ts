@@ -27,12 +27,19 @@ export const load = (async ({ locals, url }) => {
 	const page = Number.isFinite(requestedPage) && requestedPage > 0 ? requestedPage : 1;
 
 	const source = SOURCES.find((value) => value === searchParams.get("source"));
+	const activeTask = isNull(tasks.deletedAt);
+	const ownTasks = and(eq(tasks.userId, user.id), activeTask)!;
+	const publicExamples = and(
+		isNull(tasks.userId),
+		eq(tasks.published, true),
+		activeTask
+	)!;
 	const visibility =
 		source === "mine"
-			? eq(tasks.userId, user.id)
+			? ownTasks
 			: source === "example"
-				? isNull(tasks.userId)
-				: or(eq(tasks.userId, user.id), isNull(tasks.userId));
+				? publicExamples
+				: or(ownTasks, publicExamples)!;
 	const conditions = [visibility];
 	if (task) conditions.push(eq(tasks.category, task));
 	if (subcategory) conditions.push(eq(tasks.subcategory, subcategory));
@@ -94,7 +101,7 @@ export const load = (async ({ locals, url }) => {
 			unused: sql<number>`count(case when not exists (select 1 from "practice_sessions" where "practice_sessions"."task_id" = "tasks"."id") then 1 end)`
 		})
 		.from(tasks)
-		.where(eq(tasks.userId, user.id));
+		.where(ownTasks);
 
 	return {
 		tasks: rows.map((row) => ({
