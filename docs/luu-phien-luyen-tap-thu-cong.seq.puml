@@ -1,0 +1,35 @@
+@startuml Lưu phiên luyện tập thủ công SEQ
+
+skinparam DefaultFontName Segoe UI
+
+hide footbox
+autonumber
+
+actor "Người dùng" as User
+boundary "Trình duyệt" as Browser
+control "Hệ thống" as App
+entity "tasks" as Tasks
+entity "practice_sessions" as PracticeSessions
+database "Cơ sở dữ liệu" as DB
+
+User -> Browser++: Nhấn nút "Save" trên thanh công cụ\n(hoặc nhấn Ctrl+S trong trình soạn thảo)
+Browser -> App++: Gọi save-task-prompt(taskId, đề bài)\nvà save-practice-response(practiceSessionId, bài viết)
+App -> Tasks++: Cập nhật đề bài
+Tasks -> DB++: Lưu đề bài vào cơ sở dữ liệu\n(kèm kiểm tra quyền sở hữu)
+DB --> Tasks--: Đề bài đã được lưu
+Tasks --> App--: Thành công
+App -> PracticeSessions++: Cập nhật bài viết
+PracticeSessions -> DB++: Lưu bài viết vào cơ sở dữ liệu\n(kèm kiểm tra quyền sở hữu)
+DB --> PracticeSessions--: Bài viết đã được lưu
+PracticeSessions --> App--: Thành công
+
+alt#Gold #LightPink Lưu thất bại
+	App --> Browser--: Trả về lỗi lưu nội dung
+	Browser --> User: Hiển thị trạng thái lưu thất bại kèm nút thử lại
+else #LightGreen Lưu thành công
+	App --> Browser--: Trả về kết quả thành công
+	Browser --> User: Hiển thị trạng thái đã lưu cho cả hai trình soạn thảo
+end
+deactivate Browser
+
+@enduml

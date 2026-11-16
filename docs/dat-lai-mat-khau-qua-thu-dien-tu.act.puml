@@ -1,0 +1,56 @@
+@startuml Đặt lại mật khẩu qua thư điện tử ACT
+
+skinparam DefaultFontName Segoe UI
+
+|Tác nhân chính|
+start
+:Chọn "Change password", nhập thư điện tử\ntrên trang đăng nhập;
+:Nhấn "Send to email";
+
+|Hệ thống|
+:Hiển thị thông báo xác nhận đặt lại mật khẩu\nvà đăng xuất khỏi tất cả các phiên khác;
+
+|Tác nhân chính|
+:Chọn "Continue";
+
+|Hệ thống|
+if (Thư điện tử thuộc tài khoản đã đăng ký?) then (Không)
+	:Thư điện tử không thuộc tài khoản đăng ký nào;
+	:Hiển thị thông báo kiểm tra thư điện tử;
+	stop
+else (Có)
+	:Tạo mã xác thực kèm thời hạn 10 phút;
+
+	|Tenten Email Service|
+	:Gửi liên kết đặt lại mật khẩu đến thư điện tử;
+
+	|Hệ thống|
+	:Hiển thị thông báo kiểm tra thư điện tử;
+endif
+
+|Tác nhân chính|
+:Mở liên kết trong thư;
+
+|Hệ thống|
+if (Mã xác thực còn hiệu lực khi mở liên kết?) then (Không)
+	:Thông báo liên kết hết hạn hoặc không hợp lệ;
+	stop
+else (Có)
+	:Hiển thị hộp thoại nhập mật khẩu mới;
+endif
+
+|Tác nhân chính|
+:Nhập mật khẩu mới (ít nhất 8 ký tự)\nvà nhấn "Reset password";
+
+|Hệ thống|
+if (Mã xác thực còn hiệu lực khi đổi mật khẩu?) then (Không)
+	:Thông báo liên kết hết hạn hoặc không hợp lệ;
+	stop
+else (Có)
+	:Lưu mật khẩu mới;
+	:Thu hồi toàn bộ phiên đăng nhập;
+	:Hiển thị thông báo đặt lại mật khẩu thành công;
+	stop
+endif
+
+@enduml

@@ -1,0 +1,66 @@
+@startuml Đăng ký bằng thư điện tử và mật khẩu SEQ
+
+skinparam DefaultFontName Segoe UI
+
+hide footbox
+autonumber
+
+actor "Người dùng" as User
+boundary "Trình duyệt" as Browser
+control "Hệ thống" as App
+entity "users" as Users
+entity "profiles" as Profiles
+entity "accounts" as Accounts
+entity "verifications" as Verifications
+database "Cơ sở dữ liệu" as DB
+participant "Tenten Email Service" as Email
+
+User -> Browser++: Chọn tab "Sign up", nhập tên, thư điện tử,\nmật khẩu và xác nhận mật khẩu
+User -> Browser: Nhấn "Create account"
+Browser -> Browser: Kiểm tra dữ liệu nhập
+
+alt#Gold #LightPink Dữ liệu đăng ký không hợp lệ
+	Browser --> User: Hiển thị hộp thoại "Unable to sign up"\nkèm thông báo lỗi tương ứng
+else #LightGreen Dữ liệu đăng ký hợp lệ
+	Browser -> App++: Gọi sign-up(tên, thư điện tử, mật khẩu)
+	App -> Users++: Kiểm tra người dùng theo thư điện tử
+	Users -> DB++: Truy vấn người dùng theo thư điện tử
+	DB --> Users--: Kết quả tra cứu
+	Users --> App--: Kết quả tra cứu
+
+	alt#Gold #LightPink Thư điện tử đã được đăng ký trước đó
+		App -> Email++: Gửi thư thông báo đến chủ thư điện tử\nvề hành vi đăng ký trùng (bất đồng bộ)
+		Email --> App--: Đã gửi
+		App --> Browser--: Trả về phản hồi chung\n(không tiết lộ thư điện tử đã tồn tại)
+		Browser --> User: Hiển thị phản hồi chung "kiểm tra thư điện tử"
+	else #LightGreen Thư điện tử chưa được đăng ký
+		App -> Users++: Tạo người dùng mới
+		Users -> DB++: Lưu người dùng
+		DB --> Users--: Người dùng đã được lưu
+		Users --> App--: Người dùng đã được tạo
+		App -> Profiles++: Tạo hồ sơ người dùng
+		Profiles -> DB++: Lưu hồ sơ người dùng
+		DB --> Profiles--: Hồ sơ đã được lưu
+		Profiles --> App--: Hồ sơ đã được tạo
+		App -> Accounts++: Tạo tài khoản thư điện tử (mật khẩu)
+		Accounts -> DB++: Lưu tài khoản với mật khẩu đã mã hóa
+		DB --> Accounts--: Tài khoản đã được lưu
+		Accounts --> App--: Tài khoản đã được tạo
+		App -> Verifications++: Tạo mã xác minh kèm thời hạn 10 phút
+		Verifications -> DB++: Lưu mã xác minh
+		DB --> Verifications--: Mã đã được lưu
+		Verifications --> App--: Mã đã được tạo
+		App -> Email++: Gửi thư xác minh
+		Email --> App--: Đã gửi
+		App --> Browser--: Trả về kết quả thành công
+		Browser --> User: Hiển thị thông báo kiểm tra thư điện tử\nvà quay về tab "Sign in"
+	end
+end
+deactivate Browser
+
+note over Browser
+	Người dùng vẫn ở trạng thái chưa đăng nhập;
+	phiên đăng nhập chỉ được tạo sau khi xác minh thư điện tử
+end note
+
+@enduml

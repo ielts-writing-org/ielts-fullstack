@@ -1,0 +1,30 @@
+@startuml Trò chuyện với AI ACT
+
+skinparam DefaultFontName Segoe UI
+
+|Tác nhân chính|
+start
+:Nhập câu hỏi và nhấn "Send"\ntrong khung trò chuyện với AI;
+
+|Hệ thống|
+if (Nội dung hợp lệ (1 đến 100 từ)?) then (Không)
+	:Hiển thị hộp thoại "Validation Error"\nkèm danh sách lỗi;
+	stop
+else (Có)
+	if (Trong giới hạn 3 yêu cầu mỗi phút?) then (Không)
+		:Hiển thị hộp thoại "Unable to chat"\nkèm thông báo quá nhiều yêu cầu;
+		stop
+	else (Có)
+		:Chuẩn bị ngữ cảnh: đề bài, bài viết,\nđánh giá và 10 tin nhắn gần nhất;
+
+		|Cloudflare Workers AI|
+		:Sinh câu trả lời cho câu hỏi;
+
+		|Hệ thống|
+		:Hiển thị câu trả lời theo luồng (stream);
+		:Lưu cặp tin nhắn vào lịch sử;
+		stop
+	endif
+endif
+
+@enduml

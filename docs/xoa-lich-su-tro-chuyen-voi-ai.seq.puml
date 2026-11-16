@@ -1,0 +1,32 @@
+@startuml Xóa lịch sử trò chuyện với AI SEQ
+
+skinparam DefaultFontName Segoe UI
+
+hide footbox
+autonumber
+
+actor "Người dùng" as User
+boundary "Trình duyệt" as Browser
+control "Hệ thống" as App
+entity "chat_messages" as ChatMessages
+database "Cơ sở dữ liệu" as DB
+
+User -> Browser++: Chọn "Clear all messages" trong khung trò chuyện
+Browser --> User: Hiển thị hộp thoại xác nhận xóa
+
+alt#Gold #LightPink Người dùng hủy xóa
+	User -> Browser: Chọn "Cancel"
+	Browser --> User: Đóng hộp thoại xác nhận
+else #LightGreen Người dùng xác nhận xóa
+	User -> Browser: Nhấn "Clear"
+	Browser -> App++: Gọi clear-chat-messages(practiceSessionId)
+	App -> ChatMessages++: Xóa toàn bộ tin nhắn của phiên luyện tập
+	ChatMessages -> DB++: Xóa tin nhắn khỏi cơ sở dữ liệu\n(kèm kiểm tra quyền sở hữu phiên)
+	DB --> ChatMessages--: Đã xóa
+	ChatMessages --> App--: Xóa thành công
+	App --> Browser--: Trả về kết quả thành công
+	Browser --> User: Hiển thị trạng thái trống của khung trò chuyện
+end
+deactivate Browser
+
+@enduml

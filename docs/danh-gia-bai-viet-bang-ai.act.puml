@@ -1,0 +1,30 @@
+@startuml Đánh giá bài viết bằng AI ACT
+
+skinparam DefaultFontName Segoe UI
+
+|Tác nhân chính|
+start
+:Nhấn nút đánh giá trong tab "Evaluation";
+
+|Hệ thống|
+if (Điều kiện đánh giá đạt?) then (Không)
+	:Hiển thị hộp thoại "Validation failed"\nkèm danh sách lỗi;
+	stop
+else (Có)
+	if (Trong giới hạn 1 yêu cầu mỗi phút?) then (Không)
+		:Hiển thị hộp thoại "Unable to evaluate"\nthông báo đạt giới hạn và thử lại sau;
+		stop
+	else (Có)
+		:Chuẩn bị dữ liệu bài làm: đề bài, ảnh (Task 1)\nvà bài viết;
+
+		|Cloudflare Workers AI|
+		:Đánh giá bài viết theo 4 tiêu chí;
+
+		|Hệ thống|
+		:Hiển thị kết quả đánh giá theo luồng (stream);
+		:Lưu đánh giá của AI;
+		stop
+	endif
+endif
+
+@enduml

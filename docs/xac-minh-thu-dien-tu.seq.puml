@@ -1,0 +1,44 @@
+@startuml Xác minh thư điện tử SEQ
+
+skinparam DefaultFontName Segoe UI
+
+hide footbox
+autonumber
+
+actor "Người dùng" as User
+boundary "Trình duyệt" as Browser
+control "Hệ thống" as App
+entity "users" as Users
+entity "verifications" as Verifications
+entity "sessions" as Sessions
+database "Cơ sở dữ liệu" as DB
+
+User -> Browser++: Mở liên kết xác minh trong thư điện tử
+Browser -> App++: Gọi verify-email(token)
+App -> Verifications++: Kiểm tra mã xác minh
+Verifications -> DB++: Tra cứu mã xác minh
+DB --> Verifications--: Kết quả tra cứu
+Verifications --> App--: Kết quả kiểm tra
+
+alt#Gold #LightPink Liên kết hết hạn hoặc không hợp lệ
+	App --> Browser--: Chuyển hướng về trang đăng nhập kèm lỗi
+	Browser --> User: Hiển thị hộp thoại "Email verification failed"
+else #LightGreen Liên kết còn hiệu lực
+	App -> Users++: Đánh dấu thư điện tử đã xác minh
+	Users -> DB++: Cập nhật trạng thái xác minh
+	DB --> Users--: Đã cập nhật
+	Users --> App--: Thành công
+	App -> Sessions++: Tạo phiên đăng nhập tự động
+	Sessions -> DB++: Lưu phiên đăng nhập
+	DB --> Sessions--: Phiên đã được lưu
+	Sessions --> App--: Phiên đã được tạo
+	App -> Verifications++: Xóa mã xác minh đã sử dụng
+	Verifications -> DB++: Xóa mã xác minh
+	DB --> Verifications--: Đã xóa mã xác minh
+	Verifications --> App--: Đã xóa
+	App --> Browser--: Chuyển hướng người dùng về trang chủ
+	Browser --> User: Hiển thị trang chủ (đã đăng nhập tự động)
+end
+deactivate Browser
+
+@enduml

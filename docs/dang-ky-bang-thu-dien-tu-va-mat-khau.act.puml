@@ -1,0 +1,37 @@
+@startuml Đăng ký bằng thư điện tử và mật khẩu ACT
+
+skinparam DefaultFontName Segoe UI
+
+|Tác nhân chính|
+start
+:Chọn tab "Sign up", nhập tên, thư điện tử,\nmật khẩu (ít nhất 8 ký tự) và xác nhận mật khẩu;
+:Nhấn "Create account";
+
+|Hệ thống|
+if (Dữ liệu đăng ký hợp lệ?) then (Không)
+	:Hiển thị hộp thoại "Unable to sign up"\nkèm thông báo lỗi tương ứng;
+	stop
+else (Có)
+	if (Thư điện tử đã được đăng ký trước đó?) then (Có)
+		:Tạo yêu cầu gửi thư thông báo\ntới chủ thư điện tử;
+
+		|Tenten Email Service|
+		:Gửi thư điện tử thông báo ai đó đang thử\nđăng ký tài khoản;
+
+		|Hệ thống|
+		:Hiển thị phản hồi chung "kiểm tra thư điện tử"\n(không tiết lộ thư điện tử đã tồn tại);
+		stop
+	else (Không)
+		:Tạo người dùng mới, hồ sơ người dùng\nvà tài khoản thư điện tử (mật khẩu);
+		:Tạo mã xác minh kèm thời hạn 10 phút;
+
+		|Tenten Email Service|
+		:Gửi thư xác minh đến người dùng;
+
+		|Hệ thống|
+		:Hiển thị thông báo kiểm tra thư điện tử\nvà quay về tab "Sign in";
+		stop
+	endif
+endif
+
+@enduml

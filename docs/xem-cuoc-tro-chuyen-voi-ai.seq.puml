@@ -1,0 +1,26 @@
+@startuml Xem cuộc trò chuyện với AI SEQ
+
+skinparam DefaultFontName Segoe UI
+
+hide footbox
+autonumber
+
+actor "Người dùng" as User
+boundary "Trình duyệt" as Browser
+control "Hệ thống" as App
+database "Cơ sở dữ liệu" as DB
+
+User -> Browser++: Chọn tab "Chat" trong trang luyện tập
+Browser -> App++: GET /practice/{practiceSessionId}
+App -> DB++: Truy vấn phiên luyện tập kèm\nlịch sử trò chuyện với AI
+DB --> App--: Phiên luyện tập và danh sách tin nhắn
+App --> Browser--: Trả về trang luyện tập (200)
+
+alt#Gold #LightPink Người dùng chưa có tin nhắn trò chuyện
+	Browser --> User: Hiển thị trạng thái trống\nkèm gợi ý câu hỏi mẫu
+else #LightGreen Người dùng đã có tin nhắn trò chuyện
+	Browser --> User: Hiển thị danh sách tin nhắn\ntrò chuyện với AI
+end
+deactivate Browser
+
+@enduml

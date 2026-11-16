@@ -1,0 +1,18 @@
+@startuml Xem đánh giá của AI ACT
+
+skinparam DefaultFontName Segoe UI
+
+|Tác nhân chính|
+start
+:Chọn tab "Evaluation" trong trang luyện tập;
+
+|Hệ thống|
+if (Phiên luyện tập đã có đánh giá?) then (Có)
+	:Hiển thị điểm tổng và chi tiết 4 tiêu chí;
+	stop
+else (Không)
+	:Hiển thị màn hình yêu cầu chuẩn bị\nkèm danh sách điều kiện đánh giá;
+	stop
+endif
+
+@enduml

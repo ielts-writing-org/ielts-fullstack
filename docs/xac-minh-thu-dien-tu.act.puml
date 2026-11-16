@@ -1,0 +1,20 @@
+@startuml Xác minh thư điện tử ACT
+
+skinparam DefaultFontName Segoe UI
+
+|Tác nhân chính|
+start
+:Mở liên kết xác minh trong thư điện tử;
+
+|Hệ thống|
+if (Liên kết còn hiệu lực?) then (Không)
+	:Chuyển hướng về trang đăng nhập và hiển thị\nhộp thoại "Email verification failed";
+	stop
+else (Có)
+	:Đánh dấu thư điện tử đã xác minh;
+	:Tạo phiên đăng nhập tự động;
+	:Chuyển hướng người dùng về trang chủ;
+	stop
+endif
+
+@enduml

@@ -1,0 +1,43 @@
+@startuml Đánh giá bài viết bằng AI SEQ
+
+skinparam DefaultFontName Segoe UI
+
+hide footbox
+autonumber
+
+actor "Người dùng" as User
+boundary "Trình duyệt" as Browser
+control "Hệ thống" as App
+participant "Cloudflare Workers AI" as AI
+entity "evaluations" as Evaluations
+database "Cơ sở dữ liệu" as DB
+
+User -> Browser++: Nhấn nút đánh giá trong tab "Evaluation"
+Browser -> Browser: Kiểm tra điều kiện: đề bài 15 đến 85 từ;\nbài viết 120 đến 220 từ (Task 1) hoặc 220 đến 320 từ (Task 2);\nảnh bắt buộc với Task 1
+
+alt#Gold #LightPink Điều kiện chưa đạt
+	Browser --> User: Hiển thị hộp thoại "Validation failed"\nkèm danh sách lỗi
+else #LightGreen Điều kiện đạt
+	Browser -> App++: Gửi yêu cầu đánh giá bài viết
+
+	alt#Gold #LightPink Vượt quá giới hạn 1 yêu cầu mỗi phút
+		App --> Browser--: Trả về lỗi 429 (quá nhiều yêu cầu)
+		Browser --> User: Hiển thị hộp thoại "Unable to evaluate"\nthông báo đạt giới hạn và thử lại sau
+	else #LightGreen Trong giới hạn cho phép
+		App -> DB++: Truy vấn phiên luyện tập, đề bài, ảnh và bài viết
+		DB --> App--: Dữ liệu bài làm
+		App -> AI++: Gửi yêu cầu đánh giá bài viết
+		AI --> App--: Kết quả đánh giá theo luồng
+		App --> Browser--: Truyền kết quả theo luồng (SSE)
+		Browser --> User: Hiển thị kết quả đánh giá theo luồng
+		Browser -> App++: Gọi save-evaluation(practiceSessionId, đánh giá)
+		App -> Evaluations++: Lưu đánh giá của AI
+		Evaluations -> DB++: Lưu đánh giá vào cơ sở dữ liệu\n(kèm kiểm tra quyền sở hữu)
+		DB --> Evaluations--: Đánh giá đã được lưu
+		Evaluations --> App--: Lưu thành công
+		App --> Browser--: Trả về kết quả thành công
+	end
+end
+deactivate Browser
+
+@enduml

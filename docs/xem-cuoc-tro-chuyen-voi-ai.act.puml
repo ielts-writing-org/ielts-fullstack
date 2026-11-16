@@ -1,0 +1,18 @@
+@startuml Xem cuộc trò chuyện với AI ACT
+
+skinparam DefaultFontName Segoe UI
+
+|Tác nhân chính|
+start
+:Chọn tab "Chat" trong trang luyện tập;
+
+|Hệ thống|
+if (Người dùng đã có tin nhắn trò chuyện?) then (Có)
+	:Hiển thị danh sách tin nhắn\ntrò chuyện với AI;
+	stop
+else (Không)
+	:Hiển thị trạng thái trống\nkèm gợi ý câu hỏi mẫu;
+	stop
+endif
+
+@enduml

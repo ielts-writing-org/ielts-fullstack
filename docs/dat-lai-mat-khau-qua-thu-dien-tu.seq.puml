@@ -1,0 +1,82 @@
+@startuml Đặt lại mật khẩu qua thư điện tử SEQ
+
+skinparam DefaultFontName Segoe UI
+
+hide footbox
+autonumber
+
+actor "Người dùng" as User
+boundary "Trình duyệt" as Browser
+control "Hệ thống" as App
+entity "users" as Users
+entity "verifications" as Verifications
+entity "sessions" as Sessions
+database "Cơ sở dữ liệu" as DB
+participant "Tenten Email Service" as Email
+
+User -> Browser++: Chọn "Change password", nhập thư điện tử\nvà nhấn "Send to email"
+Browser --> User: Hiển thị thông báo xác nhận đặt lại mật khẩu\nvà đăng xuất khỏi tất cả các phiên khác
+User -> Browser: Chọn "Continue"
+Browser -> App++: Gọi request-password-reset(email)
+App -> Users++: Kiểm tra thư điện tử thuộc tài khoản đã đăng ký
+Users -> DB++: Truy vấn người dùng theo thư điện tử
+DB --> Users--: Kết quả tra cứu
+Users --> App--: Kết quả tra cứu
+
+alt#Gold #LightPink Thư điện tử không thuộc tài khoản nào
+	App --> Browser--: Trả về kết quả chung
+	Browser --> User: Hiển thị thông báo kiểm tra thư điện tử
+else #LightGreen Thư điện tử thuộc tài khoản đã đăng ký
+	App -> Verifications++: Tạo mã xác thực kèm thời hạn 10 phút
+	Verifications -> DB++: Lưu mã xác thực
+	DB --> Verifications--: Mã đã được lưu
+	Verifications --> App--: Mã đã được tạo
+	App -> Email++: Gửi liên kết đặt lại mật khẩu đến thư điện tử
+	Email --> App--: Đã gửi
+	App --> Browser--: Trả về thông báo đã gửi
+	Browser --> User: Hiển thị thông báo kiểm tra thư điện tử
+end
+
+User -> Browser: Mở liên kết trong thư
+Browser -> App++: Kiểm tra mã xác thực khi mở liên kết
+App -> Verifications++: Tra cứu mã xác thực
+Verifications -> DB++: Truy vấn mã xác thực
+DB --> Verifications--: Kết quả tra cứu
+Verifications --> App--: Kết quả tra cứu
+
+alt#Gold #LightPink Mã xác thực hết hạn hoặc không hợp lệ khi mở liên kết
+	App --> Browser--: Trả về lỗi mã xác thực
+	Browser --> User: Thông báo liên kết hết hạn hoặc không hợp lệ
+else #LightGreen Mã xác thực hợp lệ
+	App --> Browser--: Trả về kết quả hợp lệ
+	Browser --> User: Hiển thị hộp thoại nhập mật khẩu mới
+	User -> Browser: Nhập mật khẩu mới (ít nhất 8 ký tự)\nvà nhấn "Reset password"
+	Browser -> App++: Gọi reset-password(mật khẩu mới, token)
+	App -> Verifications++: Kiểm tra mã xác thực khi đổi mật khẩu
+	Verifications -> DB++: Tra cứu mã xác thực
+	DB --> Verifications--: Kết quả tra cứu
+	Verifications --> App--: Kết quả tra cứu
+
+	alt#Gold #LightPink Mã xác thực hết hạn hoặc không hợp lệ khi đổi mật khẩu
+		App --> Browser--: Trả về lỗi mã xác thực
+		Browser --> User: Thông báo liên kết hết hạn hoặc không hợp lệ
+	else #LightGreen Mã xác thực hợp lệ khi đổi mật khẩu
+		App -> Users++: Lưu mật khẩu mới
+		Users -> DB++: Cập nhật mật khẩu mới
+		DB --> Users--: Mật khẩu đã được lưu
+		Users --> App--: Lưu thành công
+		App -> Sessions++: Thu hồi toàn bộ phiên đăng nhập
+		Sessions -> DB++: Xóa toàn bộ phiên đăng nhập của người dùng
+		DB --> Sessions--: Đã thu hồi
+		Sessions --> App--: Đã thu hồi
+		App -> Verifications++: Xóa mã xác thực đã sử dụng
+		Verifications -> DB++: Xóa mã xác thực
+		DB --> Verifications--: Đã xóa mã xác thực
+		Verifications --> App--: Đã xóa
+		App --> Browser--: Trả về kết quả thành công
+		Browser --> User: Hiển thị thông báo đặt lại mật khẩu thành công
+	end
+end
+deactivate Browser
+
+@enduml

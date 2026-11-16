@@ -1,0 +1,20 @@
+@startuml Lưu phiên luyện tập thủ công ACT
+
+skinparam DefaultFontName Segoe UI
+
+|Tác nhân chính|
+start
+:Nhấn nút "Save" trên thanh công cụ\n(hoặc Ctrl+S trong trình soạn thảo);
+
+|Hệ thống|
+:Lưu đề bài;
+:Lưu bài viết;
+
+if (Lưu thành công?) then (Có)
+	stop
+else (Không)
+	:Hiển thị trạng thái lưu thất bại kèm nút thử lại;
+	stop
+endif
+
+@enduml

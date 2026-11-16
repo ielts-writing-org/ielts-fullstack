@@ -1,0 +1,26 @@
+@startuml Xem đánh giá của AI SEQ
+
+skinparam DefaultFontName Segoe UI
+
+hide footbox
+autonumber
+
+actor "Người dùng" as User
+boundary "Trình duyệt" as Browser
+control "Hệ thống" as App
+database "Cơ sở dữ liệu" as DB
+
+User -> Browser++: Chọn tab "Evaluation" trong trang luyện tập
+Browser -> App++: GET /practice/{practiceSessionId}
+App -> DB++: Truy vấn phiên luyện tập kèm đánh giá của AI
+DB --> App--: Phiên luyện tập và đánh giá
+App --> Browser--: Trả về trang luyện tập (200)
+
+alt#Gold #LightPink Phiên luyện tập chưa có đánh giá
+	Browser --> User: Hiển thị màn hình yêu cầu chuẩn bị\nkèm danh sách điều kiện đánh giá
+else #LightGreen Phiên luyện tập đã có đánh giá
+	Browser --> User: Hiển thị điểm tổng và chi tiết 4 tiêu chí
+end
+deactivate Browser
+
+@enduml

@@ -1,0 +1,55 @@
+@startuml Đăng nhập bằng thư điện tử và mật khẩu SEQ
+
+skinparam DefaultFontName Segoe UI
+
+hide footbox
+autonumber
+
+actor "Người dùng" as User
+boundary "Trình duyệt" as Browser
+control "Hệ thống" as App
+entity "users" as Users
+entity "verifications" as Verifications
+entity "sessions" as Sessions
+database "Cơ sở dữ liệu" as DB
+participant "Tenten Email Service" as Email
+
+User -> Browser++: Nhập thư điện tử và mật khẩu trên trang đăng nhập
+User -> Browser: Nhấn "Sign in"
+Browser -> Browser: Kiểm tra định dạng, yêu cầu\ncủa thông tin đăng nhập
+
+alt#Gold #LightPink Thông tin đăng nhập không hợp lệ
+	Browser --> User: Hiển thị thông báo lỗi dưới ô nhập thông tin
+else #LightGreen Thông tin đăng nhập hợp lệ
+	Browser -> App++: Kiểm tra thông tin đăng nhập
+	App -> Users++: Tra cứu người dùng theo thư điện tử
+	Users -> DB++: Truy vấn người dùng và tài khoản mật khẩu
+	DB --> Users--: Thông tin người dùng
+	Users --> App--: Thông tin người dùng
+
+	alt#Gold #LightPink Thông tin đăng nhập không đúng
+		App --> Browser--: Trả về lỗi đăng nhập
+		Browser --> User: Hiển thị hộp thoại "Unable to sign in"\nthông báo tài khoản không đúng
+	else #LightGreen Thông tin đăng nhập đúng
+		alt#Gold #LightPink Thư điện tử chưa được xác minh
+			App -> Verifications++: Tạo thư xác minh email
+			Verifications -> DB++: Lưu mã xác minh kèm thời hạn 10 phút
+			DB --> Verifications--: Mã đã được lưu
+			Verifications --> App--: Mã đã được tạo
+			App -> Email++: Gửi thư xác minh email đến người dùng
+			Email --> App--: Đã gửi
+			App --> Browser--: Trả về kết quả cần xác minh
+			Browser --> User: Thông báo cần xác minh
+		else #LightGreen Thư điện tử đã được xác minh
+			App -> Sessions++: Tạo phiên đăng nhập
+			Sessions -> DB++: Lưu phiên đăng nhập
+			DB --> Sessions--: Phiên đã được lưu
+			Sessions --> App--: Phiên đăng nhập đã được tạo
+			App --> Browser--: Trả về kết quả thành công
+			Browser --> User: Chuyển hướng người dùng về trang chủ
+		end
+	end
+end
+deactivate Browser
+
+@enduml

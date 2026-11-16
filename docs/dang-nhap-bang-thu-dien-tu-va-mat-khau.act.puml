@@ -1,0 +1,36 @@
+@startuml Đăng nhập bằng thư điện tử và mật khẩu ACT
+
+skinparam DefaultFontName Segoe UI
+
+|Tác nhân chính|
+start
+:Nhập thư điện tử và mật khẩu trên trang đăng nhập;
+:Nhấn "Sign in";
+
+|Hệ thống|
+if (Thông tin đăng nhập hợp lệ về định dạng?) then (Không)
+	:Hiển thị thông báo lỗi dưới ô nhập thông tin;
+	stop
+else (Có)
+	if (Thông tin đăng nhập đúng?) then (Không)
+		:Hiển thị hộp thoại "Unable to sign in"\nthông báo tài khoản không đúng;
+		stop
+	else (Có)
+		if (Thư điện tử đã được xác minh?) then (Không)
+			:Tạo thư xác minh email;
+
+			|Tenten Email Service|
+			:Gửi thư xác minh email đến người dùng;
+
+			|Hệ thống|
+			:Thông báo cần xác minh;
+			stop
+		else (Có)
+			:Tạo phiên đăng nhập và lưu trữ;
+			:Chuyển hướng người dùng về trang chủ;
+			stop
+		endif
+	endif
+endif
+
+@enduml

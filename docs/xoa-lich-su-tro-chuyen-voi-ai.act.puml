@@ -1,0 +1,24 @@
+@startuml Xóa lịch sử trò chuyện với AI ACT
+
+skinparam DefaultFontName Segoe UI
+
+|Tác nhân chính|
+start
+:Chọn "Clear all messages" trong khung trò chuyện;
+
+|Hệ thống|
+:Hiển thị hộp thoại xác nhận xóa;
+
+|Tác nhân chính|
+if (Xác nhận xóa?) then (Có)
+	|Hệ thống|
+	:Xóa toàn bộ tin nhắn trò chuyện\ncủa phiên luyện tập;
+	:Hiển thị trạng thái trống của khung trò chuyện;
+	stop
+else (Không)
+	|Hệ thống|
+	:Đóng hộp thoại xác nhận;
+	stop
+endif
+
+@enduml
