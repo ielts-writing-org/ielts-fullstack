@@ -1,0 +1,222 @@
+@startuml Domain Class Diagram
+
+skinparam DefaultFontName Segoe UI
+skinparam classAttributeIconSize 0
+
+class User {
+	+id: string
+	+name: string
+	+email: string
+	+emailVerified: boolean
+	+image: string | null
+	+role: string | null
+	+banned: boolean
+	+banReason: string | null
+	+banExpires: Date | null
+	+lastActiveAt: Date | null
+	+createdAt: Date
+	+updatedAt: Date
+	+isAdmin(): boolean
+	+isLocked(): boolean
+	+canBeDemoted(activeAdminCount: number): boolean
+	+canBeLocked(activeAdminCount: number): boolean
+}
+
+class Profile {
+	+id: string
+	+userId: string
+	+bandTarget: number | null
+	+theme: string
+	+createdAt: Date
+	+updatedAt: Date
+	+deletedAt: Date | null
+	+hasBandTarget(): boolean
+	+isBandTargetValid(band: number): boolean
+	+setBandTarget(band: number): void
+}
+
+class Task {
+	+id: string
+	+userId: string | null
+	+category: TaskCategory
+	+subcategory: TaskSubcategory | null
+	+topic: string | null
+	+difficulty: "beginner" | "intermediate" | "advanced" | null
+	+published: boolean
+	+prompt: string
+	+imageName: string | null
+	+createdAt: Date
+	+updatedAt: Date
+	+deletedAt: Date | null
+	+isExample(): boolean
+	+hasImage(): boolean
+	+isImageRequired(): boolean
+	+canPublish(requested: boolean, imageAvailable: boolean): boolean
+	+supportsSubcategory(subcategory: TaskSubcategory): boolean
+	+availableSubcategories(): TaskSubcategory[]
+	+idealResponseWords(): number
+	+acceptableResponseWords(): [number, number]
+	+isPromptValid(): boolean
+	+imagePath(): string | null
+	+imageUrl(): string | null
+}
+
+class PracticeSession {
+	+id: string
+	+userId: string
+	+taskId: string
+	+name: string
+	+type: PracticeType
+	+response: string
+	+timeUpAction: "stop" | "continue" | null
+	+startedAt: Date
+	+createdAt: Date
+	+updatedAt: Date
+	+deletedAt: Date | null
+	+stats(): DeterministicStats
+	+wordCount(): number
+	+isTimed(): boolean
+	+isWithinWordRange(): boolean
+	+isNameValid(name: string): boolean
+	+rename(name: string): void
+	+applyTimeUpAction(action: "stop" | "continue"): void
+}
+
+class ChatMessage {
+	+id: string
+	+practiceSessionId: string
+	+from: "assistant" | "user"
+	+message: string
+	+createdAt: Date
+	+updatedAt: Date
+	+deletedAt: Date | null
+	+wordCount(): number
+	+isWithinWordLimit(): boolean
+	+isFromUser(): boolean
+}
+
+class Evaluation {
+	+taskCategory: TaskCategory
+	+criteria: EvaluationCriterion[]
+	+summary: string
+	+estimatedBand: number
+	+isTask1(): boolean
+	+criterionFor(key: Criteria): EvaluationCriterion | null
+	+criterionBands(): Map<Criteria, number>
+	+roundedBand(): number
+}
+
+class EvaluationCriterion {
+	+band: number
+	+checks: CriterionCheck[]
+	+strengths: CriterionStrength[]
+	+weaknesses: CriterionWeakness[]
+	+why: string
+	+nextBandGap: string | null
+	+label(): string
+	+metCheckCount(): number
+	+allChecksMet(): boolean
+}
+
+class CriterionCheck {
+	+title: string
+	+status: CriterionCheckStatus
+	+evidence: string
+	+isMet(): boolean
+	+statusLabel(): string
+}
+
+class CriterionStrength {
+	+title: string
+	+evidence: string
+	+describe(): string
+}
+
+class CriterionWeakness {
+	+title: string
+	+evidence: string
+	+advice: string
+	+describe(): string
+}
+
+class TaskImage {
+	+fileName: string
+	+sizeBytes: number
+	+isValidSize(): boolean
+	+isValidExtension(): boolean
+	+isValidName(): boolean
+	{static} +allowedMimeTypes(): string[]
+	+path(): string
+}
+
+class DeterministicStats {
+	+words: number
+	+characters: number
+	+sentences: number
+	+paragraphs: number
+	+isEmpty(): boolean
+}
+
+enum TaskCategory {
+	"1"
+	"2"
+}
+
+enum TaskSubcategory {
+	line-graph
+	bar-chart
+	pie-chart
+	table
+	mixed-charts
+	process
+	map
+	letter
+	opinion-essay
+	discussion-essay
+	advantages-disadvantages-essay
+	problem-solution-essay
+	two-part-question-essay
+}
+
+enum PracticeType {
+	free
+	timed
+}
+
+enum Criteria {
+	taskAchievement
+	taskResponse
+	coherenceAndCohesion
+	lexicalResource
+	grammaticalRangeAndAccuracy
+}
+
+enum CriterionCheckStatus {
+	met
+	partially_met
+	not_met
+}
+
+User "1" -- "0..1" Profile : has >
+User "1" -- "0..*" Task : owns >
+User "1" -- "0..*" PracticeSession : practices >
+Task "1" -- "0..*" PracticeSession : is used in >
+Task "1" -- "0..1" TaskImage : has >
+PracticeSession "1" -- "0..1" Evaluation : is graded by >
+PracticeSession "1" -- "0..*" ChatMessage : contains >
+PracticeSession ..> DeterministicStats : analyses >
+
+Evaluation *-- "4" EvaluationCriterion : groups >
+EvaluationCriterion *-- "1..*" CriterionCheck : checks >
+EvaluationCriterion *-- "0..*" CriterionStrength : highlights >
+EvaluationCriterion *-- "0..*" CriterionWeakness : flags >
+
+Task --> TaskCategory
+Task --> TaskSubcategory
+PracticeSession --> PracticeType
+Evaluation --> TaskCategory
+Evaluation ..> Criteria
+EvaluationCriterion ..> Criteria
+CriterionCheck --> CriterionCheckStatus
+
+@enduml
