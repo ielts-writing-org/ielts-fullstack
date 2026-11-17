@@ -29,7 +29,7 @@ describe("EditorSaver", () => {
 		const saver = new EditorSaver(save);
 
 		saver.scheduleSaving();
-		await vi.advanceTimersByTimeAsync(1999);
+		await vi.advanceTimersByTimeAsync(4999);
 		expect(save).not.toHaveBeenCalled();
 
 		await vi.advanceTimersByTimeAsync(1);

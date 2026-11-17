@@ -12,6 +12,12 @@ vi.mock("$app/state", () => ({
 	page: { url: new URL("http://localhost:5173/practice/session-1") }
 }));
 
+// The browser test page loads no CSS, so modal dialogs never fire
+// `transitionend` and every waitForTransition call would fall back to its 5s
+// timeout. Resolve immediately instead; real transition timing is covered by
+// the e2e flows.
+vi.mock("#lib/utils/dom.ts", () => ({ waitForTransition: () => Promise.resolve() }));
+
 vi.mock("#lib/remotes/command/save-chat-message.remote.ts", () => ({
 	saveChatMessages: vi.fn(async () => {})
 }));
