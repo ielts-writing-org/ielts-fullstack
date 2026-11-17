@@ -39,9 +39,11 @@ describe("Modal", () => {
 		expect(document.body.textContent).toContain("Hello there");
 		expect(document.body.textContent).toContain("Body text");
 
-		const button = Array.from(document.querySelectorAll("button")).find((b) => b.textContent?.trim() === "Close")!;
+		const button = Array.from(document.querySelectorAll("button")).find(
+			(b) => b.textContent?.trim() === "Close"
+		)!;
 		expect(button).toBeDefined();
-		await button.click();
+		button.click();
 		await vi.waitFor(() => expect(dialog().open).toBe(false), { timeout: 6000 });
 
 		unmount();
@@ -58,8 +60,10 @@ describe("Modal", () => {
 			secondaryButton: "Cancel"
 		});
 
-		const button = Array.from(document.querySelectorAll("button")).find((b) => b.textContent?.trim() === "Do it")!;
-		await button.click();
+		const button = Array.from(document.querySelectorAll("button")).find(
+			(b) => b.textContent?.trim() === "Do it"
+		)!;
+		button.click();
 		expect(action).toHaveBeenCalledTimes(1);
 		await vi.waitFor(() => expect(dialog().open).toBe(false), { timeout: 6000 });
 
@@ -76,7 +80,9 @@ describe("Modal", () => {
 			primaryButton: { text: "Run", onclick: action, explicitClose: true }
 		});
 
-		await (Array.from(document.querySelectorAll("button")).find((b) => b.textContent?.trim() === "Run")!).click();
+		Array.from(document.querySelectorAll("button"))
+			.find((b) => b.textContent?.trim() === "Run")!
+			.click();
 
 		expect(action).toHaveBeenCalledTimes(1);
 		// With explicitClose the handler decides when to close; the modal stays open.
@@ -97,7 +103,9 @@ describe("Modal", () => {
 			secondaryButton: { text: "Cancel" }
 		});
 
-		await (Array.from(document.querySelectorAll("button")).find((b) => b.textContent?.trim() === "Cancel")!).click();
+		Array.from(document.querySelectorAll("button"))
+			.find((b) => b.textContent?.trim() === "Cancel")!
+			.click();
 		await vi.waitFor(() => expect(dialog().open).toBe(false), { timeout: 6000 });
 		expect(action).not.toHaveBeenCalled();
 
@@ -145,4 +153,3 @@ describe("Modal", () => {
 		unmount();
 	});
 });
-
