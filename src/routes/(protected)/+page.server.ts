@@ -74,13 +74,15 @@ export const load = (async () => {
 
 	const db = getDb(env.IELTS_WRITING_DB);
 	const practices = await db.query.practiceSessions.findMany({
-		limit: 4,
-		orderBy: (practiceSessions, { desc }) => [desc(practiceSessions.updatedAt)],
-		where: (practiceSessions, { eq }) => eq(practiceSessions.userId, user.id),
+		where: {
+			userId: user.id
+		},
 		with: {
 			task: true,
 			evaluation: true
-		}
+		},
+		orderBy: (practiceSessions, { desc }) => [desc(practiceSessions.updatedAt)],
+		limit: 4
 	});
 
 	// Statistics

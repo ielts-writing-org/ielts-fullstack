@@ -121,7 +121,7 @@
 				</div>
 			</div>
 
-			<div class="tabs tabs-border" role="tablist">
+			<div class="tabs-border tabs" role="tablist">
 				{#each getAllAuthModes() as authMode (authMode)}
 					<input
 						type="radio"

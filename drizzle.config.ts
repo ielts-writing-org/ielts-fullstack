@@ -10,7 +10,6 @@ export default defineConfig({
 	dialect: "sqlite",
 	schema: "./src/lib/server/db/*.schema.ts",
 	dbCredentials: { url: resolveDbUrl() },
-	strict: true,
 	verbose: true
 });
 

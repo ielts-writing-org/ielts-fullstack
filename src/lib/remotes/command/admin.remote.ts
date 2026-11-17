@@ -44,7 +44,9 @@ export const setAdminUserRole = command(
 		}
 		if (result.meta.changes !== 1) {
 			const target = await db.query.users.findFirst({
-				where: (fields, { eq }) => eq(fields.id, userId),
+				where: {
+					id: userId
+				},
 				columns: { role: true }
 			});
 			if (!target) error(404, "User not found.");
@@ -72,7 +74,9 @@ export const setAdminUserLocked = command(
 		const db = getDatabase();
 		if (userId === user.id) error(400, "You cannot lock your own account.");
 		const target = await db.query.users.findFirst({
-			where: (fields, { eq }) => eq(fields.id, userId),
+			where: {
+				id: userId
+			},
 			columns: { id: true, role: true, banned: true, banExpires: true }
 		});
 		if (!target) error(404, "User not found.");
@@ -121,7 +125,9 @@ export const revokeAdminUserSessions = command(userIdSchema, async ({ userId }) 
 	const db = getDatabase();
 	if (userId === user.id) error(400, "You cannot revoke your own sessions from user management.");
 	const target = await db.query.users.findFirst({
-		where: (fields, { eq }) => eq(fields.id, userId),
+		where: {
+			id: userId
+		},
 		columns: { id: true }
 	});
 	if (!target) error(404, "User not found.");
@@ -184,7 +190,9 @@ export const updateAdminTask = command(
 			error(400, "The subcategory does not belong to the selected task category.");
 		}
 		const old = await db.query.tasks.findFirst({
-			where: (fields, { eq }) => eq(fields.id, taskId)
+			where: {
+				id: taskId
+			}
 		});
 		if (!old || old.deletedAt) error(404, "Active task not found.");
 		const imageName = input.category === "1" && old.category === "1" ? old.imageName : null;
@@ -227,7 +235,7 @@ export const setAdminTaskVisibility = command(
 		const { user } = await getAdminSession(getRequestEvent().locals);
 		const db = getDatabase();
 		const task = await db.query.tasks.findFirst({
-			where: (fields, { eq }) => eq(fields.id, taskId),
+			where: { id: taskId },
 			columns: { userId: true, category: true, imageName: true, deletedAt: true }
 		});
 		if (!task || task.deletedAt) error(404, "Active task not found.");
@@ -253,7 +261,7 @@ export const archiveAdminTask = command(z.object({ taskId: z.uuidv7() }), async 
 	const { user } = await getAdminSession(getRequestEvent().locals);
 	const db = getDatabase();
 	const task = await db.query.tasks.findFirst({
-		where: (fields, { eq }) => eq(fields.id, taskId),
+		where: { id: taskId },
 		columns: { id: true, deletedAt: true }
 	});
 	if (!task) error(404, "Task not found.");
@@ -273,7 +281,7 @@ export const removeAdminTaskImage = command(
 		const { user } = await getAdminSession(getRequestEvent().locals);
 		const db = getDatabase();
 		const old = await db.query.tasks.findFirst({
-			where: (fields, { eq }) => eq(fields.id, taskId)
+			where: { id: taskId }
 		});
 		if (!old || old.deletedAt) error(404, "Active task not found.");
 		if (!old.imageName) return { taskId, success: true };
@@ -309,7 +317,7 @@ export const restoreAdminTask = command(z.object({ taskId: z.uuidv7() }), async 
 	const { user } = await getAdminSession(getRequestEvent().locals);
 	const db = getDatabase();
 	const task = await db.query.tasks.findFirst({
-		where: (fields, { eq }) => eq(fields.id, taskId),
+		where: { id: taskId },
 		columns: { userId: true, deletedAt: true }
 	});
 	if (!task) error(404, "Task not found.");
@@ -320,7 +328,7 @@ export const restoreAdminTask = command(z.object({ taskId: z.uuidv7() }), async 
 		.where(and(eq(tasks.id, taskId), sql`${tasks.deletedAt} IS NOT NULL`));
 	if (restored.meta.changes !== 1) {
 		const latest = await db.query.tasks.findFirst({
-			where: (fields, { eq }) => eq(fields.id, taskId),
+			where: { id: taskId },
 			columns: { deletedAt: true }
 		});
 		if (!latest) error(404, "Task not found.");
@@ -337,7 +345,7 @@ export const deleteAdminSession = command(
 		const { user } = await getAdminSession(getRequestEvent().locals);
 		const db = getDatabase();
 		const target = await db.query.practiceSessions.findFirst({
-			where: (fields, { eq }) => eq(fields.id, practiceSessionId),
+			where: { id: practiceSessionId },
 			columns: { id: true }
 		});
 		if (!target) error(404, "Practice session not found.");

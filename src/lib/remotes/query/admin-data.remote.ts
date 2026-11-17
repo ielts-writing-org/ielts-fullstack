@@ -234,7 +234,9 @@ export const getAdminSessionDetail = query(z.uuidv7(), async (practiceSessionId)
 		.limit(1);
 	if (!session[0]) error(404, "Practice session not found.");
 	const messages = await db.query.chatMessages.findMany({
-		where: (fields, { eq }) => eq(fields.practiceSessionId, practiceSessionId),
+		where: {
+			practiceSessionId: practiceSessionId
+		},
 		orderBy: (fields, { asc }) => asc(fields.createdAt)
 	});
 	return {

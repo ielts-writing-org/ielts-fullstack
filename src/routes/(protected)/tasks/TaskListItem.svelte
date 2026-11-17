@@ -118,7 +118,7 @@
 					aria-haspopup="menu">
 					<EllipsisVertical class="size-4" />
 				</button>
-				<ul class="menu dropdown-content z-1 w-36 rounded-box bg-base-100 p-1.5 shadow-sm">
+				<ul class="dropdown-content menu z-1 w-36 rounded-box bg-base-100 p-1.5 shadow-sm">
 					<li>
 						<button onclick={onEdit}>
 							Edit

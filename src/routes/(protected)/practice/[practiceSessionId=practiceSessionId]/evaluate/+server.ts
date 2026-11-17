@@ -80,12 +80,13 @@ async function getValidatedPracticeSession(id: string, userId: string) {
 	const db = getDatabase();
 	const ps = await db.query.practiceSessions.findFirst({
 		columns: { id: true, response: true },
-		where: (practiceSessions, { and, eq, isNull }) =>
-			and(
-				eq(practiceSessions.id, id),
-				eq(practiceSessions.userId, userId),
-				isNull(practiceSessions.deletedAt)
-			),
+		where: {
+			id: id,
+			userId: userId,
+			deletedAt: {
+				isNull: true
+			}
+		},
 		with: {
 			task: {
 				columns: { category: true, prompt: true, imageName: true }

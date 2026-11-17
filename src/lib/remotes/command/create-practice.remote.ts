@@ -32,12 +32,11 @@ export const createPractice = command(
 			taskId = createdTask.id;
 		} else {
 			const task = await db.query.tasks.findFirst({
-				where: (fields, { and, eq, isNull, or }) =>
-					and(
-						eq(fields.id, taskId!),
-						isNull(fields.deletedAt),
-						or(eq(fields.userId, user.id), and(isNull(fields.userId), eq(fields.published, true)))
-					),
+				where: {
+					id: taskId,
+					deletedAt: { isNull: true },
+					OR: [{ userId: user.id }, { userId: { isNull: true }, published: true }]
+				},
 				columns: { category: true }
 			});
 			if (!task) error(404);

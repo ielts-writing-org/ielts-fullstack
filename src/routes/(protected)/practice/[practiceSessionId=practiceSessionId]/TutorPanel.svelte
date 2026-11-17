@@ -45,7 +45,7 @@
 	}
 </script>
 
-<div class="tabs tabs-lift h-full" role="tablist">
+<div class="tabs-lift tabs h-full" role="tablist">
 	<label class="tab [--tab-border-color:var(--color-base-content)]/20">
 		<input
 			type="radio"

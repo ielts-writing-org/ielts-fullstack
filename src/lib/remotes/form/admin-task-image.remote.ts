@@ -28,7 +28,9 @@ export const saveAdminTaskImage = form(
 		const { user } = await getAdminSession(getRequestEvent().locals);
 		const db = getDatabase();
 		const old = await db.query.tasks.findFirst({
-			where: (fields, { eq }) => eq(fields.id, taskId)
+			where: {
+				id: taskId
+			}
 		});
 		if (!old || old.deletedAt) error(404, "Active task not found.");
 		if (old.category !== "1") error(400, "Only Task 1 questions can have a chart image.");
@@ -61,7 +63,9 @@ export const saveAdminTaskImage = form(
 			}
 		} catch (cause) {
 			const stillReferenced = await db.query.tasks.findFirst({
-				where: (fields, { eq }) => eq(fields.id, version.id),
+				where: {
+					id: version.id
+				},
 				columns: { id: true }
 			});
 			if (!stillReferenced) await deleteObject(getImagePath(imageName));

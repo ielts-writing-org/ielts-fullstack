@@ -10,7 +10,9 @@ export const getProfile = query(async () => {
 
 	const db = getDb(env.IELTS_WRITING_DB);
 	const profile = await db.query.profiles.findFirst({
-		where: (profiles, { eq }) => eq(profiles.userId, user.id)
+		where: {
+			userId: user.id
+		}
 	});
 
 	if (!profile) {

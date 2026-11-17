@@ -35,7 +35,10 @@ export const updateTask = form(
 
 		const db = getDatabase();
 		const task = await db.query.tasks.findFirst({
-			where: (tasks, { and, eq }) => and(eq(tasks.id, taskId), eq(tasks.userId, user.id))
+			where: {
+				id: taskId,
+				userId: user.id
+			}
 		});
 
 		if (!task) {

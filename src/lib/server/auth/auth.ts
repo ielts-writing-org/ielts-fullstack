@@ -7,13 +7,13 @@ import {
 import { ORIGIN } from "$app/env/public";
 import { getRequestEvent } from "$app/server";
 import { dash, sentinel } from "@better-auth/infra";
-import { drizzleAdapter } from "better-auth/adapters/drizzle";
+import { drizzleAdapter } from "@better-auth/drizzle-adapter/relations-v2";
 import { betterAuth } from "better-auth/minimal";
 import { admin } from "better-auth/plugins";
 import { sveltekitCookies } from "better-auth/svelte-kit";
 import { waitUntil } from "cloudflare:workers";
 import { getDb } from "../db";
-import { profiles } from "../db/app.schema";
+// import { profiles } from "../db/app.schema";
 import { sendEmail } from "../bindings/email";
 import { getKVConfigValue } from "../bindings/kv";
 
@@ -84,11 +84,11 @@ export const createAuth = (d1: D1Database) => {
 						}
 
 						return { data: user };
-					},
-					after: async (user) => {
-						const db = getDb(d1);
-						await db.insert(profiles).values({ userId: user.id });
 					}
+					// after: async (user) => {
+					// 	const db = getDb(d1);
+					// 	await db.insert(profiles).values({ userId: user.id });
+					// }
 				}
 			}
 		},

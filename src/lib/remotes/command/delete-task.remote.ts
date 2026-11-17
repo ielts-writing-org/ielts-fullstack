@@ -19,7 +19,10 @@ export const deleteTask = command(
 		const db = getDatabase();
 		const task = await db.query.tasks.findFirst({
 			columns: { imageName: true },
-			where: (fields, { and, eq }) => and(eq(fields.id, taskId), eq(fields.userId, user.id))
+			where: {
+				id: taskId,
+				userId: user.id
+			}
 		});
 
 		if (!task) {

@@ -17,7 +17,7 @@ declare global {
 			metadata?: {
 				title: string;
 				taskCategory: TaskCategory;
-				taskSubcategory: TaskSubcategory<TaskCategory>;
+				taskSubcategory: TaskSubcategory<TaskCategory> | null;
 			};
 		}
 

@@ -13,8 +13,10 @@ export const load = (async ({ locals, params, depends }) => {
 
 	const db = getDatabase();
 	const practiceSession = await db.query.practiceSessions.findFirst({
-		where: (practices, { and, eq }) =>
-			and(eq(practices.id, practiceSessionId), eq(practices.userId, user.id)),
+		where: {
+			id: practiceSessionId,
+			userId: user.id
+		},
 		with: { task: true, evaluation: true, chatMessages: true }
 	});
 

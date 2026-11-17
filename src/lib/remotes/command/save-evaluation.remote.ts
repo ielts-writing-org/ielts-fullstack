@@ -18,8 +18,10 @@ export const saveEvaluation = command(
 
 		const db = getDb(env.IELTS_WRITING_DB);
 		const practiceSession = await db.query.practiceSessions.findFirst({
-			where: (practiceSessions, { and, eq }) =>
-				and(eq(practiceSessions.id, practiceSessionId), eq(practiceSessions.userId, user.id)),
+			where: {
+				id: practiceSessionId,
+				userId: user.id
+			},
 			columns: { id: true }
 		});
 

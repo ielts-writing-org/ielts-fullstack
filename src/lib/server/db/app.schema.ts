@@ -1,4 +1,3 @@
-import { relations } from "drizzle-orm";
 import { index, integer, real, sqliteTable, text } from "drizzle-orm/sqlite-core";
 import type { Evaluation } from "#lib/domain/evaluation.ts";
 import type { TaskCategory } from "#lib/domain/task-category.ts";
@@ -6,11 +5,6 @@ import type { TaskSubcategory } from "#lib/domain/task-subcategory.ts";
 import { users } from "./auth.schema";
 import { now, withBaseColumns } from "./common";
 
-/******************************************************************************
- *                                                                            *
- *                                  TABLES                                    *
- *                                                                            *
- *****************************************************************************/
 export const profiles = sqliteTable(
 	"profiles",
 	withBaseColumns({
@@ -133,61 +127,3 @@ export const aiSettings = sqliteTable("ai_settings", {
 	updatedBy: text("updated_by").references(() => users.id, { onDelete: "set null" }),
 	updatedAt: integer("updated_at", { mode: "timestamp_ms" }).notNull().default(now)
 });
-
-/******************************************************************************
- *                                                                            *
- *                                RELATIONS                                   *
- *                                                                            *
- *****************************************************************************/
-export const profilesRelations = relations(profiles, ({ one }) => ({
-	user: one(users, {
-		fields: [profiles.id],
-		references: [users.id]
-	})
-}));
-
-export const tasksRelations = relations(tasks, ({ many, one }) => ({
-	user: one(users, {
-		fields: [tasks.userId],
-		references: [users.id]
-	}),
-	practiceSessions: many(practiceSessions)
-}));
-
-export const practiceSessionsRelations = relations(practiceSessions, ({ one, many }) => ({
-	task: one(tasks, {
-		fields: [practiceSessions.taskId],
-		references: [tasks.id]
-	}),
-	evaluation: one(evaluations),
-	chatMessages: many(chatMessages)
-}));
-
-export const evaluationsRelations = relations(evaluations, ({ one }) => ({
-	practiceSession: one(practiceSessions, {
-		fields: [evaluations.practiceSessionId],
-		references: [practiceSessions.id]
-	})
-}));
-
-export const adminAuditLogsRelations = relations(adminAuditLogs, ({ one }) => ({
-	actor: one(users, {
-		fields: [adminAuditLogs.actorUserId],
-		references: [users.id]
-	})
-}));
-
-export const aiRequestsRelations = relations(aiRequests, ({ one }) => ({
-	user: one(users, { fields: [aiRequests.userId], references: [users.id] }),
-	practiceSession: one(practiceSessions, {
-		fields: [aiRequests.practiceSessionId],
-		references: [practiceSessions.id]
-	})
-}));
-
-export const chatMessagesRelations = relations(chatMessages, ({ one }) => ({
-	practiceSession: one(practiceSessions, {
-		fields: [chatMessages.practiceSessionId],
-		references: [practiceSessions.id]
-	})
-}));

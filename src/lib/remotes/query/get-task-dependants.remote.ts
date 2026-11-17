@@ -14,7 +14,10 @@ export const getTaskDependants = query(z.uuidv7(), async (taskId) => {
 	const db = getDb(env.IELTS_WRITING_DB);
 	const task = await db.query.tasks.findFirst({
 		columns: { id: true },
-		where: (fields, { and, eq }) => and(eq(fields.id, taskId), eq(fields.userId, user.id))
+		where: {
+			id: taskId,
+			userId: user.id
+		}
 	});
 
 	if (!task) {
