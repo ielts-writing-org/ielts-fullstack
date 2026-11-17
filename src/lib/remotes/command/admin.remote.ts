@@ -5,9 +5,10 @@ import { and, eq, isNull, sql } from "drizzle-orm";
 import { z } from "zod";
 import { isValidSubcategory, taskSubcategorySchema } from "#lib/domain/task-subcategory.ts";
 import { AI_CHAT_MODEL_OPTIONS, AI_GRADING_MODEL_OPTIONS } from "#lib/server/ai-settings.ts";
-import { recordAdminAction, requireAdmin } from "#lib/server/auth/admin.ts";
+import { recordAdminAction, getAdminSession } from "#lib/server/auth/admin.ts";
 import { aiSettings, practiceSessions, tasks } from "#lib/server/db/app.schema.ts";
 import { getImagePath } from "#lib/utils/paths.ts";
+import { getDatabase } from "#lib/server/db/index.ts";
 
 const userIdSchema = z.object({ userId: z.string().min(1).max(128) });
 
@@ -15,7 +16,8 @@ export const setAdminUserRole = command(
 	userIdSchema.extend({ isAdmin: z.boolean() }),
 	async ({ userId, isAdmin }) => {
 		const event = getRequestEvent();
-		const { user, db } = await requireAdmin(event.locals);
+		const { user } = await getAdminSession(event.locals);
+		const db = getDatabase();
 		if (userId === user.id) error(400, "You cannot change your own administrator role.");
 		const now = Date.now();
 		let result;
@@ -46,11 +48,18 @@ export const setAdminUserRole = command(
 				columns: { role: true }
 			});
 			if (!target) error(404, "User not found.");
-			if (!isAdmin && target.role === "admin") error(409, "The last active administrator cannot be removed.");
+			if (!isAdmin && target.role === "admin")
+				error(409, "The last active administrator cannot be removed.");
 			if (isAdmin && target.role === "admin") return { success: true };
 			error(409, "Administrator privileges changed; reload and try again.");
 		}
-		await recordAdminAction(db, user.id, isAdmin ? "user.role.grant" : "user.role.revoke", "user", userId);
+		await recordAdminAction(
+			db,
+			user.id,
+			isAdmin ? "user.role.grant" : "user.role.revoke",
+			"user",
+			userId
+		);
 		return { success: true };
 	}
 );
@@ -59,7 +68,8 @@ export const setAdminUserLocked = command(
 	userIdSchema.extend({ locked: z.boolean(), reason: z.string().trim().max(500).default("") }),
 	async ({ userId, locked, reason }) => {
 		const event = getRequestEvent();
-		const { user, db } = await requireAdmin(event.locals);
+		const { user } = await getAdminSession(event.locals);
+		const db = getDatabase();
 		if (userId === user.id) error(400, "You cannot lock your own account.");
 		const target = await db.query.users.findFirst({
 			where: (fields, { eq }) => eq(fields.id, userId),
@@ -95,7 +105,8 @@ export const setAdminUserLocked = command(
 				AND EXISTS (SELECT 1 FROM users WHERE id = ${user.id} AND role = 'admin'
 					AND (banned = 0 OR banned IS NULL OR ban_expires <= ${now}))
 			`);
-			if (result.meta.changes !== 1) error(409, "Administrator privileges changed; reload and try again.");
+			if (result.meta.changes !== 1)
+				error(409, "Administrator privileges changed; reload and try again.");
 		}
 		await recordAdminAction(db, user.id, locked ? "user.lock" : "user.unlock", "user", userId, {
 			reasonProvided: locked && reason.length > 0
@@ -106,7 +117,8 @@ export const setAdminUserLocked = command(
 
 export const revokeAdminUserSessions = command(userIdSchema, async ({ userId }) => {
 	const event = getRequestEvent();
-	const { user, db } = await requireAdmin(event.locals);
+	const { user } = await getAdminSession(event.locals);
+	const db = getDatabase();
 	if (userId === user.id) error(400, "You cannot revoke your own sessions from user management.");
 	const target = await db.query.users.findFirst({
 		where: (fields, { eq }) => eq(fields.id, userId),
@@ -124,14 +136,21 @@ export const revokeAdminUserSessions = command(userIdSchema, async ({ userId }) 
 const adminTaskFields = z.object({
 	category: z.enum(["1", "2"]),
 	subcategory: z.union([taskSubcategorySchema, z.literal("")]).transform((value) => value || null),
-	topic: z.string().trim().max(160).transform((value) => value || null),
-	difficulty: z.enum(["beginner", "intermediate", "advanced", ""]).transform((value) => value || null),
+	topic: z
+		.string()
+		.trim()
+		.max(160)
+		.transform((value) => value || null),
+	difficulty: z
+		.enum(["beginner", "intermediate", "advanced", ""])
+		.transform((value) => value || null),
 	prompt: z.string().trim().min(1).max(20_000),
 	published: z.boolean()
 });
 
 export const createAdminTask = command(adminTaskFields, async (input) => {
-	const { user, db } = await requireAdmin(getRequestEvent().locals);
+	const { user } = await getAdminSession(getRequestEvent().locals);
+	const db = getDatabase();
 	if (input.subcategory && !isValidSubcategory(input.category, input.subcategory)) {
 		error(400, "The subcategory does not belong to the selected task category.");
 	}
@@ -159,11 +178,14 @@ export const createAdminTask = command(adminTaskFields, async (input) => {
 export const updateAdminTask = command(
 	adminTaskFields.extend({ taskId: z.uuidv7() }),
 	async ({ taskId, ...input }) => {
-		const { user, db } = await requireAdmin(getRequestEvent().locals);
+		const { user } = await getAdminSession(getRequestEvent().locals);
+		const db = getDatabase();
 		if (input.subcategory && !isValidSubcategory(input.category, input.subcategory)) {
 			error(400, "The subcategory does not belong to the selected task category.");
 		}
-		const old = await db.query.tasks.findFirst({ where: (fields, { eq }) => eq(fields.id, taskId) });
+		const old = await db.query.tasks.findFirst({
+			where: (fields, { eq }) => eq(fields.id, taskId)
+		});
 		if (!old || old.deletedAt) error(404, "Active task not found.");
 		const imageName = input.category === "1" && old.category === "1" ? old.imageName : null;
 		const imageAvailable = imageName
@@ -202,7 +224,8 @@ export const updateAdminTask = command(
 export const setAdminTaskVisibility = command(
 	z.object({ taskId: z.uuidv7(), published: z.boolean() }),
 	async ({ taskId, published }) => {
-		const { user, db } = await requireAdmin(getRequestEvent().locals);
+		const { user } = await getAdminSession(getRequestEvent().locals);
+		const db = getDatabase();
 		const task = await db.query.tasks.findFirst({
 			where: (fields, { eq }) => eq(fields.id, taskId),
 			columns: { userId: true, category: true, imageName: true, deletedAt: true }
@@ -227,7 +250,8 @@ export const setAdminTaskVisibility = command(
 );
 
 export const archiveAdminTask = command(z.object({ taskId: z.uuidv7() }), async ({ taskId }) => {
-	const { user, db } = await requireAdmin(getRequestEvent().locals);
+	const { user } = await getAdminSession(getRequestEvent().locals);
+	const db = getDatabase();
 	const task = await db.query.tasks.findFirst({
 		where: (fields, { eq }) => eq(fields.id, taskId),
 		columns: { id: true, deletedAt: true }
@@ -243,40 +267,47 @@ export const archiveAdminTask = command(z.object({ taskId: z.uuidv7() }), async 
 	return { success: true };
 });
 
-export const removeAdminTaskImage = command(z.object({ taskId: z.uuidv7() }), async ({ taskId }) => {
-	const { user, db } = await requireAdmin(getRequestEvent().locals);
-	const old = await db.query.tasks.findFirst({ where: (fields, { eq }) => eq(fields.id, taskId) });
-	if (!old || old.deletedAt) error(404, "Active task not found.");
-	if (!old.imageName) return { taskId, success: true };
-	const [created] = await db
-		.insert(tasks)
-		.values({
-			userId: old.userId,
-			category: old.category,
-			subcategory: old.subcategory,
-			topic: old.topic,
-			difficulty: old.difficulty,
-			prompt: old.prompt,
-			imageName: null,
-			published: false
-		})
-		.returning({ id: tasks.id });
-	const archived = await db
-		.update(tasks)
-		.set({ published: false, deletedAt: new Date() })
-		.where(and(eq(tasks.id, taskId), isNull(tasks.deletedAt)));
-	if (archived.meta.changes !== 1) {
-		await db.delete(tasks).where(eq(tasks.id, created.id));
-		error(409, "Question changed while its image was being removed. Reload and retry.");
+export const removeAdminTaskImage = command(
+	z.object({ taskId: z.uuidv7() }),
+	async ({ taskId }) => {
+		const { user } = await getAdminSession(getRequestEvent().locals);
+		const db = getDatabase();
+		const old = await db.query.tasks.findFirst({
+			where: (fields, { eq }) => eq(fields.id, taskId)
+		});
+		if (!old || old.deletedAt) error(404, "Active task not found.");
+		if (!old.imageName) return { taskId, success: true };
+		const [created] = await db
+			.insert(tasks)
+			.values({
+				userId: old.userId,
+				category: old.category,
+				subcategory: old.subcategory,
+				topic: old.topic,
+				difficulty: old.difficulty,
+				prompt: old.prompt,
+				imageName: null,
+				published: false
+			})
+			.returning({ id: tasks.id });
+		const archived = await db
+			.update(tasks)
+			.set({ published: false, deletedAt: new Date() })
+			.where(and(eq(tasks.id, taskId), isNull(tasks.deletedAt)));
+		if (archived.meta.changes !== 1) {
+			await db.delete(tasks).where(eq(tasks.id, created.id));
+			error(409, "Question changed while its image was being removed. Reload and retry.");
+		}
+		await recordAdminAction(db, user.id, "task.image.remove", "task", created.id, {
+			previousVersionId: taskId
+		});
+		return { taskId: created.id, success: true };
 	}
-	await recordAdminAction(db, user.id, "task.image.remove", "task", created.id, {
-		previousVersionId: taskId
-	});
-	return { taskId: created.id, success: true };
-});
+);
 
 export const restoreAdminTask = command(z.object({ taskId: z.uuidv7() }), async ({ taskId }) => {
-	const { user, db } = await requireAdmin(getRequestEvent().locals);
+	const { user } = await getAdminSession(getRequestEvent().locals);
+	const db = getDatabase();
 	const task = await db.query.tasks.findFirst({
 		where: (fields, { eq }) => eq(fields.id, taskId),
 		columns: { userId: true, deletedAt: true }
@@ -303,7 +334,8 @@ export const restoreAdminTask = command(z.object({ taskId: z.uuidv7() }), async 
 export const deleteAdminSession = command(
 	z.object({ practiceSessionId: z.uuidv7() }),
 	async ({ practiceSessionId }) => {
-		const { user, db } = await requireAdmin(getRequestEvent().locals);
+		const { user } = await getAdminSession(getRequestEvent().locals);
+		const db = getDatabase();
 		const target = await db.query.practiceSessions.findFirst({
 			where: (fields, { eq }) => eq(fields.id, practiceSessionId),
 			columns: { id: true }
@@ -312,7 +344,13 @@ export const deleteAdminSession = command(
 		// The session FK uses ON DELETE CASCADE for evaluations and chats; one D1
 		// statement keeps the dependent cleanup atomic without db.transaction().
 		await db.delete(practiceSessions).where(eq(practiceSessions.id, practiceSessionId));
-		await recordAdminAction(db, user.id, "practice_session.delete", "practice_session", practiceSessionId);
+		await recordAdminAction(
+			db,
+			user.id,
+			"practice_session.delete",
+			"practice_session",
+			practiceSessionId
+		);
 		return { success: true };
 	}
 );
@@ -329,16 +367,20 @@ const aiConfigSchema = z.object({
 });
 
 export const saveAdminAiConfig = command(aiConfigSchema, async (input) => {
-	const { user, db } = await requireAdmin(getRequestEvent().locals);
+	const { user } = await getAdminSession(getRequestEvent().locals);
+	const db = getDatabase();
 	const rows = Object.entries(input).map(([key, value]) => ({
 		key,
 		value: String(value),
 		updatedBy: user.id
 	}));
-	await db.insert(aiSettings).values(rows).onConflictDoUpdate({
-		target: aiSettings.key,
-		set: { value: sql`excluded.value`, updatedBy: user.id, updatedAt: new Date() }
-	});
+	await db
+		.insert(aiSettings)
+		.values(rows)
+		.onConflictDoUpdate({
+			target: aiSettings.key,
+			set: { value: sql`excluded.value`, updatedBy: user.id, updatedAt: new Date() }
+		});
 	await recordAdminAction(db, user.id, "ai.config.update", "ai_config", null, {
 		chatModel: input.chatModel,
 		gradingModel: input.gradingModel,
@@ -354,16 +396,16 @@ export const saveAdminAiConfig = command(aiConfigSchema, async (input) => {
 
 export const saveAdminPrompt = command(
 	z.object({
-		key: z.enum([
-			"chat-prompt-1",
-			"chat-prompt-2",
-			"evaluation-prompt-1",
-			"evaluation-prompt-2"
-		]),
-		prompt: z.string().min(1).max(30_000).refine((value) => value.trim().length > 0)
+		key: z.enum(["chat-prompt-1", "chat-prompt-2", "evaluation-prompt-1", "evaluation-prompt-2"]),
+		prompt: z
+			.string()
+			.min(1)
+			.max(30_000)
+			.refine((value) => value.trim().length > 0)
 	}),
 	async ({ key, prompt }) => {
-		const { user, db } = await requireAdmin(getRequestEvent().locals);
+		const { user } = await getAdminSession(getRequestEvent().locals);
+		const db = getDatabase();
 		await env.IELTS_WRITING_KV.put(key, prompt);
 		await recordAdminAction(db, user.id, "ai.prompt.update", "cloudflare_kv", key, {
 			storage: "IELTS_WRITING_KV",

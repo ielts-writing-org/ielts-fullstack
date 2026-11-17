@@ -1,22 +1,9 @@
 import { error } from "@sveltejs/kit";
 import { env } from "cloudflare:workers";
-import {
-	and,
-	asc,
-	count,
-	desc,
-	eq,
-	gte,
-	isNull,
-	isNotNull,
-	like,
-	ne,
-	or,
-	sql
-} from "drizzle-orm";
+import { and, asc, count, desc, eq, gte, isNull, isNotNull, like, ne, or, sql } from "drizzle-orm";
 import { getRequestEvent, query } from "$app/server";
 import { z } from "zod";
-import { requireAdmin } from "#lib/server/auth/admin.ts";
+import { getAdminSession } from "#lib/server/auth/admin.ts";
 import {
 	getStoredAiSettings,
 	DEFAULT_AI_RUNTIME,
@@ -32,6 +19,7 @@ import {
 } from "#lib/server/db/app.schema.ts";
 import { users } from "#lib/server/db/auth.schema.ts";
 import { computeDeterministicStats } from "#lib/utils/stats.ts";
+import { getDatabase } from "#lib/server/db/index.ts";
 
 const pagingSchema = z.object({
 	page: z.number().int().min(1).max(100_000),
@@ -47,7 +35,8 @@ export const getAdminUsers = query(
 		status: z.enum(["all", "active", "locked"])
 	}),
 	async ({ page, pageSize, search, role, status }) => {
-		const { db, user: adminUser } = await requireAdmin(getRequestEvent().locals);
+		const { user: adminUser } = await getAdminSession(getRequestEvent().locals);
+		const db = getDatabase();
 		const now = Date.now();
 		const locked = sql`(${users.banned} = 1 AND (${users.banExpires} IS NULL OR ${users.banExpires} > ${now}))`;
 		const active = sql`(${users.banned} IS NULL OR ${users.banned} = 0 OR ${users.banExpires} <= ${now})`;
@@ -101,7 +90,8 @@ export const getAdminTasks = query(
 		status: z.enum(["active", "archived"])
 	}),
 	async ({ page, pageSize, search, category, source, visibility, status }) => {
-		const { db } = await requireAdmin(getRequestEvent().locals);
+		await getAdminSession(getRequestEvent().locals);
+		const db = getDatabase();
 		const conditions = [];
 		if (category !== "all") conditions.push(eq(tasks.category, category));
 		if (source === "system") conditions.push(isNull(tasks.userId));
@@ -113,7 +103,11 @@ export const getAdminTasks = query(
 		if (search) {
 			const pattern = `%${search}%`;
 			conditions.push(
-				or(like(tasks.prompt, pattern), like(tasks.topic, pattern), like(tasks.subcategory, pattern))!
+				or(
+					like(tasks.prompt, pattern),
+					like(tasks.topic, pattern),
+					like(tasks.subcategory, pattern)
+				)!
 			);
 		}
 		const where = conditions.length ? and(...conditions) : undefined;
@@ -153,14 +147,17 @@ export const getAdminSessions = query(
 		days: z.enum(["all", "7", "30", "90"])
 	}),
 	async ({ page, pageSize, search, category, type, evaluation, days }) => {
-		const { db } = await requireAdmin(getRequestEvent().locals);
+		await getAdminSession(getRequestEvent().locals);
+		const db = getDatabase();
 		const conditions = [isNull(practiceSessions.deletedAt)];
 		if (category !== "all") conditions.push(eq(tasks.category, category));
 		if (type !== "all") conditions.push(eq(practiceSessions.type, type));
 		if (evaluation === "evaluated") conditions.push(sql`${evaluations.id} IS NOT NULL`);
 		if (evaluation === "unevaluated") conditions.push(isNull(evaluations.id));
 		if (days !== "all") {
-			conditions.push(gte(practiceSessions.startedAt, new Date(Date.now() - Number(days) * 86_400_000)));
+			conditions.push(
+				gte(practiceSessions.startedAt, new Date(Date.now() - Number(days) * 86_400_000))
+			);
 		}
 		if (search) {
 			const pattern = `%${search}%`;
@@ -209,7 +206,8 @@ export const getAdminSessions = query(
 );
 
 export const getAdminSessionDetail = query(z.uuidv7(), async (practiceSessionId) => {
-	const { db } = await requireAdmin(getRequestEvent().locals);
+	await getAdminSession(getRequestEvent().locals);
+	const db = getDatabase();
 	const session = await db
 		.select({
 			id: practiceSessions.id,
@@ -239,7 +237,11 @@ export const getAdminSessionDetail = query(z.uuidv7(), async (practiceSessionId)
 		where: (fields, { eq }) => eq(fields.practiceSessionId, practiceSessionId),
 		orderBy: (fields, { asc }) => asc(fields.createdAt)
 	});
-	return { ...session[0], wordCount: computeDeterministicStats(session[0].response).words, messages };
+	return {
+		...session[0],
+		wordCount: computeDeterministicStats(session[0].response).words,
+		messages
+	};
 });
 
 export const getAdminAiRequests = query(
@@ -250,8 +252,11 @@ export const getAdminAiRequests = query(
 		days: z.enum(["7", "30", "90", "365"])
 	}),
 	async ({ page, pageSize, kind, status, model, days }) => {
-		const { db } = await requireAdmin(getRequestEvent().locals);
-		const conditions = [gte(aiRequests.startedAt, new Date(Date.now() - Number(days) * 86_400_000))];
+		await getAdminSession(getRequestEvent().locals);
+		const db = getDatabase();
+		const conditions = [
+			gte(aiRequests.startedAt, new Date(Date.now() - Number(days) * 86_400_000))
+		];
 		if (kind !== "all") conditions.push(eq(aiRequests.kind, kind));
 		if (status !== "all") conditions.push(eq(aiRequests.status, status));
 		if (model) conditions.push(eq(aiRequests.model, model));
@@ -283,8 +288,13 @@ export const getAdminAiRequests = query(
 );
 
 export const getAdminAiConfig = query(async () => {
-	await requireAdmin(getRequestEvent().locals);
-	const promptKeys = ["chat-prompt-1", "chat-prompt-2", "evaluation-prompt-1", "evaluation-prompt-2"] as const;
+	await getAdminSession(getRequestEvent().locals);
+	const promptKeys = [
+		"chat-prompt-1",
+		"chat-prompt-2",
+		"evaluation-prompt-1",
+		"evaluation-prompt-2"
+	] as const;
 	const stored = await getStoredAiSettings([...promptKeys, ...Object.keys(DEFAULT_AI_RUNTIME)]);
 	const prompts: Record<(typeof promptKeys)[number], string> = {
 		"chat-prompt-1": "",
@@ -323,7 +333,8 @@ export const getAdminAiConfig = query(async () => {
 });
 
 export const getAdminDashboard = query(z.enum(["7", "30", "90", "365"]), async (days) => {
-	const { db } = await requireAdmin(getRequestEvent().locals);
+	await getAdminSession(getRequestEvent().locals);
+	const db = getDatabase();
 	const from = new Date(Date.now() - Number(days) * 86_400_000);
 	const [[totalUsers], [activeUsers], [sessionsCount], [evaluatedWritings], [aiSummary]] =
 		await Promise.all([
@@ -365,13 +376,19 @@ export const getAdminDashboard = query(z.enum(["7", "30", "90", "365"]), async (
 		.groupBy(band)
 		.orderBy(asc(band));
 	const sessionTrend = await db
-		.select({ day: sql<string>`date(${practiceSessions.startedAt} / 1000, 'unixepoch')`, total: count() })
+		.select({
+			day: sql<string>`date(${practiceSessions.startedAt} / 1000, 'unixepoch')`,
+			total: count()
+		})
 		.from(practiceSessions)
 		.where(and(isNull(practiceSessions.deletedAt), gte(practiceSessions.startedAt, from)))
 		.groupBy(sql`date(${practiceSessions.startedAt} / 1000, 'unixepoch')`)
 		.orderBy(asc(sql`date(${practiceSessions.startedAt} / 1000, 'unixepoch')`));
 	const evaluationTrend = await db
-		.select({ day: sql<string>`date(${evaluations.createdAt} / 1000, 'unixepoch')`, total: count() })
+		.select({
+			day: sql<string>`date(${evaluations.createdAt} / 1000, 'unixepoch')`,
+			total: count()
+		})
 		.from(evaluations)
 		.where(and(isNull(evaluations.deletedAt), gte(evaluations.createdAt, from)))
 		.groupBy(sql`date(${evaluations.createdAt} / 1000, 'unixepoch')`)
@@ -428,7 +445,8 @@ const reportDateSchema = z.string().regex(/^\d{4}-\d{2}-\d{2}$/);
 export const getAdminReport = query(
 	z.object({ from: reportDateSchema, to: reportDateSchema }),
 	async ({ from, to }) => {
-		const { db } = await requireAdmin(getRequestEvent().locals);
+		await getAdminSession(getRequestEvent().locals);
+		const db = getDatabase();
 		const start = new Date(`${from}T00:00:00.000Z`);
 		const end = new Date(`${to}T00:00:00.000Z`);
 		if (
@@ -444,7 +462,10 @@ export const getAdminReport = query(
 		if (dayCount > 366) error(400, "Reports are limited to 366 days.");
 		const endExclusive = end.getTime() + 86_400_000;
 		const sessionRows = await db
-			.select({ day: sql<string>`date(${practiceSessions.startedAt} / 1000, 'unixepoch')`, sessions: count() })
+			.select({
+				day: sql<string>`date(${practiceSessions.startedAt} / 1000, 'unixepoch')`,
+				sessions: count()
+			})
 			.from(practiceSessions)
 			.where(
 				and(
@@ -455,7 +476,10 @@ export const getAdminReport = query(
 			)
 			.groupBy(sql`date(${practiceSessions.startedAt} / 1000, 'unixepoch')`);
 		const evaluationRows = await db
-			.select({ day: sql<string>`date(${evaluations.createdAt} / 1000, 'unixepoch')`, evaluations: count() })
+			.select({
+				day: sql<string>`date(${evaluations.createdAt} / 1000, 'unixepoch')`,
+				evaluations: count()
+			})
 			.from(evaluations)
 			.where(
 				and(
@@ -500,7 +524,8 @@ export const getAdminReport = query(
 );
 
 export const getAdminAuditLogs = query(async () => {
-	const { db } = await requireAdmin(getRequestEvent().locals);
+	await getAdminSession(getRequestEvent().locals);
+	const db = getDatabase();
 	return db
 		.select({
 			id: adminAuditLogs.id,

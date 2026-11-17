@@ -88,7 +88,10 @@ export function trackAiStream(
 				if (next.done) {
 					inspect(decoder.decode());
 					if (partial.startsWith("data:")) inspect("\n");
-					await finish(providerError ? "error" : "success", providerError ? "AI provider reported a stream error" : null);
+					await finish(
+						providerError ? "error" : "success",
+						providerError ? "AI provider reported a stream error" : null
+					);
 					controller.close();
 				} else {
 					inspect(decoder.decode(next.value, { stream: true }));

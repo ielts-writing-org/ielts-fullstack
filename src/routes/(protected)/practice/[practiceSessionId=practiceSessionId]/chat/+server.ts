@@ -7,18 +7,11 @@ import { chatMessageSchema } from "#lib/domain/chat-message.ts";
 import { getObjectAsBlob } from "#lib/server/bindings/bucket.ts";
 import { compressImageAsBase64 } from "#lib/server/bindings/images.ts";
 import { getAiCompletionAsStream } from "#lib/server/bindings/ai.ts";
-import { ConfigProvider } from "#lib/server/infrastructure/config-provider.ts";
-import {
-	DEFAULT_AI_RUNTIME,
-	getAiRuntimeConfig
-} from "#lib/server/ai-settings.ts";
-import {
-	failAiRequest,
-	reserveAiRequest,
-	trackAiStream
-} from "#lib/server/ai-telemetry.ts";
+import { DEFAULT_AI_RUNTIME, getAiRuntimeConfig } from "#lib/server/ai-settings.ts";
+import { failAiRequest, reserveAiRequest, trackAiStream } from "#lib/server/ai-telemetry.ts";
 import type { TaskCategory } from "#lib/domain/task-category.ts";
 import { computeDeterministicStats } from "#lib/utils/stats.ts";
+import { getChatPrompt } from "#lib/server/bindings/kv.ts";
 
 export const POST: RequestHandler = async ({ locals, params, request }) => {
 	const { user } = getApiSession(locals);
@@ -36,11 +29,10 @@ export const POST: RequestHandler = async ({ locals, params, request }) => {
 
 	let stream: ReadableStream;
 	try {
-		const prompt = await ConfigProvider.instance.getChatPrompt(ps.task.category);
 		stream = await getAiCompletionAsStream(
 			runtime.chatModel,
 			[
-				{ role: "system", content: prompt },
+				{ role: "system", content: await getChatPrompt(ps.task.category) },
 				{
 					role: "user",
 					content: [
@@ -69,7 +61,7 @@ export const POST: RequestHandler = async ({ locals, params, request }) => {
 			request.signal,
 			{
 				seed: runtime.seed,
-				enableThinking: runtime.enableThinking,
+				instantMode: true,
 				temperature: runtime.temperature,
 				maxCompletionToken: runtime.maxOutputTokens,
 				sessionAffinity: ps.id
@@ -113,7 +105,7 @@ async function getValidatedPracticeSession(id: string, userId: string) {
 		}
 	});
 
-	if (!ps) error(404, "Practice session not found.");
+	if (!ps) error(404);
 	return ps;
 }
 
@@ -121,6 +113,6 @@ async function getTaskImageAsBase64(category: TaskCategory, name: string | null)
 	if (category !== "1" || !name) return undefined;
 
 	const image = await getObjectAsBlob(`images/${name}`);
-	if (!image) error(400, "Task image is missing.");
+	if (!image) error(400);
 	return compressImageAsBase64(image);
 }

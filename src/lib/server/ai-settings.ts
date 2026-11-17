@@ -1,14 +1,15 @@
-import { env } from "cloudflare:workers";
 import { inArray } from "drizzle-orm";
 import { aiSettings } from "#lib/server/db/app.schema.ts";
-import { getDb } from "#lib/server/db/index.ts";
+import { getDatabase } from "#lib/server/db/index.ts";
 
 export const AI_CHAT_MODEL_OPTIONS = [
 	"@cf/google/gemma-4-26b-a4b-it",
 	"@cf/meta/llama-4-scout-17b-16e-instruct"
 ] as const satisfies readonly (keyof AiModels)[];
 
-export const AI_GRADING_MODEL_OPTIONS = ["@cf/google/gemma-4-26b-a4b-it"] as const satisfies readonly (keyof AiModels)[];
+export const AI_GRADING_MODEL_OPTIONS = [
+	"@cf/google/gemma-4-26b-a4b-it"
+] as const satisfies readonly (keyof AiModels)[];
 
 export type AiModel = (typeof AI_CHAT_MODEL_OPTIONS)[number];
 export type AiGradingModel = (typeof AI_GRADING_MODEL_OPTIONS)[number];
@@ -40,8 +41,11 @@ const runtimeKeys = [
 
 export async function getStoredAiSettings(keys: readonly string[]) {
 	if (!keys.length) return new Map<string, string>();
-	const db = getDb(env.IELTS_WRITING_DB.withSession("first-primary"));
-	const rows = await db.select().from(aiSettings).where(inArray(aiSettings.key, [...keys]));
+	const db = getDatabase();
+	const rows = await db
+		.select()
+		.from(aiSettings)
+		.where(inArray(aiSettings.key, [...keys]));
 	return new Map(rows.map(({ key, value }) => [key, value]));
 }
 
@@ -51,7 +55,9 @@ export async function getAiRuntimeConfig(
 	const stored = await getStoredAiSettings(runtimeKeys);
 	const chatModel = (fallback: AiModel): AiModel => {
 		const value = stored.get("chatModel");
-		return value && AI_CHAT_MODEL_OPTIONS.includes(value as AiModel) ? (value as AiModel) : fallback;
+		return value && AI_CHAT_MODEL_OPTIONS.includes(value as AiModel)
+			? (value as AiModel)
+			: fallback;
 	};
 	const gradingModel = (fallback: AiGradingModel): AiGradingModel => {
 		const value = stored.get("gradingModel");
@@ -61,7 +67,10 @@ export async function getAiRuntimeConfig(
 	};
 	const number = (key: string, fallback: number, min: number, max: number, integer = true) => {
 		const value = Number(stored.get(key));
-		return Number.isFinite(value) && value >= min && value <= max && (!integer || Number.isInteger(value))
+		return Number.isFinite(value) &&
+			value >= min &&
+			value <= max &&
+			(!integer || Number.isInteger(value))
 			? value
 			: fallback;
 	};

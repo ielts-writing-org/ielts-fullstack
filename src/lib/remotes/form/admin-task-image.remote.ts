@@ -3,23 +3,33 @@ import { error } from "@sveltejs/kit";
 import { and, eq, isNull } from "drizzle-orm";
 import { uuidv7 } from "uuidv7";
 import { z } from "zod";
-import { recordAdminAction, requireAdmin } from "#lib/server/auth/admin.ts";
+import { recordAdminAction, getAdminSession } from "#lib/server/auth/admin.ts";
 import { tasks } from "#lib/server/db/app.schema.ts";
 import { compressImageAsBlob } from "#lib/server/bindings/images.ts";
 import { deleteObject, putObject } from "#lib/server/bindings/bucket.ts";
 import { getImagePath } from "#lib/utils/paths.ts";
+import { getDatabase } from "#lib/server/db/index.ts";
 
 const MAX_FILE_SIZE = 1 * 1024 * 1024;
 
 export const saveAdminTaskImage = form(
 	z.object({
 		taskId: z.uuidv7(),
-		image: z.file().max(MAX_FILE_SIZE).mime(["image/jpeg", "image/png", "image/webp", "image/avif"]),
-		published: z.enum(["true", "false"]).default("false").transform((value) => value === "true")
+		image: z
+			.file()
+			.max(MAX_FILE_SIZE)
+			.mime(["image/jpeg", "image/png", "image/webp", "image/avif"]),
+		published: z
+			.enum(["true", "false"])
+			.default("false")
+			.transform((value) => value === "true")
 	}),
 	async ({ taskId, image, published }) => {
-		const { user, db } = await requireAdmin(getRequestEvent().locals);
-		const old = await db.query.tasks.findFirst({ where: (fields, { eq }) => eq(fields.id, taskId) });
+		const { user } = await getAdminSession(getRequestEvent().locals);
+		const db = getDatabase();
+		const old = await db.query.tasks.findFirst({
+			where: (fields, { eq }) => eq(fields.id, taskId)
+		});
 		if (!old || old.deletedAt) error(404, "Active task not found.");
 		if (old.category !== "1") error(400, "Only Task 1 questions can have a chart image.");
 

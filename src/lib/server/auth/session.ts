@@ -10,6 +10,7 @@ export function getApiSession(locals: App.Locals) {
 
 	return { session, user };
 }
+
 export function getPageSession(locals: App.Locals) {
 	const { session, user } = locals;
 

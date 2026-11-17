@@ -1,5 +1,8 @@
 import type { TaskCategory } from "#lib/domain/task-category.ts";
 import { env } from "cloudflare:workers";
+import { eq } from "drizzle-orm";
+import { getDatabase } from "../db";
+import { aiSettings } from "../db/app.schema";
 
 export const CONFIGS = {
 	cacheTtl: 86_400,
@@ -23,4 +26,18 @@ export async function getKVConfigValue(key: string): Promise<string> {
 	}
 
 	return value;
+}
+
+export async function setKVConfigValue(key: string, value: string) {
+	await env.IELTS_WRITING_KV.put(key, value);
+}
+
+export async function getPromptOverride(key: string): Promise<string | null> {
+	const db = getDatabase();
+	const [setting] = await db
+		.select({ value: aiSettings.value })
+		.from(aiSettings)
+		.where(eq(aiSettings.key, key))
+		.limit(1);
+	return setting?.value ?? null;
 }

@@ -29,11 +29,7 @@ export const load = (async ({ locals, url }) => {
 	const source = SOURCES.find((value) => value === searchParams.get("source"));
 	const activeTask = isNull(tasks.deletedAt);
 	const ownTasks = and(eq(tasks.userId, user.id), activeTask)!;
-	const publicExamples = and(
-		isNull(tasks.userId),
-		eq(tasks.published, true),
-		activeTask
-	)!;
+	const publicExamples = and(isNull(tasks.userId), eq(tasks.published, true), activeTask)!;
 	const visibility =
 		source === "mine"
 			? ownTasks
