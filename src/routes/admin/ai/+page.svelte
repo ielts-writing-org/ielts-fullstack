@@ -141,8 +141,7 @@
 					<tr>
 						<td
 							><span class="badge" class:badge-primary={request.kind === "grading"}
-								>{request.kind}</span
-							>
+								>{request.kind}</span>
 							<div class="mt-1 text-xs">{request.userName ?? "Deleted account"}</div>
 							{#if request.userEmail}<div class="text-xs text-base-content/60">
 									{request.userEmail}

@@ -18,6 +18,7 @@
 			practiceSessionType: practiceType
 		});
 		if (result.success) {
+			await closeModal();
 			goto(result.location);
 		}
 	}

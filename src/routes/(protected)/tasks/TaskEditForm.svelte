@@ -3,7 +3,6 @@
 	import { Trash } from "@lucide/svelte";
 	import { closeModal } from "#lib/components/Modal.svelte";
 	import { getTaskSubcategories, getTaskSubcategoryLabel } from "#lib/domain/task-subcategory.ts";
-	import { clearTaskImage } from "#lib/remotes/command/clear-task-image.remote.js";
 	import { updateTask } from "#lib/remotes/form/update-task.remote.js";
 	import { type TaskItem } from "./links.ts";
 	import { getImageUrl } from "#lib/utils/paths.ts";
@@ -13,33 +12,36 @@
 
 	let previewUrl = $state<string | undefined>(undefined);
 	let imageCleared = $state(false);
+
+	const canManageImage = $derived(task.category === "1");
 	const imageName = $derived(imageCleared ? "" : task.imageName);
 
 	const subcategoryOptions = $derived(getTaskSubcategories(task.category));
 
-	function handleImageChange() {
+	function revokePreview() {
 		if (previewUrl) {
 			URL.revokeObjectURL(previewUrl);
+			previewUrl = undefined;
 		}
-		previewUrl = undefined;
+	}
+
+	function handleImageChange() {
+		revokePreview();
 
 		const file = updateTask.fields.image.value();
 		if (file) {
+			imageCleared = false;
 			previewUrl = URL.createObjectURL(file);
 		}
 	}
 
-	async function handleRemoveImage() {
-		await clearTaskImage({ taskId: task.id });
+	// Removal is deferred: the image is only dropped from the task when the form is saved.
+	function handleRemoveImage() {
+		revokePreview();
 		imageCleared = true;
-		await onSaved?.();
 	}
 
-	onDestroy(() => {
-		if (previewUrl) {
-			URL.revokeObjectURL(previewUrl);
-		}
-	});
+	onDestroy(revokePreview);
 </script>
 
 {#key task.id}
@@ -54,6 +56,9 @@
 		enctype="multipart/form-data"
 		oninput={() => updateTask.validate()}>
 		<input {...updateTask.fields.taskId.as("hidden", task.id)} />
+		{#if imageCleared}
+			<input {...updateTask.fields.removeImage.as("hidden", "true")} />
+		{/if}
 
 		<div class="flex flex-wrap items-center gap-1.5">
 			<span class="badge rounded-box badge-soft badge-xs font-semibold badge-primary">
@@ -88,33 +93,34 @@
 			</textarea>
 		</label>
 
-		<fieldset class="flex flex-col gap-1.5">
-			<legend class="text-xs font-semibold text-base-content/75">Image</legend>
-			<input
-				{...updateTask.fields.image.as("file")}
-				class="file-input-bordered file-input w-full file-input-sm"
-				accept="image/jpeg,image/png,image/webp,image/avif"
-				onchange={handleImageChange} />
-			{#if previewUrl}
-				<img
-					src={previewUrl}
-					alt="Selected visual preview"
-					class="max-h-40 w-full rounded-box border border-base-content/10 object-contain" />
-			{:else if imageName}
-				<img
-					src={getImageUrl(imageName)}
-					alt="Current task visual"
-					class="max-h-40 w-full rounded-box border border-base-content/10 bg-base-200/50 object-contain" />
-				<button
-					type="button"
-					class="btn self-start btn-ghost text-error btn-xs"
-					disabled={clearTaskImage.pending > 0}
-					onclick={handleRemoveImage}>
-					<Trash size="1em" />
-					Remove image
-				</button>
-			{/if}
-		</fieldset>
+		{#if canManageImage}
+			<fieldset class="flex flex-col gap-1.5">
+				<legend class="text-xs font-semibold text-base-content/75">Image</legend>
+				<input
+					{...updateTask.fields.image.as("file")}
+					class="file-input-bordered file-input w-full file-input-sm"
+					accept="image/jpeg,image/png,image/webp,image/avif"
+					onchange={handleImageChange} />
+				{#if previewUrl}
+					<img
+						src={previewUrl}
+						alt="Selected visual preview"
+						class="max-h-40 w-full rounded-box border border-base-content/10 object-contain" />
+				{:else if imageName}
+					<img
+						src={getImageUrl(imageName)}
+						alt="Current task visual"
+						class="max-h-40 w-full rounded-box border border-base-content/10 bg-base-200/50 object-contain" />
+					<button
+						type="button"
+						class="btn self-start btn-ghost text-error btn-xs"
+						onclick={handleRemoveImage}>
+						<Trash size="1em" />
+						Remove image
+					</button>
+				{/if}
+			</fieldset>
+		{/if}
 
 		{#each updateTask.fields.allIssues() as issue (issue.message)}
 			<p class="text-xs text-error" role="alert">{issue.message}</p>

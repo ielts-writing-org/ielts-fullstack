@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { goto, refreshAll } from "$app/navigation";
 	import { LibraryBig, Plus } from "@lucide/svelte";
-	import { openModal } from "#lib/components/Modal.svelte";
+	import { closeModal, openModal } from "#lib/components/Modal.svelte";
 	import TaskCreateForm from "#lib/components/TaskCreateForm.svelte";
 	import { getTaskDependants } from "#lib/remotes/query/get-task-dependants.remote.js";
 	import { buildTasksHref, type TaskItem } from "./links.ts";
@@ -23,7 +23,7 @@
 	);
 
 	function openCreateModal() {
-		openModal({
+		return openModal({
 			title: "New task",
 			content: {
 				component: TaskCreateForm,
@@ -33,7 +33,7 @@
 	}
 
 	function openPracticeModal(task: TaskItem) {
-		openModal({
+		return openModal({
 			title: "Start a practice session",
 			content: { component: TaskPracticeSetup, props: { task } }
 		});
@@ -46,9 +46,18 @@
 				component: TaskDetails,
 				props: {
 					task,
-					onPractice: () => openPracticeModal(task),
-					onEdit: () => openEditModal(task),
-					onDelete: () => openDeleteModal(task)
+					onPractice: async () => {
+						await closeModal();
+						await openPracticeModal(task);
+					},
+					onEdit: async () => {
+						await closeModal();
+						await openEditModal(task);
+					},
+					onDelete: async () => {
+						await closeModal();
+						await openDeleteModal(task);
+					}
 				}
 			},
 			closeButton: true,
@@ -57,7 +66,7 @@
 	}
 
 	function openEditModal(task: TaskItem) {
-		openModal({
+		return openModal({
 			title: "Edit task",
 			content: { component: TaskEditForm, props: { task, onSaved: refreshAll } }
 		});
@@ -65,7 +74,7 @@
 
 	async function openDeleteModal(task: TaskItem) {
 		const { sessions } = await getTaskDependants(task.id);
-		openModal({
+		return openModal({
 			title: { text: "Delete task", color: "error" },
 			content: {
 				component: TaskDeleteConfirm,

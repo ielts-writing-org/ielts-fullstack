@@ -22,9 +22,14 @@ export const updateTask = form(
 			.optional()
 			.transform((value) => (value === "" ? null : value)),
 		prompt: taskPromptSchema,
-		image: taskImageSchema.optional()
+		image: taskImageSchema.optional(),
+		// Sent by the edit form when the user asked to remove the current image.
+		removeImage: z
+			.union([z.literal("true"), z.literal("")])
+			.optional()
+			.transform((value) => value === "true")
 	}),
-	async ({ taskId, subcategory, prompt, image }) => {
+	async ({ taskId, subcategory, prompt, image, removeImage }) => {
 		const { locals } = getRequestEvent();
 		const { user } = getApiSession(locals);
 
@@ -48,6 +53,15 @@ export const updateTask = form(
 			await db
 				.update(tasks)
 				.set({ prompt, subcategory, imageName: newImageName })
+				.where(eq(tasks.id, taskId));
+
+			if (task.imageName) {
+				await deleteObject(getImagePath(task.imageName));
+			}
+		} else if (removeImage) {
+			await db
+				.update(tasks)
+				.set({ prompt, subcategory, imageName: null })
 				.where(eq(tasks.id, taskId));
 
 			if (task.imageName) {
