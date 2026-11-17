@@ -1,10 +1,6 @@
 <script lang="ts">
-	import type { Component } from "svelte";
 	import type { LayoutProps } from "./$types";
-	import type { RouteIdWithSearchOrHash } from "$app/types";
-	import type { PathnameWithSearchOrHash } from "$app/types";
 	import { page } from "$app/state";
-	import { LibraryBig, PenLine, RotateCcwClock } from "@lucide/svelte";
 	import Modal from "#lib/components/Modal.svelte";
 	import BrandHeader from "./BrandHeader.svelte";
 	import MainNav from "./MainNav.svelte";
@@ -14,16 +10,6 @@
 	import "./layout.css";
 
 	let { data, children }: LayoutProps = $props();
-
-	const NAV_ITEMS = [
-		{ href: "/(protected)", label: "Practice", icon: PenLine },
-		{ href: "/(protected)/tasks", label: "Tasks", icon: LibraryBig },
-		{ href: "/(protected)/history", label: "History", icon: RotateCcwClock }
-	] as const satisfies readonly {
-		href: RouteIdWithSearchOrHash | PathnameWithSearchOrHash;
-		label: string;
-		icon: Component;
-	}[];
 
 	const inPracticeSession = $derived(Boolean(page.data.metadata));
 	const showTabBar = $derived(data.session && data.user && !page.data.metadata);
@@ -51,7 +37,7 @@
 
 			<!-- Desktop nav -->
 			{#if data.session}
-				<MainNav items={NAV_ITEMS} />
+				<MainNav items={data.navItems} />
 			{/if}
 		{/if}
 
@@ -66,5 +52,5 @@
 
 <!-- Mobile nav -->
 {#if showTabBar}
-	<MobileDock items={NAV_ITEMS} />
+	<MobileDock items={data.navItems} />
 {/if}
