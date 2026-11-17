@@ -8,7 +8,7 @@
 	const props: Props = $props();
 
 	beforeNavigate(({ cancel, shallow }) => {
-		if (shallow || (!props.canLeave && !window.confirm("The application is busy. Leave anyway?"))) {
+		if (!shallow && !props.canLeave && !window.confirm("The application is busy. Leave anyway?")) {
 			cancel();
 		}
 	});

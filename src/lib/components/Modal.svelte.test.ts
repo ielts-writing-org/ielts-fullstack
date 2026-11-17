@@ -3,6 +3,12 @@ import { render } from "vitest-browser-svelte";
 import Modal, { closeModal, openModal } from "./Modal.svelte";
 import ValidationErrors from "./ValidationErrors.svelte";
 
+// The unit test page loads no CSS, so dialogs never fire `transitionend` and
+// every waitForTransition call would fall back to its 5s timeout, leaking
+// pending opens/closes across tests. Resolve immediately instead; real
+// transition timing is covered by the e2e flows.
+vi.mock("#lib/utils/dom.ts", () => ({ waitForTransition: () => Promise.resolve() }));
+
 /**
  * Global confirmation/error dialog used by every destructive or async action.
  */
@@ -64,7 +70,7 @@ describe("Modal", () => {
 			(b) => b.textContent?.trim() === "Do it"
 		)!;
 		button.click();
-		expect(action).toHaveBeenCalledTimes(1);
+		await vi.waitFor(() => expect(action).toHaveBeenCalledTimes(1));
 		await vi.waitFor(() => expect(dialog().open).toBe(false), { timeout: 6000 });
 
 		unmount();
@@ -112,7 +118,7 @@ describe("Modal", () => {
 		unmount();
 	});
 
-	test("a second openModal replaces the first and closing returns to a clean dialog", async () => {
+	test("a second openModal stacks on top of the first; closing restores it, another close drains the dialog", async () => {
 		const { unmount } = await render(Modal);
 
 		await openModal({ title: "First modal", content: "First content", primaryButton: "Close" });
@@ -121,14 +127,17 @@ describe("Modal", () => {
 		expect(document.body.textContent).toContain("Second modal");
 		expect(dialog().open).toBe(true);
 
-		// Closing the top modal drains the stack; the dialog ends up closed and
-		// empty. (Chained restores are exercised by the e2e flows instead, where
-		// real DaisyUI transitions are involved.)
+		// Closing the top modal pops the stack: the previous modal is restored.
+		await closeModal();
+		expect(dialog().open).toBe(true);
+		expect(document.body.textContent).toContain("First modal");
+		expect(document.body.textContent).not.toContain("Second modal");
+
+		// Closing again empties the stack; the dialog ends up closed and empty.
 		await closeModal();
 		await vi.waitFor(() => expect(dialog().open).toBe(false), { timeout: 6000 });
-		await new Promise((resolve) => setTimeout(resolve, 2500));
+		expect(document.body.textContent).not.toContain("First modal");
 		expect(document.body.textContent).not.toContain("Second modal");
-		await closeModal().catch(() => {});
 
 		unmount();
 	});

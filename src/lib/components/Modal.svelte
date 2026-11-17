@@ -1,6 +1,7 @@
 <script lang="ts" module>
 	import { type Component, type ComponentProps, type Snippet } from "svelte";
 	import { waitForTransition } from "#lib/utils/dom.ts";
+	import PreventLeaving from "./PreventLeaving.svelte";
 
 	type SnippetArgs<T> = T extends Snippet<infer P> ? P : never;
 	type SnippetFirstArg<T> = SnippetArgs<T> extends [] ? never : SnippetArgs<T>[0];
@@ -85,18 +86,7 @@
 	}
 </script>
 
-<script lang="ts">
-	import { beforeNavigate } from "$app/navigation";
-
-	beforeNavigate(({ cancel, shallow }) => {
-		const canLeave = shallow || !isBusy || current?.bypassBusy;
-		if (!canLeave && !window.confirm("The action has not been completed. Navigate anyway?")) {
-			cancel();
-		}
-	});
-</script>
-
-<svelte:window on:beforeunload={(e) => isBusy && !current?.bypassBusy && e.preventDefault()} />
+<PreventLeaving canLeave={!isBusy || Boolean(current?.bypassBusy)} />
 
 <dialog class="modal" bind:this={modal}>
 	{#if current}
@@ -190,12 +180,10 @@
 			]}
 			disabled={isBusy || (source.disabled ?? false)}
 			onclick={async () => {
-				isBusy = true;
-
-				if (!source.explicitClose) closeModal();
-
 				try {
+					isBusy = true;
 					await source.onclick?.();
+					if (!source.explicitClose) await closeModal();
 				} finally {
 					isBusy = false;
 				}
