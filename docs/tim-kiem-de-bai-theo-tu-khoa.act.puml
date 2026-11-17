@@ -1,0 +1,18 @@
+@startuml Tìm kiếm đề bài theo từ khóa ACT
+
+skinparam DefaultFontName Segoe UI
+
+|Tác nhân chính|
+start
+:Nhập từ khóa vào ô tìm kiếm trên trang Tasks;
+
+|Hệ thống|
+if (Có đề bài nào khớp từ khóa?) then (Có)
+	:Hiển thị danh sách đề bài khớp từ khóa\ntheo nội dung hoặc thể loại phụ, có phân trang;
+	stop
+else (Không)
+	:Hiển thị thông báo không có đề bài khớp\nkèm nút xóa bộ lọc;
+	stop
+endif
+
+@enduml

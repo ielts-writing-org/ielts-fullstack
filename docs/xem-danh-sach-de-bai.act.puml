@@ -1,0 +1,19 @@
+@startuml Xem danh sách đề bài ACT
+
+skinparam DefaultFontName Segoe UI
+
+|Tác nhân chính|
+start
+:Chọn "Tasks" từ thanh điều hướng;
+
+|Hệ thống|
+if (Danh sách đã có đề bài?) then (Không)
+	:Hiển thị thông báo chưa có đề bài\nkèm nút tạo đề bài đầu tiên;
+	stop
+else (Có)
+	:Hiển thị danh sách đề bài của chính người dùng\nvà từ ngân hàng đề, có phân trang;
+	:Hiển thị thông tin mỗi đề bài: loại đề bài,\nmột phần đề bài, thời gian tạo đề,\ntrạng thái đã luyện tập và điểm cao nhất (nếu có);
+	stop
+endif
+
+@enduml

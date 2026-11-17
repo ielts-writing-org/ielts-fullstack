@@ -1,0 +1,26 @@
+@startuml Tìm kiếm đề bài theo từ khóa SEQ
+
+skinparam DefaultFontName Segoe UI
+
+hide footbox
+autonumber
+
+actor "Người dùng" as User
+boundary "Trình duyệt" as Browser
+control "Hệ thống" as App
+database "Cơ sở dữ liệu" as DB
+
+User -> Browser++: Nhập từ khóa vào ô tìm kiếm trên trang Tasks
+Browser -> App++: GET /tasks?q={từ khóa}
+App -> DB++: Truy vấn đề bài khớp từ khóa\ntheo nội dung hoặc thể loại phụ
+DB --> App--: Danh sách đề bài khớp và tổng số trang
+App --> Browser--: Trả về kết quả tìm kiếm (200)
+
+alt#Gold #LightPink Không có đề bài nào khớp từ khóa
+	Browser --> User: Hiển thị thông báo không có đề bài khớp\nkèm nút xóa bộ lọc
+else #LightGreen Có đề bài khớp từ khóa
+	Browser --> User: Hiển thị danh sách đề bài khớp từ khóa\ncó phân trang
+end
+deactivate Browser
+
+@enduml

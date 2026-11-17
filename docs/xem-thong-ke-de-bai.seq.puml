@@ -1,0 +1,21 @@
+@startuml Xem thống kê đề bài SEQ
+
+skinparam DefaultFontName Segoe UI
+
+hide footbox
+autonumber
+
+actor "Người dùng" as User
+boundary "Trình duyệt" as Browser
+control "Hệ thống" as App
+database "Cơ sở dữ liệu" as DB
+
+User -> Browser++: Chọn "Tasks" từ thanh điều hướng
+Browser -> App++: GET /tasks
+App -> DB++: Truy vấn thống kê đề bài của chính người dùng:\ntổng số đề bài, số đề bài Task 1, số đề bài Task 2\nvà số đề bài chưa có phiên luyện tập
+DB --> App--: Dữ liệu thống kê
+App --> Browser--: Trả về trang Tasks (200)
+Browser --> User: Hiển thị thống kê đề bài
+deactivate Browser
+
+@enduml

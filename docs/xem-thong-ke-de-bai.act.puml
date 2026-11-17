@@ -1,0 +1,13 @@
+@startuml Xem thống kê đề bài ACT
+
+skinparam DefaultFontName Segoe UI
+
+|Tác nhân chính|
+start
+:Chọn "Tasks" từ thanh điều hướng;
+
+|Hệ thống|
+:Hiển thị thống kê đề bài của chính người dùng:\ntổng số đề bài, số đề bài Task 1, số đề bài Task 2\nvà số đề bài chưa có phiên luyện tập;
+stop
+
+@enduml

@@ -1,0 +1,26 @@
+@startuml Xem danh sách đề bài SEQ
+
+skinparam DefaultFontName Segoe UI
+
+hide footbox
+autonumber
+
+actor "Người dùng" as User
+boundary "Trình duyệt" as Browser
+control "Hệ thống" as App
+database "Cơ sở dữ liệu" as DB
+
+User -> Browser++: Chọn "Tasks" từ thanh điều hướng
+Browser -> App++: GET /tasks
+App -> DB++: Truy vấn danh sách đề bài của chính người dùng\nvà đề bài công khai từ ngân hàng đề theo trang hiện tại\n(kèm trạng thái luyện tập và điểm cao nhất)
+DB --> App--: Danh sách đề bài và tổng số trang
+App --> Browser--: Trả về trang Tasks (200)
+
+alt#Gold #LightPink Danh sách chưa có đề bài
+	Browser --> User: Hiển thị thông báo chưa có đề bài\nkèm nút tạo đề bài đầu tiên
+else #LightGreen Danh sách đã có đề bài
+	Browser --> User: Hiển thị danh sách đề bài có phân trang\n(loại đề bài, một phần đề bài, thời gian tạo đề,\ntrạng thái đã luyện tập và điểm cao nhất nếu có)
+end
+deactivate Browser
+
+@enduml

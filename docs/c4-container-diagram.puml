@@ -1,0 +1,45 @@
+@startuml C4 Container Diagram
+
+!include <C4/C4_Container>
+
+skinparam DefaultFontName Segoe UI
+
+LAYOUT_LEFT_RIGHT()
+
+Person(enduser, "End User", "Practices IELTS Writing and chats with the AI tutor.")
+Person(admin, "Admin", "Manages users and tasks from the admin console.")
+
+System_Boundary(platform, "IELTS Writing Practice Platform") {
+
+	Container(spa, "Web Application", "SvelteKit 3, DaisyUI and Tailwind v4", "Browser UI: Dashboard, task browser, writing editor.")
+	Container(app, "Application Server", "SvelteKit 3 on Cloudflare Workers", "Handles SSR, remote functions, streaming POST endpoints for chat and evaluation.")
+
+	ContainerDb(db, "Application Database", "Cloudflare D1 (SQLite)", "Users, tasks, practice sessions, chat messages, evaluations.")
+	ContainerDb(kv, "Prompt Store", "Cloudflare KV", "Dynamic settings: System prompts, root admin email.")
+	ContainerDb(r2, "Task Image Store", "Cloudflare R2", "Stores WebP images for Task 1 prompts.")
+
+	Container(images, "Image Processing", "Cloudflare Images binding", "Compresses and converts uploaded task images to WebP.")
+	Container(ai, "AI Inference", "Cloudflare Workers AI", "Produces streamed chat replies and structured writing evaluations.")
+	Container(rl, "Rate Limiter", "Cloudflare Rate Limiting binding", "Enforces per-user request limits for the chat and evaluation endpoints.")
+}
+
+System_Ext(github, "GitHub OAuth", "External identity provider used for social sign-in (OAuth 2.0).")
+System_Ext(smtp, "TenTen SMTP Mail Server", "Delivers verification, password-reset, and duplicate-signup notification emails.")
+
+Rel(enduser, spa, "Uses", "HTTPS")
+Rel(admin, spa, "Administers", "HTTPS")
+
+Rel(spa, app, "Calls pages, remote functions and streaming APIs", "HTTPS / SSE")
+Rel(app, spa, "Serves rendered HTML and static assets", "HTTPS")
+
+Rel(app, db, "Reads and writes data", "SQL via Drizzle")
+Rel(app, kv, "Reads and writes data", "KV API")
+Rel(app, r2, "Stores and serves task images", "R2 API")
+Rel(app, images, "Compresses uploaded images", "Binding")
+Rel(app, ai, "Sends prompts and receives streamed output", "Binding")
+Rel(app, rl, "Checks request limits", "Binding")
+
+Rel(app, github, "Delegates sign-in", "OAuth 2.0 / HTTPS")
+Rel(app, smtp, "Sends transactional email", "SMTP")
+
+@enduml
