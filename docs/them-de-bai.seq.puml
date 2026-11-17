@@ -1,0 +1,49 @@
+@startuml Thêm đề bài SEQ
+
+skinparam DefaultFontName Segoe UI
+
+hide footbox
+autonumber
+
+actor "Người dùng" as User
+boundary "Trình duyệt" as Browser
+control "Hệ thống" as App
+entity "tasks" as Tasks
+database "Cơ sở dữ liệu" as DB
+database "Kho lưu trữ ảnh" as Bucket
+
+User -> Browser++: Chọn "New task" trên trang Tasks
+Browser --> User: Hiển thị hộp thoại thêm đề bài
+User -> Browser: Nhập loại đề bài, thể loại phụ,\nnội dung đề bài và ảnh đề bài (nếu là Task 1)
+
+alt#Gold #LightPink Người dùng hủy thêm đề bài
+	User -> Browser: Chọn "Cancel"
+	Browser --> User: Đóng hộp thoại
+else #LightGreen Người dùng nhấn "Save task"
+	Browser -> Browser: Kiểm tra dữ liệu nhập
+
+	alt#Gold #LightPink Dữ liệu đề bài không hợp lệ
+		Browser --> User: Hiển thị thông báo lỗi dưới các trường nhập
+	else #LightGreen Dữ liệu đề bài hợp lệ
+		Browser -> App++: Gửi form tạo đề bài
+		App -> Tasks++: Tạo đề bài mới
+		Tasks -> DB++: Lưu đề bài vào cơ sở dữ liệu
+		DB --> Tasks--: Đề bài đã được lưu
+		Tasks --> App--: Đề bài đã được tạo
+
+		opt#Gold Có ảnh đề bài
+			App -> Bucket++: Lưu ảnh đề bài vào kho lưu trữ
+			Bucket --> App--: Ảnh đã được lưu
+			App -> Tasks++: Cập nhật tên ảnh cho đề bài
+			Tasks -> DB++: Lưu tên ảnh vào cơ sở dữ liệu
+			DB --> Tasks--: Tên ảnh đã được lưu
+			Tasks --> App--: Cập nhật thành công
+		end
+
+		App --> Browser--: Trả về kết quả thành công
+		Browser --> User: Cập nhật danh sách và đóng hộp thoại
+	end
+end
+deactivate Browser
+
+@enduml

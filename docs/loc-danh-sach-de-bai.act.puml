@@ -1,0 +1,18 @@
+@startuml Lọc danh sách đề bài ACT
+
+skinparam DefaultFontName Segoe UI
+
+|Tác nhân chính|
+start
+:Chọn tiêu chí lọc trên trang Tasks\n(loại Task 1 hoặc Task 2, thể loại phụ,\nnguồn đề bài bản thân hoặc ngân hàng đề);
+
+|Hệ thống|
+if (Có đề bài nào khớp tiêu chí đã chọn?) then (Có)
+	:Hiển thị danh sách đề bài khớp tiêu chí\nđã chọn, có phân trang;
+	stop
+else (Không)
+	:Hiển thị thông báo không có đề bài khớp\nkèm nút xóa bộ lọc;
+	stop
+endif
+
+@enduml

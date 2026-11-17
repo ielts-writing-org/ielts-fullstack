@@ -1,0 +1,13 @@
+@startuml Sắp xếp danh sách đề bài ACT
+
+skinparam DefaultFontName Segoe UI
+
+|Tác nhân chính|
+start
+:Chọn thứ tự sắp xếp trên trang Tasks\n(mới nhất, cũ nhất, theo tên đề bài\nhoặc đã luyện gần đây nhất);
+
+|Hệ thống|
+:Hiển thị danh sách đề bài đã sắp xếp\ntheo thứ tự đã chọn, có phân trang;
+stop
+
+@enduml

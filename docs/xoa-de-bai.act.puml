@@ -1,0 +1,30 @@
+@startuml Xóa đề bài ACT
+
+skinparam DefaultFontName Segoe UI
+
+|Tác nhân chính|
+start
+:Chọn "Delete" cho một đề bài của chính người dùng\ntrong danh sách;
+
+|Hệ thống|
+:Hiển thị hộp thoại xác nhận xóa kèm\ndanh sách phiên luyện tập phụ thuộc (nếu có);
+
+|Tác nhân chính|
+if (Có phiên luyện tập phụ thuộc?) then (Có)
+	:Gõ "DELETE" để xác nhận;
+else (Không)
+endif
+
+if (Nhấn "Delete task"?) then (Có)
+	|Hệ thống|
+	:Xóa các phiên luyện tập liên quan\n(kèm đánh giá và trò chuyện của chúng);
+	:Xóa đề bài;
+	:Xóa ảnh đề bài khỏi kho lưu trữ (nếu có);
+	:Cập nhật danh sách và đóng hộp thoại;
+	stop
+else (Không)
+	:Đóng hộp thoại;
+	stop
+endif
+
+@enduml

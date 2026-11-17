@@ -1,0 +1,15 @@
+@startuml Xem chi tiết đề bài SEQ
+
+skinparam DefaultFontName Segoe UI
+
+hide footbox
+autonumber
+
+actor "Người dùng" as User
+boundary "Trình duyệt" as Browser
+
+User -> Browser++: Chọn xem chi tiết một đề bài trong danh sách
+Browser --> User: Hiển thị chi tiết đề bài: ảnh đề bài (nếu có),\ntoàn bộ nội dung đề bài, tổng số phiên luyện tập,\nthời gian tạo và cập nhật
+deactivate Browser
+
+@enduml

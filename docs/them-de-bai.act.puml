@@ -1,0 +1,31 @@
+@startuml Thêm đề bài ACT
+
+skinparam DefaultFontName Segoe UI
+
+|Tác nhân chính|
+start
+:Chọn "New task" trên trang Tasks;
+
+|Hệ thống|
+:Hiển thị hộp thoại thêm đề bài;
+
+|Tác nhân chính|
+:Nhập loại đề bài, thể loại phụ (nếu có),\nnội dung đề bài (15 đến 85 từ)\nvà ảnh đề bài (nếu là Task 1);
+
+if (Nhấn "Save task"?) then (Có)
+	|Hệ thống|
+	if (Dữ liệu đề bài hợp lệ?) then (Có)
+		:Lưu đề bài mới vào hệ thống;
+		:Lưu ảnh đề bài vào kho lưu trữ (nếu có);
+		:Cập nhật danh sách và đóng hộp thoại;
+		stop
+	else (Không)
+		:Hiển thị thông báo lỗi dưới các trường nhập;
+		stop
+	endif
+else (Không)
+	:Đóng hộp thoại;
+	stop
+endif
+
+@enduml

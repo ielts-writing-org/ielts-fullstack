@@ -1,0 +1,21 @@
+@startuml Sắp xếp danh sách đề bài SEQ
+
+skinparam DefaultFontName Segoe UI
+
+hide footbox
+autonumber
+
+actor "Người dùng" as User
+boundary "Trình duyệt" as Browser
+control "Hệ thống" as App
+database "Cơ sở dữ liệu" as DB
+
+User -> Browser++: Chọn thứ tự sắp xếp trên trang Tasks
+Browser -> App++: GET /tasks?sort={thứ tự}
+App -> DB++: Truy vấn danh sách đề bài\nsắp xếp theo thứ tự đã chọn
+DB --> App--: Danh sách đề bài đã sắp xếp và tổng số trang
+App --> Browser--: Trả về kết quả (200)
+Browser --> User: Hiển thị danh sách đề bài\nđã sắp xếp, có phân trang
+deactivate Browser
+
+@enduml

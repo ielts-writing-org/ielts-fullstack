@@ -1,0 +1,26 @@
+@startuml Lọc danh sách đề bài SEQ
+
+skinparam DefaultFontName Segoe UI
+
+hide footbox
+autonumber
+
+actor "Người dùng" as User
+boundary "Trình duyệt" as Browser
+control "Hệ thống" as App
+database "Cơ sở dữ liệu" as DB
+
+User -> Browser++: Chọn tiêu chí lọc trên trang Tasks
+Browser -> App++: GET /tasks?task=...&subcategory=...&source=...
+App -> DB++: Truy vấn đề bài khớp tiêu chí đã chọn
+DB --> App--: Danh sách đề bài khớp và tổng số trang
+App --> Browser--: Trả về kết quả lọc (200)
+
+alt#Gold #LightPink Không có đề bài nào khớp tiêu chí đã chọn
+	Browser --> User: Hiển thị thông báo không có đề bài khớp\nkèm nút xóa bộ lọc
+else #LightGreen Có đề bài khớp tiêu chí đã chọn
+	Browser --> User: Hiển thị danh sách đề bài khớp tiêu chí\nđã chọn, có phân trang
+end
+deactivate Browser
+
+@enduml

@@ -1,0 +1,51 @@
+@startuml Sửa đề bài SEQ
+
+skinparam DefaultFontName Segoe UI
+
+hide footbox
+autonumber
+
+actor "Người dùng" as User
+boundary "Trình duyệt" as Browser
+control "Hệ thống" as App
+entity "tasks" as Tasks
+database "Cơ sở dữ liệu" as DB
+database "Kho lưu trữ ảnh" as Bucket
+
+User -> Browser++: Chọn "Edit" cho một đề bài của chính người dùng
+Browser --> User: Hiển thị hộp thoại sửa đề bài
+User -> Browser: Sửa thể loại phụ, nội dung đề bài hoặc ảnh đề bài
+
+alt#Gold #LightPink Người dùng hủy sửa đề bài
+	User -> Browser: Chọn "Cancel"
+	Browser --> User: Đóng hộp thoại
+else #LightGreen Người dùng nhấn "Save changes"
+	Browser -> Browser: Kiểm tra dữ liệu nhập
+
+	alt#Gold #LightPink Dữ liệu đề bài không hợp lệ
+		Browser --> User: Hiển thị thông báo lỗi dưới các trường nhập
+	else #LightGreen Dữ liệu đề bài hợp lệ
+		Browser -> App++: Gửi form cập nhật đề bài
+
+		opt#Gold Có ảnh mới
+			App -> Bucket++: Lưu ảnh mới vào kho lưu trữ
+			Bucket --> App--: Ảnh mới đã được lưu
+		end
+
+		App -> Tasks++: Cập nhật đề bài (kèm tên ảnh mới nếu có)
+		Tasks -> DB++: Lưu các thay đổi vào cơ sở dữ liệu\n(kèm kiểm tra quyền sở hữu)
+		DB --> Tasks--: Đề bài đã được cập nhật
+		Tasks --> App--: Cập nhật thành công
+
+		opt#Gold Có ảnh cũ bị thay thế
+			App -> Bucket++: Xóa ảnh cũ khỏi kho lưu trữ
+			Bucket --> App--: Ảnh cũ đã được xóa
+		end
+
+		App --> Browser--: Trả về kết quả thành công
+		Browser --> User: Cập nhật danh sách và đóng hộp thoại
+	end
+end
+deactivate Browser
+
+@enduml

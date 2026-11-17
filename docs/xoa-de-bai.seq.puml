@@ -1,0 +1,52 @@
+@startuml Xóa đề bài SEQ
+
+skinparam DefaultFontName Segoe UI
+
+hide footbox
+autonumber
+
+actor "Người dùng" as User
+boundary "Trình duyệt" as Browser
+control "Hệ thống" as App
+entity "practice_sessions" as PracticeSessions
+entity "tasks" as Tasks
+database "Cơ sở dữ liệu" as DB
+database "Kho lưu trữ ảnh" as Bucket
+
+User -> Browser++: Chọn "Delete" cho một đề bài của chính người dùng
+Browser -> App++: Gọi get-task-dependants(taskId)
+App -> DB++: Truy vấn các phiên luyện tập phụ thuộc của đề bài
+DB --> App--: Danh sách phiên luyện tập phụ thuộc
+App --> Browser--: Danh sách phiên luyện tập phụ thuộc
+Browser --> User: Hiển thị hộp thoại xác nhận xóa kèm\ndanh sách phiên luyện tập phụ thuộc
+
+opt#Gold Có phiên luyện tập phụ thuộc
+	Browser --> User: Yêu cầu gõ "DELETE" để xác nhận
+end
+
+alt#Gold #LightPink Người dùng hủy xóa
+	User -> Browser: Chọn "Cancel"
+	Browser --> User: Đóng hộp thoại
+else #LightGreen Người dùng xác nhận xóa
+	User -> Browser: Nhấn "Delete task"
+	Browser -> App++: Gọi delete-task(taskId)
+	App -> PracticeSessions++: Xóa các phiên luyện tập liên quan
+	PracticeSessions -> DB++: Xóa phiên luyện tập khỏi cơ sở dữ liệu\n(đánh giá và trò chuyện liên quan bị xóa theo cascade)
+	DB --> PracticeSessions--: Đã xóa các phiên luyện tập
+	PracticeSessions --> App--: Đã xóa
+	App -> Tasks++: Xóa đề bài
+	Tasks -> DB++: Xóa đề bài khỏi cơ sở dữ liệu\n(kèm kiểm tra quyền sở hữu)
+	DB --> Tasks--: Đề bài đã được xóa
+	Tasks --> App--: Đã xóa
+
+	opt#Gold Đề bài có ảnh
+		App -> Bucket++: Xóa ảnh đề bài khỏi kho lưu trữ
+		Bucket --> App--: Ảnh đã được xóa
+	end
+
+	App --> Browser--: Trả về kết quả thành công
+	Browser --> User: Cập nhật danh sách và đóng hộp thoại
+end
+deactivate Browser
+
+@enduml

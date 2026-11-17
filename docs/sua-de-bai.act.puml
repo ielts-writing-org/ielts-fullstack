@@ -1,0 +1,30 @@
+@startuml Sửa đề bài ACT
+
+skinparam DefaultFontName Segoe UI
+
+|Tác nhân chính|
+start
+:Chọn "Edit" cho một đề bài của chính người dùng\ntrong danh sách;
+
+|Hệ thống|
+:Hiển thị hộp thoại sửa đề bài\n(loại đề bài không thể thay đổi);
+
+|Tác nhân chính|
+:Sửa thể loại phụ, nội dung đề bài (15 đến 85 từ)\nhoặc ảnh đề bài;
+
+if (Nhấn "Save changes"?) then (Có)
+	|Hệ thống|
+	if (Dữ liệu đề bài hợp lệ?) then (Có)
+		:Lưu các chỉnh sửa của đề bài\n(kèm ảnh mới nếu có);
+		:Cập nhật danh sách và đóng hộp thoại;
+		stop
+	else (Không)
+		:Hiển thị thông báo lỗi dưới các trường nhập;
+		stop
+	endif
+else (Không)
+	:Đóng hộp thoại;
+	stop
+endif
+
+@enduml
