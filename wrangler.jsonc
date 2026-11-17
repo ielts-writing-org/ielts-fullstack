@@ -8,12 +8,19 @@
 		"binding": "ASSETS",
 		"directory": ".svelte-kit/cloudflare"
 	},
-	"workers_dev": true,
-	"preview_urls": true,
 	"kv_namespaces": [
 		{
 			"binding": "IELTS_WRITING_KV",
 			"id": "cc61a444e44740b6b1d9ff59a1f3f75b"
+		}
+	],
+	"d1_databases": [
+		{
+			"binding": "IELTS_WRITING_DB",
+			"database_name": "main-database",
+			"database_id": "08b1ad6e-a246-4320-a434-ff2f3f6d7e05",
+			"migrations_dir": "drizzle",
+			"migrations_pattern": "drizzle/*/migration.sql"
 		}
 	],
 	"r2_buckets": [
@@ -22,42 +29,20 @@
 			"bucket_name": "ielts-writing-bucket"
 		}
 	],
-	"d1_databases": [
-		{
-			"binding": "IELTS_WRITING_DB",
-			"database_name": "main-database",
-			"database_id": "08b1ad6e-a246-4320-a434-ff2f3f6d7e05",
-			"migrations_dir": "drizzle"
-		}
-	],
-	"ai": {
-		"binding": "IELTS_WRITING_AI",
-		"remote": true
-	},
-	"images": {
-		"binding": "IELTS_WRITING_IMAGES"
-	},
+	"ai": { "binding": "IELTS_WRITING_AI", "remote": true },
+	"images": { "binding": "IELTS_WRITING_IMAGES" },
 	"ratelimits": [
 		{
 			"name": "CHAT_RATE_LIMITER",
 			"namespace_id": "1001",
-			"simple": {
-				"limit": 3,
-				"period": 60
-			}
+			"simple": { "limit": 3, "period": 60 }
 		},
 		{
 			"name": "EVALUATE_RATE_LIMITER",
 			"namespace_id": "1002",
-			"simple": {
-				"limit": 1,
-				"period": 60
-			}
+			"simple": { "limit": 1, "period": 60 }
 		}
 	],
-	"cache": {
-		"enabled": true
-	},
 	"routes": [
 		{
 			"pattern": "ielts-writing.ptus04.id.vn",
@@ -66,15 +51,15 @@
 			"previews_enabled": false
 		}
 	],
+	"vars": {
+		"R2_ENDPOINT": "r2.ielts-writing.ptus04.id.vn"
+	},
+	"workers_dev": true,
+	"preview_urls": true,
+	"cache": { "enabled": false },
 	"observability": {
-		"issues": {
-			"enabled": true
-		},
-		"logs": {
-			"enabled": true
-		},
-		"traces": {
-			"enabled": true
-		}
+		"issues": { "enabled": true },
+		"logs": { "enabled": true },
+		"traces": { "enabled": true }
 	}
 }
