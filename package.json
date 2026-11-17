@@ -23,7 +23,7 @@
 		"db:push": "drizzle-kit push",
 		"db:generate": "drizzle-kit generate",
 		"db:migrate": "drizzle-kit migrate",
-		"db:migrate:remote": "wranger d1 migrations apply main-database --remote --yes"
+		"db:migrate:remote": "wrangler d1 migrations apply main-database --remote"
 	},
 	"dependencies": {
 		"@better-auth/drizzle-adapter": "^1.7.25",
