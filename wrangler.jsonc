@@ -52,7 +52,7 @@
 		}
 	],
 	"vars": {
-		"R2_ENDPOINT": "r2.ielts-writing.ptus04.id.vn"
+		"R2_ENDPOINT": "https://r2.ielts-writing.ptus04.id.vn"
 	},
 	"workers_dev": true,
 	"preview_urls": true,
