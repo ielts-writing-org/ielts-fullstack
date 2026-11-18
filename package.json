@@ -17,7 +17,7 @@
 		"test:e2e": "playwright install && playwright test",
 		"build": "wrangler types --check && vite build",
 		"preview": "wrangler dev --port 5173 --infer-origin-from-routes=false",
-		"preview:e2e": "wrangler dev -c wrangler.e2e.jsonc --port 5173 --persist-to .wrangler/state/e2e",
+		"preview:e2e": "wrangler dev --port 5173 --infer-origin-from-routes=false --persist-to .wrangler/state/e2e",
 		"auth:schema": "auth generate --config src/lib/server/auth/cli.ts --output src/lib/server/db/auth.schema.ts --yes",
 		"db:studio": "drizzle-kit studio",
 		"db:push": "drizzle-kit push",
