@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { chatMessageSchema, getChatMessageAcceptableWordCount } from "./chat-message.ts";
-import { createMockString } from "#lib/utils/test.ts";
+import { createMockString } from "#lib/testing/test.ts";
 
 describe.concurrent("chatMessageSchema", () => {
 	const [min, max] = getChatMessageAcceptableWordCount();

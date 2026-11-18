@@ -6,17 +6,13 @@ import Modal, { closeModal } from "#lib/components/Modal.svelte";
 import { saveChatMessages } from "#lib/remotes/command/save-chat-message.remote.ts";
 import { clearChatMessages } from "#lib/remotes/command/clear-chat-messages.remote.ts";
 import type { ChatMessage } from "#lib/domain/chat-message.ts";
-import { createMockString } from "#lib/utils/test.ts";
+import { createMockString } from "#lib/testing/test.ts";
 
 vi.mock("$app/state", () => ({
 	page: { url: new URL("http://localhost:5173/practice/session-1") }
 }));
 
-// The browser test page loads no CSS, so modal dialogs never fire
-// `transitionend` and every waitForTransition call would fall back to its 5s
-// timeout. Resolve immediately instead; real transition timing is covered by
-// the e2e flows.
-vi.mock("#lib/utils/dom.ts", () => ({ waitForTransition: () => Promise.resolve() }));
+vi.mock("#lib/utils/dom.ts", async () => await import("#lib/testing/dom.mock.ts"));
 
 vi.mock("#lib/remotes/command/save-chat-message.remote.ts", () => ({
 	saveChatMessages: vi.fn(async () => {})

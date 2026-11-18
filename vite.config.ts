@@ -22,9 +22,10 @@ export default defineConfig({
 		expect: { requireAssertions: true },
 		projects: [
 			{
-				test: {
-					name: "client",
-					browser: {
+			test: {
+				name: "client",
+				setupFiles: ["src/lib/testing/client.test-setup.ts"],
+				browser: {
 						enabled: true,
 						provider: playwright(),
 						instances: [{ browser: "chromium", headless: true }]

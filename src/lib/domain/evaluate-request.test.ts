@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { evaluateRequestSchema } from "./evaluate-request.ts";
-import { createMockString } from "#lib/utils/test.ts";
+import { createMockString } from "#lib/testing/test.ts";
 import { getPromptAcceptableWordCount } from "./task-prompt.ts";
 import { getResponseAcceptableWordCount, getResponseIdealWordCount } from "./task-response.ts";
 

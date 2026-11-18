@@ -9,11 +9,7 @@ vi.mock("#lib/remotes/command/delete-task.remote.js", () => ({
 	deleteTask: vi.fn(async () => {})
 }));
 
-// The unit test page loads no CSS, so dialogs never fire `transitionend` and
-// every waitForTransition call would fall back to its 5s timeout, leaking
-// pending opens/closes across tests. Resolve immediately instead; real
-// transition timing is covered by the e2e flows.
-vi.mock("#lib/utils/dom.ts", () => ({ waitForTransition: () => Promise.resolve() }));
+vi.mock("#lib/utils/dom.ts", async () => await import("#lib/testing/dom.mock.ts"));
 
 /**
  * Deleting a task that practice sessions depend on must require the typed

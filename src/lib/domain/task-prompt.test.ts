@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { getPromptAcceptableWordCount, taskPromptSchema } from "./task-prompt.ts";
-import { createMockString } from "#lib/utils/test.ts";
+import { createMockString } from "#lib/testing/test.ts";
 
 describe.concurrent("taskPromptSchema", () => {
 	const [min, max] = getPromptAcceptableWordCount();
