@@ -2,9 +2,6 @@ import { debounce } from "#lib/utils/debounce.ts";
 
 type SavePhase = "Not saved" | "Saved" | "Saving" | "Failed";
 
-/** Autosave lifecycle shared by the practice editors: a debounced autosave
- *  2s behind the last keystroke, an explicit saveNow for Ctrl+S / the toolbar
- *  button, and the save status surfaced in the editor status bar. */
 export class EditorSaver {
 	current = $state<SavePhase>("Saved");
 	#save: () => Promise<void>;

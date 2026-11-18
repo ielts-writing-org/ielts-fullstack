@@ -1,13 +1,19 @@
 import { userEvent } from "vitest/browser";
 import { afterEach, describe, expect, test, vi } from "vitest";
 import { render } from "vitest-browser-svelte";
-import Modal, { closeModal } from "#lib/components/Modal.svelte";
+import Modal, { closeModal, openModal } from "#lib/components/Modal.svelte";
 import TaskDeleteConfirm from "./TaskDeleteConfirm.svelte";
 import { deleteTask } from "#lib/remotes/command/delete-task.remote.js";
 
 vi.mock("#lib/remotes/command/delete-task.remote.js", () => ({
 	deleteTask: vi.fn(async () => {})
 }));
+
+// The unit test page loads no CSS, so dialogs never fire `transitionend` and
+// every waitForTransition call would fall back to its 5s timeout, leaking
+// pending opens/closes across tests. Resolve immediately instead; real
+// transition timing is covered by the e2e flows.
+vi.mock("#lib/utils/dom.ts", () => ({ waitForTransition: () => Promise.resolve() }));
 
 /**
  * Deleting a task that practice sessions depend on must require the typed
@@ -39,14 +45,17 @@ const dependantSessions = [
 
 let cleanups: Array<() => void> = [];
 
+/** Mirrors the tasks page: the confirm renders inside the global Modal. */
 async function mount(sessions: never) {
 	const modal = await render(Modal);
 	cleanups.push(modal.unmount);
 
 	const onDeleted = vi.fn(async () => {});
-	const component = await render(TaskDeleteConfirm, { task, sessions, onDeleted });
-	cleanups.push(component.unmount);
-	return { component, onDeleted };
+	await openModal({
+		title: { text: "Delete task", color: "error" },
+		content: { component: TaskDeleteConfirm, props: { task, sessions, onDeleted } }
+	});
+	return { onDeleted };
 }
 
 function confirmButton(): HTMLButtonElement {
@@ -105,6 +114,11 @@ describe("TaskDeleteConfirm", () => {
 		await userEvent.click(button);
 		await vi.waitFor(() => expect(deleteTask).toHaveBeenCalledTimes(1));
 		expect(deleteTask).toHaveBeenCalledWith({ taskId: "019201a1-7000-7e00-9000-000000000003" });
+
+		// A confirmed delete dismisses the dialog.
+		await vi.waitFor(() =>
+			expect(document.querySelector<HTMLDialogElement>("dialog.modal")!.open).toBe(false)
+		);
 	});
 
 	test("cancel closes the dialog without deleting", async () => {

@@ -17,8 +17,8 @@ describe.concurrent("isValidTaskImageExtension", () => {
 		["rejects", "gif", false],
 		["rejects", "svg", false],
 		["rejects", "jpg", false],
-		["accepts", "", false],
-		["accepts", undefined as unknown as string, false]
+		["rejects", "", false],
+		["rejects", undefined as unknown as string, false]
 	])("%s %s extension", (_, ext, expected) => {
 		expect(isValidTaskImageExtension(ext)).toBe(expected);
 	});
