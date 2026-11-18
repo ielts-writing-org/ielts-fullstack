@@ -6,6 +6,7 @@
 	import { openModal } from "#lib/components/Modal.svelte";
 	import { resetTheme } from "#lib/components/ThemeController.svelte";
 	import { getProfile } from "#lib/remotes/query/get-profile.remote.ts";
+	import InitialsAvatar from "#lib/components/InitialsAvatar.svelte";
 	import ChangeBandTarget from "./ChangeBandTarget.svelte";
 	import ChangeTheme from "./ChangeTheme.svelte";
 	import type { LayoutProps } from "./$types";
@@ -71,7 +72,7 @@
 
 <div class="navbar-end flex-1 gap-2 overflow-hidden">
 	<div class="flex flex-col items-end gap-1 overflow-hidden">
-		<div dir="rtl" class="w-full truncate text-left font-semibold">
+		<div dir="rtl" class="w-full truncate text-right font-semibold">
 			{user.name}
 		</div>
 
@@ -89,10 +90,14 @@
 			style="anchor-name: --avatar"
 			popovertarget="avatar-popover"
 			title="Open Menu">
-			<img
-				class="aspect-square w-10 rounded-full ring ring-base-content/20"
-				src={user.image}
-				alt={user.name} />
+			{#if user.image}
+				<img
+					class="aspect-square w-10 rounded-full ring ring-base-content/20"
+					src={user.image}
+					alt={user.name} />
+			{:else}
+				<InitialsAvatar name={user.name} />
+			{/if}
 		</button>
 
 		<ul
