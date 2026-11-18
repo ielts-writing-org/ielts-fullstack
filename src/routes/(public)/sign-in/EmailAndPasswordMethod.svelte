@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { resolve } from "$app/paths";
 	import { Eye, EyeOff, Info, LockKeyhole, Mail, UserPen } from "@lucide/svelte";
-	import { openModal } from "#lib/components/Modal.svelte";
+	import { closeModal, openModal } from "#lib/components/Modal.svelte";
 	import { authClient } from "#lib/auth/auth-client.ts";
 	import type { AuthMode } from "./auth-mode";
 	import AuthError from "./AuthError.svelte";
@@ -120,12 +120,13 @@
 
 	async function changePassword() {
 		pendingState = "change-password";
-		openModal({
+		await openModal({
 			title: "Change password",
 			content: "Changing your password will sign you out of all sessions across devices. Continue?",
 			primaryButton: {
 				text: "Continue",
-				onclick: handleChangePasswordConfirmed
+				onclick: handleChangePasswordConfirmed,
+				explicitClose: true
 			},
 			secondaryButton: {
 				text: "Cancel",
@@ -145,6 +146,8 @@
 				redirectTo: `${page.url.origin}${page.url.pathname}?registered-email=${email}`
 			});
 
+			await closeModal();
+
 			if (result.error) {
 				return openModal({
 					title: { text: "Unable to change password", color: "error" },
@@ -161,13 +164,14 @@
 				});
 			}
 
-			openModal({
+			await openModal({
 				title: "Change password",
 				content: result.data.message,
 				primaryButton: "Close"
 			});
 		} catch (e) {
-			openModal({
+			await closeModal();
+			await openModal({
 				title: { text: "Unable to reset password", color: "error" },
 				content: `Unable to sign up: ${e}`,
 				primaryButton: "Close"

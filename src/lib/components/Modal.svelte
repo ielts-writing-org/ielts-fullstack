@@ -92,15 +92,24 @@
 	{#if current}
 		<div class="modal-box overflow-hidden">
 			<!-- Close Button -->
-			{const closeButton = current.closeButton}
+			{const closeButton = $derived(current.closeButton)}
 			{#if closeButton}
 				<button
-					class="btn absolute top-2 right-2 btn-circle btn-ghost btn-sm"
+					class={[
+						"btn absolute top-2 right-2 btn-circle btn-ghost btn-sm",
+						"disabled:pointer-events-auto disabled:cursor-not-allowed"
+					]}
+					disabled={isBusy}
 					onclick={async () => {
-						if (closeButton !== true) {
-							await closeButton.onclick?.();
+						try {
+							isBusy = true;
+							if (closeButton !== true) {
+								await closeButton.onclick?.();
+							}
+							await closeModal();
+						} finally {
+							isBusy = false;
 						}
-						await closeModal();
 					}}>
 					✕
 				</button>
@@ -147,15 +156,22 @@
 		</div>
 
 		<!-- Close by backdrop -->
-		{const closeByBackdrop = current.closeByBackdrop}
+		{const closeByBackdrop = $derived(current.closeByBackdrop)}
 		{#if closeByBackdrop}
 			<div class="modal-backdrop">
 				<button
+					class="disabled:pointer-events-auto disabled:cursor-not-allowed"
+					disabled={isBusy}
 					onclick={async () => {
-						if (closeByBackdrop !== true) {
-							await closeByBackdrop.onclick?.();
+						try {
+							isBusy = true;
+							if (closeByBackdrop !== true) {
+								await closeByBackdrop.onclick?.();
+							}
+							await closeModal();
+						} finally {
+							isBusy = false;
 						}
-						await closeModal();
 					}}>
 					close
 				</button>
@@ -166,7 +182,12 @@
 
 {#snippet modalButton(source: ModalButtonConfig)}
 	{#if typeof source === "string"}
-		<button class="btn" onclick={closeModal}>{source}</button>
+		<button
+			class="btn disabled:pointer-events-auto disabled:cursor-not-allowed"
+			disabled={isBusy}
+			onclick={closeModal}>
+			{source}
+		</button>
 	{:else}
 		<button
 			class={[
@@ -182,8 +203,11 @@
 			onclick={async () => {
 				try {
 					isBusy = true;
+					const autoClose = !source.explicitClose;
 					await source.onclick?.();
-					if (!source.explicitClose) await closeModal();
+					if (autoClose) {
+						await closeModal();
+					}
 				} finally {
 					isBusy = false;
 				}
