@@ -25,13 +25,14 @@
 					: { component: CContent; props: ComponentProps<CContent> });
 		primaryButton?: ModalButtonConfig;
 		secondaryButton?: ModalButtonConfig;
-		closeByBackdrop?: true | ModalCloseConfig;
-		closeButton?: true | ModalCloseConfig;
+		closingConfig?: ModalCloseConfig;
 		bypassBusy?: boolean;
 	};
 
 	type ModalCloseConfig = {
 		onclick?: () => unknown | Promise<unknown>;
+		byButton?: boolean;
+		byBackdrop?: boolean;
 		disabled?: boolean;
 	};
 
@@ -84,33 +85,36 @@
 		current = next;
 		modal.showModal();
 	}
+
+	async function handleClose() {
+		try {
+			isBusy = true;
+			await current?.closingConfig?.onclick?.();
+			await closeModal();
+		} finally {
+			isBusy = false;
+		}
+	}
 </script>
 
 <PreventLeaving canLeave={!isBusy || Boolean(current?.bypassBusy)} />
 
-<dialog class="modal" bind:this={modal}>
+<dialog
+	class="modal"
+	bind:this={modal}
+	// TODO: Implement close by ESC
+	closedby="none">
 	{#if current}
 		<div class="modal-box overflow-hidden">
 			<!-- Close Button -->
-			{const closeButton = $derived(current.closeButton)}
-			{#if closeButton}
+			{#if current.closingConfig?.byButton}
 				<button
 					class={[
 						"btn absolute top-2 right-2 btn-circle btn-ghost btn-sm",
-						"disabled:pointer-events-auto disabled:cursor-not-allowed"
+						"disabled:pointer-events-auto disabled:cursor-wait"
 					]}
-					disabled={isBusy}
-					onclick={async () => {
-						try {
-							isBusy = true;
-							if (closeButton !== true) {
-								await closeButton.onclick?.();
-							}
-							await closeModal();
-						} finally {
-							isBusy = false;
-						}
-					}}>
+					disabled={isBusy || current.closingConfig.disabled}
+					onclick={handleClose}>
 					✕
 				</button>
 			{/if}
@@ -156,23 +160,12 @@
 		</div>
 
 		<!-- Close by backdrop -->
-		{const closeByBackdrop = $derived(current.closeByBackdrop)}
-		{#if closeByBackdrop}
+		{#if current.closingConfig?.byBackdrop}
 			<div class="modal-backdrop">
 				<button
-					class="disabled:pointer-events-auto disabled:cursor-not-allowed"
-					disabled={isBusy}
-					onclick={async () => {
-						try {
-							isBusy = true;
-							if (closeByBackdrop !== true) {
-								await closeByBackdrop.onclick?.();
-							}
-							await closeModal();
-						} finally {
-							isBusy = false;
-						}
-					}}>
+					class="disabled:pointer-events-auto disabled:cursor-wait"
+					disabled={isBusy || current.closingConfig.disabled}
+					onclick={handleClose}>
 					close
 				</button>
 			</div>
@@ -183,7 +176,7 @@
 {#snippet modalButton(source: ModalButtonConfig)}
 	{#if typeof source === "string"}
 		<button
-			class="btn disabled:pointer-events-auto disabled:cursor-not-allowed"
+			class="btn disabled:pointer-events-auto disabled:cursor-wait"
 			disabled={isBusy}
 			onclick={closeModal}>
 			{source}
@@ -191,7 +184,7 @@
 	{:else}
 		<button
 			class={[
-				"btn disabled:pointer-events-auto disabled:cursor-not-allowed",
+				"btn disabled:pointer-events-auto disabled:cursor-wait",
 				source.color === "primary" && "btn-primary",
 				source.color === "success" && "btn-success",
 				source.color === "warning" && "btn-warning",
@@ -199,7 +192,7 @@
 				source.style === "ghost" && "btn-ghost",
 				source.style === "outline" && "btn-outline"
 			]}
-			disabled={isBusy || (source.disabled ?? false)}
+			disabled={isBusy || source.disabled}
 			onclick={async () => {
 				try {
 					isBusy = true;

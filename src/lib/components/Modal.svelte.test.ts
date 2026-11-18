@@ -190,7 +190,7 @@ describe("Modal", () => {
 		await openModal({
 			title: "Dismissable",
 			content: "Bye",
-			closeButton: { onclick },
+			closingConfig: { onclick, byButton: true },
 			primaryButton: "Close"
 		});
 
@@ -208,7 +208,7 @@ describe("Modal", () => {
 		await openModal({
 			title: "Backdrop",
 			content: "Click outside",
-			closeByBackdrop: { onclick },
+			closingConfig: { onclick, byBackdrop: true },
 			primaryButton: "Close"
 		});
 
@@ -225,14 +225,22 @@ describe("Modal", () => {
 		await openModal({
 			title: "Plain close",
 			content: "First",
-			closeButton: true,
-			closeByBackdrop: true,
+			closingConfig: {
+				byButton: true,
+				byBackdrop: true
+			},
 			primaryButton: "Close"
 		});
 		buttonByText("✕").click();
 		await vi.waitFor(() => expect(dialog().open).toBe(false), { timeout: 6000 });
 
-		await openModal({ title: "Plain backdrop", content: "Second", closeByBackdrop: true });
+		await openModal({
+			title: "Plain backdrop",
+			content: "Second",
+			closingConfig: {
+				byBackdrop: true
+			}
+		});
 		// The ✕ click's close handler resets the busy state only after its
 		// transition settles; wait until the backdrop control is usable again.
 		await vi.waitFor(() => expect(backdropButton().disabled).toBe(false));
@@ -250,8 +258,10 @@ describe("Modal", () => {
 		await openModal({
 			title: "Second modal",
 			content: "Working...",
-			closeButton: true,
-			closeByBackdrop: true,
+			closingConfig: {
+				byButton: true,
+				byBackdrop: true
+			},
 			primaryButton: { text: "Do it", onclick: action },
 			secondaryButton: { text: "Cancel" }
 		});
@@ -284,8 +294,10 @@ describe("Modal", () => {
 		await openModal({
 			title: "Busy action",
 			content: "Working...",
-			closeButton: true,
-			closeByBackdrop: true,
+			closingConfig: {
+				byButton: true,
+				byBackdrop: true
+			},
 			primaryButton: { text: "Run", onclick: action, explicitClose: true },
 			secondaryButton: { text: "Cancel" }
 		});

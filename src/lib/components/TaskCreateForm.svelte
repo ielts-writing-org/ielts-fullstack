@@ -51,7 +51,7 @@
 			}
 		}
 	})}
-	class="flex flex-col gap-3 p-2"
+	class="flex max-h-[75dvh] flex-col gap-3 overflow-y-auto p-2"
 	enctype="multipart/form-data"
 	oninput={() => createTask.validate()}>
 	{#if category}
@@ -119,7 +119,7 @@
 	{/each}
 
 	<div class="modal-action">
-		<button type="button" class="btn btn-ghost btn-error" onclick={closeModal}>Cancel</button>
+		<button type="reset" class="btn btn-ghost btn-error" onclick={closeModal}>Cancel</button>
 		<button type="submit" class="btn btn-primary" disabled={createTask.pending > 0}>
 			{createTask.pending > 0 ? "Saving..." : submitLabel}
 		</button>

@@ -60,8 +60,10 @@
 					}
 				}
 			},
-			closeButton: true,
-			closeByBackdrop: true
+			closingConfig: {
+				byButton: true,
+				byBackdrop: true
+			}
 		});
 	}
 
