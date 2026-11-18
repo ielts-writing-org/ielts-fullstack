@@ -87,7 +87,8 @@
 											replace: true
 										});
 									}
-								}
+								},
+								bypassBusy: true
 							});
 						}
 					}

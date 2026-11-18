@@ -33,15 +33,15 @@
 
 			if (result.error) {
 				if (result.error.code === "INVALID_TOKEN") {
-					closeModal();
-					return openModal({
+					await closeModal();
+					return await openModal({
 						title: { text: "Unable to reset password", color: "error" },
 						content: "The link has been expired or contains invalid token. Please try again.",
 						primaryButton: "Close"
 					});
 				}
 
-				return openModal({
+				return await openModal({
 					title: { text: "Unable to reset password", color: "error" },
 					content: {
 						component: AuthError,
@@ -58,7 +58,7 @@
 
 			await props.onReset();
 		} catch (e) {
-			openModal({
+			await openModal({
 				title: { text: "Unable to reset password", color: "error" },
 				content: `Unable to reset password: ${e}`,
 				primaryButton: "Close"
