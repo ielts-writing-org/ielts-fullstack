@@ -89,8 +89,7 @@
 				rows="5"
 				required
 				maxlength={20000}
-				placeholder="Paste or type the task prompt...">
-			</textarea>
+				placeholder="Paste or type the task prompt..."></textarea>
 		</label>
 
 		{#if canManageImage}

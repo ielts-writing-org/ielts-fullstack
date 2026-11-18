@@ -396,14 +396,15 @@
 						Uncheck to keep this question hidden.</span
 					></span>
 			</label>
-			<label class="admin-field"
-				><span class="admin-field-label">Prompt</span><textarea
+			<label class="admin-field">
+				<span class="admin-field-label">Prompt</span>
+				<textarea
 					class="textarea-bordered textarea min-h-40 w-full"
 					disabled={busy}
 					maxlength="20000"
 					required
-					bind:value={editor.prompt}></textarea
-				></label>
+					bind:value={editor.prompt}></textarea>
+			</label>
 			{#if editor.category === "1"}
 				<div class="flex flex-col gap-4 rounded-2xl bg-base-200/60 p-4 sm:p-5">
 					<div>

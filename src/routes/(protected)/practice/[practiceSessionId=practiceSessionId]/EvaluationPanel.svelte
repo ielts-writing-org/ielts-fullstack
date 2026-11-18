@@ -248,7 +248,7 @@
 
 <div class={["h-full w-full rounded-box", isBusy && "aura aura-holo"]}>
 	<div class="flex h-full w-full flex-col gap-2 rounded-box bg-base-100">
-		<div class="flex flex-1 flex-col gap-2 overflow-y-auto p-3">
+		<div class="flex flex-1 flex-col gap-2 overflow-y-auto bg-base-100 p-3">
 			{#if evaluation === undefined}
 				<div class="flex flex-1 flex-col items-center justify-center gap-3 text-center">
 					<ListChecks class="size-6" />

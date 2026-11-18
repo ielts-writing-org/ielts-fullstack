@@ -90,8 +90,7 @@
 			class="textarea w-full"
 			rows="5"
 			required
-			placeholder="Paste or type the task prompt...">
-		</textarea>
+			placeholder="Paste or type the task prompt..."></textarea>
 	</fieldset>
 
 	{#if selectedCategory === "1"}

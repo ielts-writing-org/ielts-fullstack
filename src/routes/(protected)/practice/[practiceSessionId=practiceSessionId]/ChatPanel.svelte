@@ -159,7 +159,7 @@
 		</div>
 
 		<div
-			class="relative prose prose-sm flex max-w-none flex-1 flex-col gap-2 overflow-y-auto prose-p:my-0 prose-p:py-0">
+			class="prose prose-sm flex max-w-none flex-1 flex-col gap-2 overflow-y-auto bg-base-100 prose-p:my-0 prose-p:py-0">
 			{#if messages.length === 0}
 				<div class="flex flex-1 flex-col items-center justify-center gap-3 text-base-content/75">
 					<MessagesSquare size="2em" />
