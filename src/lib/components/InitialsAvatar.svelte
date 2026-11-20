@@ -7,7 +7,9 @@
 	const { name, class: className }: Props = $props();
 
 	const initials = $derived.by(() => {
-		const splitedName = name.split(" ");
+		if (!name || !name.trim()) return "IW";
+
+		const splitedName = name.trim().split(" ");
 		return splitedName[0][0].toUpperCase() + splitedName[splitedName.length - 1][0].toUpperCase();
 	});
 </script>

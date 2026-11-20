@@ -13,3 +13,18 @@ it("should contains VT for Van Tu", async () => {
 	await render(InitialsAvatar, { name: "Van Tu" });
 	await expect.element(page.getByRole("img")).toHaveTextContent("VT");
 });
+
+it("should contains IW for undefined name", async () => {
+	await render(InitialsAvatar, { name: undefined! });
+	await expect.element(page.getByRole("img")).toHaveTextContent("IW");
+});
+
+it("should contains IW for empty name", async () => {
+	await render(InitialsAvatar, { name: "" });
+	await expect.element(page.getByRole("img")).toHaveTextContent("IW");
+});
+
+it("should contains IW for whitespace-only name", async () => {
+	await render(InitialsAvatar, { name: "     " });
+	await expect.element(page.getByRole("img")).toHaveTextContent("IW");
+});
