@@ -44,13 +44,13 @@ export const load = (async ({ locals, url }) => {
 	}
 	const where = and(...conditions);
 
-	const sessionCount = sql<number>`(select count(*) from "practice_sessions" where "practice_sessions"."task_id" = "tasks"."id")`;
+	const sessionCount = sql<number>`(select count(*) from "practice_sessions" where "practice_sessions"."task_id" = "tasks"."id" and "practice_sessions"."deleted_at" IS NULL)`;
 	const bestBand = sql<
 		number | null
-	>`(select max(json_extract("evaluations"."result", '$.estimatedBand')) from "evaluations" inner join "practice_sessions" on "evaluations"."practice_session_id" = "practice_sessions"."id" where "practice_sessions"."task_id" = "tasks"."id")`;
+	>`(select max(json_extract("evaluations"."result", '$.estimatedBand')) from "evaluations" inner join "practice_sessions" on "evaluations"."practice_session_id" = "practice_sessions"."id" where "practice_sessions"."task_id" = "tasks"."id" and "practice_sessions"."deleted_at" IS NULL)`;
 	const lastPracticedAt = sql<
 		number | null
-	>`(select max("practice_sessions"."started_at") from "practice_sessions" where "practice_sessions"."task_id" = "tasks"."id")`;
+	>`(select max("practice_sessions"."started_at") from "practice_sessions" where "practice_sessions"."task_id" = "tasks"."id" and "practice_sessions"."deleted_at" IS NULL)`;
 
 	const [countRow] = await db
 		.select({ total: sql<number>`count(*)` })
