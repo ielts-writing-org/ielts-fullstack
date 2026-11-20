@@ -24,6 +24,7 @@ Copy `.env.example` to `.env` and fill in:
 | `SMTP_SERVER`                               | SMTP host for sending authentication emails.                |
 | `SMTP_USER`                                 | SMTP username for sending authentication emails.            |
 | `SMTP_PASSWORD`                             | SMTP password for sending authentication emails.            |
+| `ROOT_ADMIN_EMAIL`                          | Email granted the `admin` role on sign-up.                  |
 
 ## Cloudflare bindings
 
@@ -45,7 +46,6 @@ Declared in `wrangler.jsonc` and read via `import { env } from "cloudflare:worke
 | ------------------ | -------------------------------------------- | ------------------------------------------------ |
 | `IELTS_WRITING_KV` | `chat-prompt-1`, `chat-prompt-2`             | System prompt for chat, per task category.       |
 | `IELTS_WRITING_KV` | `evaluation-prompt-1`, `evaluation-prompt-2` | System prompt for evaluation, per task category. |
-| `IELTS_WRITING_KV` | `root-admin-email`                           | Email granted the `admin` role on sign-up.       |
 
 Missing keys throw `ConfigMissingError` at request time.
 

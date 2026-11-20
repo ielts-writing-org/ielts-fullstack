@@ -2,7 +2,8 @@ import {
 	BETTER_AUTH_API_KEY,
 	BETTER_AUTH_SECRET,
 	GITHUB_CLIENT_ID,
-	GITHUB_CLIENT_SECRET
+	GITHUB_CLIENT_SECRET,
+	ROOT_ADMIN_EMAIL
 } from "$app/env/private";
 import { ORIGIN } from "$app/env/public";
 import { getRequestEvent } from "$app/server";
@@ -15,7 +16,6 @@ import { waitUntil } from "cloudflare:workers";
 import { getDb } from "../db";
 import { profiles } from "../db/app.schema";
 import { sendEmail } from "../bindings/email";
-import { getKVConfigValue } from "../bindings/kv";
 
 export const createAuth = (d1: D1Database) => {
 	return betterAuth({
@@ -88,9 +88,7 @@ export const createAuth = (d1: D1Database) => {
 			user: {
 				create: {
 					before: async (user) => {
-						const rootAdminEmail = await getKVConfigValue("root-admin-email");
-
-						if (rootAdminEmail === user.email) {
+						if (ROOT_ADMIN_EMAIL === user.email) {
 							return { data: { ...user, role: "admin" } };
 						}
 

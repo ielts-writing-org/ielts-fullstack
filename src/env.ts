@@ -27,5 +27,6 @@ export const variables = defineEnvVars({
 	},
 	SMTP_SERVER: {},
 	SMTP_USER: {},
-	SMTP_PASSWORD: {}
+	SMTP_PASSWORD: {},
+	ROOT_ADMIN_EMAIL: {}
 });
