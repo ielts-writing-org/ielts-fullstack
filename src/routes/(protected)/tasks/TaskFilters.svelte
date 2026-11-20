@@ -40,7 +40,7 @@
 		searchTimer = setTimeout(() => {
 			const next = value.trim();
 			if (next !== filters.q) update({ q: next });
-		}, 300);
+		}, 2000);
 	}
 
 	function clearSearch() {

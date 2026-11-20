@@ -17,7 +17,10 @@ export type TaskFiltersData = {
 };
 
 export function buildTasksHref(query?: string) {
-	return resolve(`/(protected)/tasks?${query}`);
+	if (query) {
+		return resolve(`/(protected)/tasks?${query}`);
+	}
+	return resolve("/(protected)/tasks");
 }
 
 /** Builds a query string for the given filter state with optional overrides. */

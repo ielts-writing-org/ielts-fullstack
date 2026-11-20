@@ -20,7 +20,11 @@ export type HistoryFiltersData = {
 };
 
 export function buildHistoryHref(query?: string) {
-	return resolve(`/(protected)/history?${query}`);
+	if (query) {
+		return resolve(`/(protected)/history?${query}`);
+	}
+
+	return resolve("/(protected)/history");
 }
 
 export const newPracticeHref = resolve("/(protected)");
