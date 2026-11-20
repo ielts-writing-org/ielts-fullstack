@@ -5,8 +5,9 @@
 	import { changeSessionName } from "../lib/remotes/command/change-session-name.remote";
 	import { closeModal } from "#lib/components/Modal.svelte";
 
-	let newName = $derived<string>(page.data.pageName);
+	let newName = $derived<string>(page.data.metadata?.title ?? "");
 
+	// TODO: Use form RPC
 	async function handleSave() {
 		await changeSessionName({
 			practiceSessionId: page.params.practiceSessionId!,
