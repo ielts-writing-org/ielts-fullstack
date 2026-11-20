@@ -1,5 +1,4 @@
-import { getDb } from "#lib/server/db/index.ts";
-import { env } from "cloudflare:workers";
+import { getDatabase } from "#lib/server/db/index.ts";
 import type { PageServerLoad } from "./$types";
 import type { Evaluation } from "#lib/domain/evaluation.ts";
 import { countWords } from "#lib/utils/stats.ts";
@@ -47,7 +46,7 @@ function criterionBands(result: Evaluation | undefined): Partial<Record<Criteria
 
 export const load = (async ({ locals, url }) => {
 	const { user } = getPageSession(locals);
-	const db = getDb(env.IELTS_WRITING_DB);
+	const db = getDatabase();
 
 	const searchParams = url.searchParams;
 	const q = searchParams.get("q")?.trim() ?? "";

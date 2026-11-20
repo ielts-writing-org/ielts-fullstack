@@ -1,10 +1,9 @@
 import { evaluationSchema } from "#lib/domain/evaluation.ts";
 import { getApiSession } from "#lib/server/auth/session.ts";
 import { evaluations } from "#lib/server/db/app.schema.ts";
-import { getDb } from "#lib/server/db/index.ts";
+import { getDatabase } from "#lib/server/db/index.ts";
 import { command, getRequestEvent } from "$app/server";
 import { error } from "@sveltejs/kit";
-import { env } from "cloudflare:workers";
 import { z } from "zod";
 
 export const saveEvaluation = command(
@@ -16,7 +15,7 @@ export const saveEvaluation = command(
 		const { locals } = getRequestEvent();
 		const { user } = getApiSession(locals);
 
-		const db = getDb(env.IELTS_WRITING_DB);
+		const db = getDatabase();
 		const practiceSession = await db.query.practiceSessions.findFirst({
 			where: {
 				id: practiceSessionId,

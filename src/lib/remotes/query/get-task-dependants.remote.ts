@@ -1,9 +1,8 @@
 import { getApiSession } from "#lib/server/auth/session.ts";
 import { evaluations, practiceSessions } from "#lib/server/db/app.schema.ts";
-import { getDb } from "#lib/server/db/index.ts";
+import { getDatabase } from "#lib/server/db/index.ts";
 import { getRequestEvent, query } from "$app/server";
 import { error } from "@sveltejs/kit";
-import { env } from "cloudflare:workers";
 import { desc, eq } from "drizzle-orm";
 import z from "zod";
 
@@ -11,7 +10,7 @@ export const getTaskDependants = query(z.uuidv7(), async (taskId) => {
 	const { locals } = getRequestEvent();
 	const { user } = getApiSession(locals);
 
-	const db = getDb(env.IELTS_WRITING_DB);
+	const db = getDatabase();
 	const task = await db.query.tasks.findFirst({
 		columns: { id: true },
 		where: {

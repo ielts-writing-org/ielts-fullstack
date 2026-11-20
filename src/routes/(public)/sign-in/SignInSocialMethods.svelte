@@ -2,7 +2,7 @@
 	import { untrack } from "svelte";
 	import { authClient } from "#lib/auth/auth-client.ts";
 	import { openModal } from "#lib/components/Modal.svelte";
-	import GitHub from "#lib/components/icons/GitHub.svelte";
+	import GitHub from "#lib/components/GitHub.svelte";
 	import AuthError from "./AuthError.svelte";
 
 	let signingIn = $state<boolean>(false);

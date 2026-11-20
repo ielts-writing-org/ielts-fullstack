@@ -1,10 +1,9 @@
 import { isValidSubcategory } from "#lib/domain/task-subcategory.ts";
 import { getApiSession } from "#lib/server/auth/session.ts";
 import { tasks } from "#lib/server/db/app.schema.ts";
-import { getDb } from "#lib/server/db/index.ts";
+import { getDatabase } from "#lib/server/db/index.ts";
 import { form, getRequestEvent } from "$app/server";
 import { error } from "@sveltejs/kit";
-import { env } from "cloudflare:workers";
 import { eq } from "drizzle-orm";
 import { uuidv7 } from "uuidv7";
 import { z } from "zod";
@@ -36,7 +35,7 @@ export const createTask = form(
 			error(400, "The subcategory does not belong to the selected task category.");
 		}
 
-		const db = getDb(env.IELTS_WRITING_DB);
+		const db = getDatabase();
 		const [createdTask] = await db
 			.insert(tasks)
 			.values({

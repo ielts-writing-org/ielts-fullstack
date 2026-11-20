@@ -1,8 +1,7 @@
 import { error } from "@sveltejs/kit";
-import { env } from "cloudflare:workers";
 import { sql } from "drizzle-orm";
 import { uuidv7 } from "uuidv7";
-import { getDb } from "#lib/server/db/index.ts";
+import { getDatabase } from "#lib/server/db/index.ts";
 import type { AiRuntimeConfig } from "#lib/server/ai-settings.ts";
 
 export type AiRequestKind = "grading" | "chat";
@@ -20,7 +19,7 @@ export async function reserveAiRequest(
 	dayStart.setUTCHours(0, 0, 0, 0);
 	const limit = kind === "chat" ? runtime.chatDailyLimit : runtime.gradingDailyLimit;
 	const id = uuidv7();
-	const db = getDb(env.IELTS_WRITING_DB);
+	const db = getDatabase();
 	const result = await db.run(sql`
 		INSERT INTO ai_requests (id, user_id, practice_session_id, kind, status, model, started_at, created_at, updated_at)
 		SELECT ${id}, ${userId}, ${practiceSessionId}, ${kind}, 'pending', ${model}, ${startedAt}, ${startedAt}, ${startedAt}
@@ -70,7 +69,7 @@ export function trackAiStream(
 		if (finished) return;
 		finished = true;
 		try {
-			await getDb(env.IELTS_WRITING_DB).run(sql`
+			await getDatabase().run(sql`
 				UPDATE ai_requests SET status = ${status}, completed_at = ${Date.now()},
 					duration_ms = ${Date.now() - startedAt}, input_tokens = ${inputTokens}, output_tokens = ${outputTokens},
 					error_summary = ${summary}, updated_at = ${Date.now()}
@@ -114,7 +113,7 @@ export function trackAiStream(
 
 export async function failAiRequest(requestId: string, startedAt: number, summary: string) {
 	try {
-		await getDb(env.IELTS_WRITING_DB).run(sql`
+		await getDatabase().run(sql`
 			UPDATE ai_requests SET status = 'error', completed_at = ${Date.now()},
 				duration_ms = ${Date.now() - startedAt}, error_summary = ${summary.slice(0, 240)}, updated_at = ${Date.now()}
 			WHERE id = ${requestId}

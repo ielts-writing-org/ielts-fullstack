@@ -1,7 +1,6 @@
 import { evaluations, practiceSessions, tasks } from "#lib/server/db/app.schema.ts";
-import { getDb } from "#lib/server/db/index.ts";
+import { getDatabase } from "#lib/server/db/index.ts";
 import { getRequestEvent } from "$app/server";
-import { env } from "cloudflare:workers";
 import { desc, eq, sql } from "drizzle-orm";
 import type { PageServerLoad } from "./$types";
 import { roundToNearestHalf } from "#lib/utils/math.ts";
@@ -72,7 +71,7 @@ export const load = (async () => {
 	const { locals } = getRequestEvent();
 	const { user } = getPageSession(locals);
 
-	const db = getDb(env.IELTS_WRITING_DB);
+	const db = getDatabase();
 	const practices = await db.query.practiceSessions.findMany({
 		where: {
 			userId: user.id
@@ -164,7 +163,7 @@ export const load = (async () => {
 		statistics: {
 			criteria: [
 				{
-					name: "Task Achievement / Response",
+					name: "Task Achievement / Task Response",
 					task1: stats.task1.ta,
 					task2: stats.task2.tr
 				},

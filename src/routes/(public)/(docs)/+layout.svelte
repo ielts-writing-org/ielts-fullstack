@@ -4,7 +4,7 @@
 	let { children }: LayoutProps = $props();
 </script>
 
-<main class="overflow-y-auto">
+<main class="overflow-y-auto bg-base-100">
 	<div
 		class={[
 			"mx-auto prose max-w-3xl p-4 font-['Times']",
