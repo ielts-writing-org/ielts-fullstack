@@ -42,7 +42,8 @@ export const load = (async ({ locals, params, depends }) => {
 		chatMessages: practiceSession.chatMessages.map(
 			(m) => ({ from: m.from, message: m.message }) satisfies ChatMessage
 		),
-		endAt: getTimeLimitInMinutes(category) + Math.floor(practiceSession.startedAt.getTime() / 1000),
+		endAt:
+			getTimeLimitInMinutes(category) * 60 + Math.floor(practiceSession.startedAt.getTime() / 1000),
 		timedUpAction: practiceSession.timeUpAction,
 		metadata: {
 			title: practiceSession.name,
