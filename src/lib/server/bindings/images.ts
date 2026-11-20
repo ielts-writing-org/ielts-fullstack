@@ -21,6 +21,7 @@ export async function compressImageAsBlob(image: Blob): Promise<Blob> {
 	const response = compressedImage.response();
 	return response.blob();
 }
+
 export async function getTaskImageAsBlob(category: TaskCategory, name: string | null) {
 	if (category !== "1" || !name) {
 		return undefined;

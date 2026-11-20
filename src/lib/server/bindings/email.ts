@@ -4,7 +4,7 @@ import { SMTP_SERVER, SMTP_USER, SMTP_PASSWORD } from "$app/env/private";
 export async function sendEmail(to: string, subject: string, content: string) {
 	try {
 		if (dev) sendEmailWithNode(to, subject, content);
-		else return sendEmailWithWorkers(to, subject, content);
+		else await sendEmailWithWorkers(to, subject, content);
 	} catch (err) {
 		console.error("Error while sending mail:", err);
 	}

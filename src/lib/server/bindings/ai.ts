@@ -19,8 +19,8 @@ export function getAiCompletionAsStream(
 			model,
 			{
 				messages: messages,
-				...(options?.seed ? { seed: options.seed } : {}),
-				...(options?.temperature ? { temperature: options.temperature } : {}),
+				...(options?.seed !== undefined ? { seed: options.seed } : {}),
+				...(options?.temperature !== undefined ? { temperature: options.temperature } : {}),
 				...(options?.maxCompletionToken
 					? { max_completion_tokens: options.maxCompletionToken }
 					: {}),
