@@ -6,6 +6,7 @@
 		setAdminUserLocked,
 		setAdminUserRole
 	} from "#lib/remotes/command/admin.remote.ts";
+	import InitialsAvatar from "#lib/components/InitialsAvatar.svelte";
 
 	type Result = Awaited<ReturnType<typeof getAdminUsers>>;
 	let data = $state<Result | null>(null);
@@ -136,7 +137,11 @@
 							><div class="flex min-w-52 items-center gap-3">
 								<div class="avatar">
 									<div class="w-10 rounded-full ring-1 ring-base-content/10">
-										<img src={user.image ?? "/favicon.png"} alt="" />
+										{#if user.image}
+											<img src={user.image} alt={user.name} />
+										{:else}
+											<InitialsAvatar name={user.name} />
+										{/if}
 									</div>
 								</div>
 								<div class="min-w-0">

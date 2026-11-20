@@ -4,13 +4,13 @@
 	import { onMount } from "svelte";
 	import { LibraryBig, PenLine } from "@lucide/svelte";
 	import { openModal } from "#lib/components/Modal.svelte";
+	import { getProfile } from "#lib/remotes/query/get-profile.remote.js";
 	import About from "./About.svelte";
 	import PracticeOptions from "./PracticeOptions.svelte";
 	import Progress from "./Progress.svelte";
 	import RecentPracticeSessions from "./RecentPracticeSessions.svelte";
 	import ActivityStats from "./ActivityStats.svelte";
 	import ChangeBandTarget from "../ChangeBandTarget.svelte";
-	import { getProfile } from "#lib/remotes/query/get-profile.remote.js";
 
 	const { data } = $props();
 
@@ -19,7 +19,7 @@
 	const profile = $derived(await getProfile());
 
 	onMount(async () => {
-		if ((await getProfile()).bandTarget === null) {
+		if (profile.bandTarget === null) {
 			openModal({
 				title: "Welcome to IELTS Writing Practice Platform",
 				content: { component: ChangeBandTarget, props: { bandTarget: 0 } }
