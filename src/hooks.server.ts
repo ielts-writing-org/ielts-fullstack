@@ -2,6 +2,7 @@ import { type Handle, sequence } from "@sveltejs/kit/hooks";
 import { building } from "$app/env";
 import { svelteKitHandler } from "better-auth/svelte-kit";
 import { env } from "cloudflare:workers";
+import { getDefaultTheme, sanitizeTheme } from "#lib/domain/theme.ts";
 import { createAuth } from "./lib/server/auth/auth";
 
 const handleBetterAuth: Handle = async ({ event, resolve }) => {
@@ -18,7 +19,8 @@ const handleBetterAuth: Handle = async ({ event, resolve }) => {
 };
 
 const handleTheme: Handle = async ({ event, resolve }) => {
-	const theme = event.cookies.get("theme") ?? "light";
+	const userTheme = event.cookies.get("theme");
+	const theme = userTheme ? sanitizeTheme(userTheme) : getDefaultTheme();
 
 	return await resolve(event, {
 		transformPageChunk: ({ html }) => html.replace("%theme%", theme)

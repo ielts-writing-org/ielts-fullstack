@@ -1,22 +1,15 @@
 <script lang="ts" module>
-	const themeGroups = {
-		"Light theme": [
-			{ themeName: "Light", themeValue: "light" },
-			{ themeName: "Winter", themeValue: "winter" }
-		],
-		"Dark theme": [
-			{ themeName: "Dark", themeValue: "dark" },
-			{ themeName: "Forest", themeValue: "forest" },
-			{ themeName: "Night", themeValue: "night" }
-		]
-	} as const;
+	import {
+		getDefaultTheme,
+		getThemesByGroupAsArray,
+		sanitizeTheme,
+		type ThemeName
+	} from "#lib/domain/theme.ts";
 
-	type ThemeNames = (typeof themeGroups)[keyof typeof themeGroups][number]["themeValue"];
-
-	let currentTheme = $state<ThemeNames>("light");
+	let currentTheme = $state<ThemeName>("light");
 
 	export async function resetTheme() {
-		currentTheme = "light";
+		currentTheme = getDefaultTheme();
 		document.documentElement.setAttribute("data-theme", currentTheme);
 		await cookieStore.delete("theme");
 	}
@@ -31,7 +24,8 @@
 	}
 
 	onMount(() => {
-		currentTheme = (document.documentElement.getAttribute("data-theme") as ThemeNames) ?? "light";
+		const userTheme = document.documentElement.getAttribute("data-theme");
+		currentTheme = userTheme ? sanitizeTheme(userTheme) : getDefaultTheme();
 	});
 </script>
 
@@ -41,10 +35,10 @@
 	aria-label="Theme switcher"
 	onchange={handleThemeChange}
 	bind:value={currentTheme}>
-	{#each Object.entries(themeGroups) as themeGroup (themeGroup)}
-		<optgroup label={themeGroup[0]}>
-			{#each themeGroup[1] as theme (theme)}
-				<option value={theme.themeValue}>{theme.themeName}</option>
+	{#each getThemesByGroupAsArray() as group (group)}
+		<optgroup label={group[0]}>
+			{#each group[1] as theme (theme)}
+				<option value={theme.value}>{theme.name}</option>
 			{/each}
 		</optgroup>
 	{/each}
