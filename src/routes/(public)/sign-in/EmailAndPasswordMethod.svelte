@@ -18,6 +18,7 @@
 	let name = $state("");
 	let email = $derived(props.registeredEmail ?? "");
 	let password = $state("");
+	let confirmPassword = $state<HTMLInputElement>();
 	let showPassword = $state(false);
 	let showConfirmPassword = $state(false);
 	let rememberMe = $state(false);
@@ -180,6 +181,17 @@
 			pendingState = null;
 		}
 	}
+
+	function validateConfirmPassword() {
+		console.log("ca");
+		if (!confirmPassword || props.mode !== "sign-up") return;
+
+		if (confirmPassword.value === password) {
+			confirmPassword.setCustomValidity("");
+		} else {
+			confirmPassword.setCustomValidity("Passwords do not match yet.");
+		}
+	}
 </script>
 
 <form class="group flex w-full flex-col gap-2" onsubmit={handleAuthSubmit}>
@@ -222,7 +234,8 @@
 					autocomplete={props.mode === "sign-in" ? "current-password" : "new-password"}
 					minlength={props.mode === "sign-up" ? 8 : undefined}
 					required
-					bind:value={password} />
+					bind:value={password}
+					oninput={validateConfirmPassword} />
 				<button
 					type="button"
 					class="btn btn-circle btn-ghost btn-xs"
@@ -253,7 +266,8 @@
 					type={showConfirmPassword ? "text" : "password"}
 					placeholder="Re-enter your password"
 					autocomplete="new-password"
-					pattern={password}
+					bind:this={confirmPassword}
+					oninput={validateConfirmPassword}
 					required />
 				<button
 					type="button"
