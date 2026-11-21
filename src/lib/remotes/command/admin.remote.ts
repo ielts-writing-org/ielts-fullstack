@@ -1,5 +1,6 @@
 import { command, getRequestEvent } from "$app/server";
 import { error } from "@sveltejs/kit";
+import { APIError } from "better-auth/api";
 import { env } from "cloudflare:workers";
 import { and, eq, isNull, sql } from "drizzle-orm";
 import { z } from "zod";
@@ -12,49 +13,53 @@ import { getDatabase } from "#lib/server/db/index.ts";
 
 const userIdSchema = z.object({ userId: z.string().min(1).max(128) });
 
+function isLocked(banned: boolean | null, banExpires: Date | null, now: number) {
+	return Boolean(banned && (!banExpires || banExpires.getTime() > now));
+}
+
+async function activeAdminCount(db: ReturnType<typeof getDatabase>) {
+	const admins = await db.query.users.findMany({
+		where: { role: "admin" },
+		columns: { banned: true, banExpires: true }
+	});
+	const now = Date.now();
+	return admins.filter((admin) => !isLocked(admin.banned, admin.banExpires, now)).length;
+}
+
+function rethrowAsHttpError(cause: unknown): never {
+	if (cause instanceof APIError) {
+		const message = cause.message || "Administrator action failed.";
+		if (cause.status === 400) error(400, message);
+		if (cause.status === 403) error(403, message);
+		if (cause.status === 404) error(404, message);
+	}
+	throw cause;
+}
+
 export const setAdminUserRole = command(
 	userIdSchema.extend({ isAdmin: z.boolean() }),
 	async ({ userId, isAdmin }) => {
 		const event = getRequestEvent();
 		const { user } = await getAdminSession(event.locals);
-		const db = getDatabase();
+
 		if (userId === user.id) error(400, "You cannot change your own administrator role.");
-		const now = Date.now();
-		let result;
-		if (isAdmin) {
-			result = await db.run(sql`
-				UPDATE users SET role = 'admin'
-				WHERE id = ${userId}
-				AND EXISTS (
-					SELECT 1 FROM users WHERE id = ${user.id} AND role = 'admin'
-					AND (banned = 0 OR banned IS NULL OR ban_expires <= ${now})
-				)
-			`);
-		} else {
-			result = await db.run(sql`
-				UPDATE users SET role = NULL
-				WHERE id = ${userId} AND role = 'admin' AND id <> ${user.id}
-				AND (SELECT count(*) FROM users WHERE role = 'admin'
-					AND (banned = 0 OR banned IS NULL OR ban_expires <= ${now})) > 1
-				AND EXISTS (
-					SELECT 1 FROM users WHERE id = ${user.id} AND role = 'admin'
-					AND (banned = 0 OR banned IS NULL OR ban_expires <= ${now})
-				)
-			`);
+
+		const db = getDatabase();
+		const target = await db.query.users.findFirst({
+			where: { id: userId },
+			columns: { id: true, role: true }
+		});
+		if (!target) error(404, "User not found.");
+		if (isAdmin === (target.role === "admin")) return { success: true };
+		if (!isAdmin && (await activeAdminCount(db)) <= 1) {
+			error(409, "The last active administrator cannot be removed.");
 		}
-		if (result.meta.changes !== 1) {
-			const target = await db.query.users.findFirst({
-				where: {
-					id: userId
-				},
-				columns: { role: true }
-			});
-			if (!target) error(404, "User not found.");
-			if (!isAdmin && target.role === "admin")
-				error(409, "The last active administrator cannot be removed.");
-			if (isAdmin && target.role === "admin") return { success: true };
-			error(409, "Administrator privileges changed; reload and try again.");
-		}
+		await event.locals.auth.api
+			.setRole({
+				body: { userId, role: isAdmin ? "admin" : "user" },
+				headers: event.request.headers
+			})
+			.catch(rethrowAsHttpError);
 		await recordAdminAction(
 			db,
 			user.id,
@@ -71,46 +76,32 @@ export const setAdminUserLocked = command(
 	async ({ userId, locked, reason }) => {
 		const event = getRequestEvent();
 		const { user } = await getAdminSession(event.locals);
-		const db = getDatabase();
+
 		if (userId === user.id) error(400, "You cannot lock your own account.");
+
+		const db = getDatabase();
 		const target = await db.query.users.findFirst({
-			where: {
-				id: userId
-			},
+			where: { id: userId },
 			columns: { id: true, role: true, banned: true, banExpires: true }
 		});
 		if (!target) error(404, "User not found.");
-		const now = Date.now();
-		const currentlyLocked = Boolean(
-			target.banned && (!target.banExpires || target.banExpires.getTime() > now)
-		);
-		if (currentlyLocked === locked) return { success: true };
-
-		let result;
+		if (isLocked(target.banned, target.banExpires, Date.now()) === locked) {
+			return { success: true };
+		}
+		if (locked && target.role === "admin" && (await activeAdminCount(db)) <= 1) {
+			error(409, "Cannot lock the last active administrator.");
+		}
 		if (locked) {
-			result = await db.run(sql`
-				UPDATE users SET banned = 1, ban_reason = ${reason || "Locked by an administrator."}, ban_expires = NULL
-				WHERE id = ${userId} AND id <> ${user.id}
-				AND (role IS NULL OR role <> 'admin' OR
-					(SELECT count(*) FROM users WHERE role = 'admin'
-					 AND (banned = 0 OR banned IS NULL OR ban_expires <= ${now})) > 1)
-				AND EXISTS (SELECT 1 FROM users WHERE id = ${user.id} AND role = 'admin'
-					AND (banned = 0 OR banned IS NULL OR ban_expires <= ${now}))
-			`);
-			if (result.meta.changes !== 1) error(409, "Cannot lock the last active administrator.");
-			await event.locals.auth.api.revokeUserSessions({
-				body: { userId },
-				headers: event.request.headers
-			});
+			await event.locals.auth.api
+				.banUser({
+					body: { userId, banReason: reason || "Locked by an administrator." },
+					headers: event.request.headers
+				})
+				.catch(rethrowAsHttpError);
 		} else {
-			result = await db.run(sql`
-				UPDATE users SET banned = 0, ban_reason = NULL, ban_expires = NULL
-				WHERE id = ${userId}
-				AND EXISTS (SELECT 1 FROM users WHERE id = ${user.id} AND role = 'admin'
-					AND (banned = 0 OR banned IS NULL OR ban_expires <= ${now}))
-			`);
-			if (result.meta.changes !== 1)
-				error(409, "Administrator privileges changed; reload and try again.");
+			await event.locals.auth.api
+				.unbanUser({ body: { userId }, headers: event.request.headers })
+				.catch(rethrowAsHttpError);
 		}
 		await recordAdminAction(db, user.id, locked ? "user.lock" : "user.unlock", "user", userId, {
 			reasonProvided: locked && reason.length > 0
