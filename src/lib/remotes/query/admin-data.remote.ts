@@ -1,5 +1,4 @@
 import { error } from "@sveltejs/kit";
-import { env } from "cloudflare:workers";
 import { and, asc, count, desc, eq, gte, isNull, isNotNull, like, ne, or, sql } from "drizzle-orm";
 import { getRequestEvent, query } from "$app/server";
 import { z } from "zod";
@@ -304,25 +303,16 @@ export const getAdminAiConfig = query(async () => {
 		"evaluation-prompt-1": "",
 		"evaluation-prompt-2": ""
 	};
-	const promptSources: Record<
-		(typeof promptKeys)[number],
-		"Cloudflare KV" | "Legacy D1 fallback" | "Not configured"
-	> = {
+	const promptSources: Record<(typeof promptKeys)[number], "Database" | "Not configured"> = {
 		"chat-prompt-1": "Not configured",
 		"chat-prompt-2": "Not configured",
 		"evaluation-prompt-1": "Not configured",
 		"evaluation-prompt-2": "Not configured"
 	};
 	for (const key of promptKeys) {
-		const kvPrompt = await env.IELTS_WRITING_KV.get(key);
-		if (kvPrompt !== null) {
-			prompts[key] = kvPrompt;
-			promptSources[key] = "Cloudflare KV";
-			continue;
-		}
-		const legacyOverride = stored.get(key);
-		prompts[key] = legacyOverride?.trim() ? legacyOverride : "";
-		promptSources[key] = legacyOverride?.trim() ? "Legacy D1 fallback" : "Not configured";
+		const value = stored.get(key);
+		prompts[key] = value?.trim() ? value : "";
+		promptSources[key] = value?.trim() ? "Database" : "Not configured";
 	}
 	return {
 		prompts,

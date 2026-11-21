@@ -8,12 +8,6 @@
 		"binding": "ASSETS",
 		"directory": ".svelte-kit/cloudflare"
 	},
-	"kv_namespaces": [
-		{
-			"binding": "IELTS_WRITING_KV",
-			"id": "cc61a444e44740b6b1d9ff59a1f3f75b"
-		}
-	],
 	"d1_databases": [
 		{
 			"binding": "IELTS_WRITING_DB",

@@ -22,9 +22,6 @@ Deployment_Node(cloudflare, "Cloudflare", "Global edge network (SaaS)"){
 	Deployment_Node(d1Node, "D1", "Managed serverless SQLite"){
 		ContainerDb(db, "Application Database", "Cloudflare D1 (main-database)", "Instance of the Application Database container.")
 	}
-	Deployment_Node(kvNode, "Workers KV", "Managed key-value storage"){
-		ContainerDb(kv, "Prompt Store", "Cloudflare KV", "Instance of the dynamic Key-Value configs container.")
-	}
 	Deployment_Node(r2Node, "R2", "Managed object storage"){
 		ContainerDb(r2, "Task Image Store", "Cloudflare R2 (ielts-writing-bucket)", "Instance of the Task Image Store container.")
 	}
@@ -57,7 +54,6 @@ Rel(spa, r2Domain, "Fetches task images directly", "HTTPS")
 Rel(r2Domain, r2, "Serves stored objects", "Public bucket domain")
 
 Rel(app, db, "Reads and writes data", "SQL via Drizzle")
-Rel(app, kv, "Reads prompts and configuration", "KV binding")
 Rel(app, r2, "Stores, reads and deletes task images", "R2 binding")
 Rel(app, images, "Compresses uploaded images", "Images binding")
 Rel(app, ai, "Runs models and receives streamed output", "AI binding")

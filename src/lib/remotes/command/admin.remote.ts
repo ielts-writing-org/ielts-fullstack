@@ -414,9 +414,15 @@ export const saveAdminPrompt = command(
 	async ({ key, prompt }) => {
 		const { user } = await getAdminSession(getRequestEvent().locals);
 		const db = getDatabase();
-		await env.IELTS_WRITING_KV.put(key, prompt);
-		await recordAdminAction(db, user.id, "ai.prompt.update", "cloudflare_kv", key, {
-			storage: "IELTS_WRITING_KV",
+		await db
+			.insert(aiSettings)
+			.values({ key, value: prompt, updatedBy: user.id })
+			.onConflictDoUpdate({
+				target: aiSettings.key,
+				set: { value: prompt, updatedBy: user.id, updatedAt: new Date() }
+			});
+		await recordAdminAction(db, user.id, "ai.prompt.update", "ai_setting", key, {
+			storage: "ai_settings",
 			characters: prompt.length
 		});
 		return { success: true };

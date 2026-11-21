@@ -7,11 +7,14 @@ import { chatMessageSchema } from "#lib/domain/chat-message.ts";
 import { getObjectAsBlob } from "#lib/server/bindings/bucket.ts";
 import { compressImageAsBase64 } from "#lib/server/bindings/images.ts";
 import { getAiCompletionAsStream } from "#lib/server/bindings/ai.ts";
-import { DEFAULT_AI_RUNTIME, getAiRuntimeConfig } from "#lib/server/ai-settings.ts";
+	import {
+	DEFAULT_AI_RUNTIME,
+	getAiRuntimeConfig,
+	getChatPrompt
+} from "#lib/server/ai-settings.ts";
 import { failAiRequest, reserveAiRequest, trackAiStream } from "#lib/server/ai-telemetry.ts";
 import type { TaskCategory } from "#lib/domain/task-category.ts";
-import { computeDeterministicStats } from "#lib/utils/stats.ts";
-import { getChatPrompt } from "#lib/server/bindings/kv.ts";
+	import { computeDeterministicStats } from "#lib/utils/stats.ts";
 
 export const POST: RequestHandler = async ({ locals, params, request }) => {
 	const { user } = getApiSession(locals);

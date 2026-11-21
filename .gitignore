@@ -55,7 +55,4 @@ coverage/
 # Cloudflare wrangler generated files
 worker-configuration.d.ts
 
-# Localflare generated files
-.localflare/
-
 docs/exports/

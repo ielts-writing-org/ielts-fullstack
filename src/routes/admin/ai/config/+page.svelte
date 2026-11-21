@@ -147,12 +147,12 @@
 				config = {
 					...config,
 					prompts: { ...config.prompts, [key]: form[key] },
-					promptSources: { ...config.promptSources, [key]: "Cloudflare KV" }
+					promptSources: { ...config.promptSources, [key]: "Database" }
 				};
 			}
 			editingPrompt = null;
 			promptBeforeEdit = "";
-			message = `${prompts.find((prompt) => prompt.key === key)?.title ?? "Prompt"} saved to Cloudflare KV. Edge caches may take up to about 60 seconds to refresh.`;
+			message = `${prompts.find((prompt) => prompt.key === key)?.title ?? "Prompt"} saved to the database. New prompts are used on subsequent requests.`;
 		} catch (cause) {
 			errorMessage = cause instanceof Error ? cause.message : "Could not save this prompt.";
 		} finally {
@@ -288,9 +288,8 @@
 				<div>
 					<h2 class="text-lg font-bold">Prompt configuration</h2>
 					<p class="mt-1 text-sm text-base-content/70">
-						Prompts are loaded from the IELTS_WRITING_KV namespace. Existing non-empty D1 prompt
-						values are used only when the matching KV key is absent. Editing a prompt saves it to
-						KV.
+						Prompts are stored in the database and loaded on each AI request. Editing a prompt
+						saves it to the database.
 					</p>
 				</div>
 				{#each prompts as prompt (prompt.key)}
@@ -339,8 +338,7 @@
 								class="mt-4 max-h-128 overflow-auto rounded-xl bg-base-200/60 p-4 font-mono text-xs leading-5 wrap-break-word whitespace-pre-wrap">{promptText}</pre>
 						{:else}
 							<div class="mt-4 alert alert-warning" role="status">
-								No prompt was found in KV or the legacy D1 fallback for this task. Use Edit to add
-								the prompt.
+								No prompt is configured for this task. Use Edit to add the prompt.
 							</div>
 						{/if}
 					</article>

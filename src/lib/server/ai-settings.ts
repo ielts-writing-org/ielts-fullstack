@@ -1,4 +1,5 @@
 import { inArray } from "drizzle-orm";
+import type { TaskCategory } from "#lib/domain/task-category.ts";
 import { aiSettings } from "#lib/server/db/app.schema.ts";
 import { getDatabase } from "#lib/server/db/index.ts";
 
@@ -47,6 +48,23 @@ export async function getStoredAiSettings(keys: readonly string[]) {
 		.from(aiSettings)
 		.where(inArray(aiSettings.key, [...keys]));
 	return new Map(rows.map(({ key, value }) => [key, value]));
+}
+
+export async function getChatPrompt(taskCategory: TaskCategory): Promise<string> {
+	return getStoredPrompt(`chat-prompt-${taskCategory}`);
+}
+
+export async function getEvaluationPrompt(taskCategory: TaskCategory): Promise<string> {
+	return getStoredPrompt(`evaluation-prompt-${taskCategory}`);
+}
+
+async function getStoredPrompt(key: string): Promise<string> {
+	const stored = await getStoredAiSettings([key]);
+	const value = stored.get(key)?.trim();
+	if (!value) {
+		throw new Error(`Config value not found for key: ${key}`);
+	}
+	return value;
 }
 
 export async function getAiRuntimeConfig(
