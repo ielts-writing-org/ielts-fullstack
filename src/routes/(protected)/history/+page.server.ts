@@ -6,7 +6,7 @@ import { evaluations, practiceSessions, tasks } from "#lib/server/db/app.schema.
 import { and, asc, desc, eq, isNotNull, isNull, like, or, sql } from "drizzle-orm";
 import { getPageSession } from "#lib/server/auth/session.ts";
 import type { Criteria } from "#lib/domain/criteria.ts";
-import { TASK_CATEGORIES } from "#lib/domain/task-category.ts";
+import { TASK_CATEGORIES, type TaskCategory } from "#lib/domain/task-category.ts";
 import { PRACTICE_TYPES } from "#lib/domain/practice-type.ts";
 import { taskSubcategorySchema, getAllTaskSubcategories } from "#lib/domain/task-subcategory.ts";
 
@@ -70,7 +70,7 @@ export const load = (async ({ locals, url }) => {
 		const pattern = `%${q}%`;
 		const textMatches = [
 			like(practiceSessions.name, pattern),
-			like(practiceSessions.type, pattern), // TODO: Remove
+			like(practiceSessions.type, pattern),
 			like(tasks.prompt, pattern)
 		];
 		if (includeBody) {
@@ -150,7 +150,7 @@ export const load = (async ({ locals, url }) => {
 		.where(eq(practiceSessions.userId, user.id))
 		.groupBy(tasks.category);
 
-	const statsFor = (category: "1" | "2") => {
+	const statsFor = (category: TaskCategory) => {
 		const row = categoryRows.find((item) => item.category === category);
 		return {
 			evaluated: row?.evaluated ?? 0,

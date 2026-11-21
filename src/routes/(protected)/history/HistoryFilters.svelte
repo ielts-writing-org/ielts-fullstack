@@ -21,9 +21,7 @@
 	const currentTask = $derived(filters.task ?? "all");
 	const currentType = $derived(filters.type ?? "all");
 	const currentStatus = $derived(filters.status ?? "all");
-	let currentSubcategory = $derived<TaskSubcategory<TaskCategory> | "all">(
-		filters.subcategory ?? "all"
-	);
+	const currentSubcategory = $derived(filters.subcategory ?? "all");
 
 	const activeFilters = $derived.by(() => {
 		const chips: { key: "task" | "subcategory" | "type" | "status" | "search"; label: string }[] =
@@ -124,8 +122,8 @@
 			<select
 				class="select max-w-52 select-sm"
 				aria-label="Filter by subcategory"
-				bind:value={currentSubcategory}
-				onchange={() => update({ subcategory: currentSubcategory })}>
+				value={currentSubcategory}
+				onchange={(event) => update({ subcategory: event.currentTarget.value })}>
 				<option value="all">All subcategories</option>
 				{#each availableSubcategories as subcategory (subcategory)}
 					<option value={subcategory}>{getTaskSubcategoryLabel(subcategory)}</option>

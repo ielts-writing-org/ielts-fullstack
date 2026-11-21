@@ -182,7 +182,6 @@
 	}
 
 	function validateConfirmPassword() {
-		console.log("ca");
 		if (!confirmPassword || props.mode !== "sign-up") return;
 
 		if (confirmPassword.value === password) {

@@ -1,8 +1,4 @@
-export function getSaveStates() {
-	return ["unsaved", "saving", "saved", "failed"] as const;
-}
-
-export type SaveState = ReturnType<typeof getSaveStates>[number];
+export type SaveState = "unsaved" | "saving" | "saved" | "failed";
 
 export function getSaveStateLabel(state: SaveState) {
 	const labels: Record<SaveState, string> = {

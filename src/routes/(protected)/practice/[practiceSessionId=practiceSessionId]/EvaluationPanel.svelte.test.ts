@@ -5,6 +5,7 @@ import EvaluationPanel from "./EvaluationPanel.svelte";
 import Modal, { closeModal } from "#lib/components/Modal.svelte";
 import { saveEvaluation } from "#lib/remotes/command/save-evaluation.remote.ts";
 import type { Evaluation } from "#lib/domain/evaluation.ts";
+import type { TaskCategory } from "#lib/domain/task-category.ts";
 
 vi.mock("$app/state", () => ({
 	page: { url: new URL("http://localhost:5173/practice/session-2") }
@@ -74,7 +75,12 @@ function words(count: number): string {
 	return Array.from({ length: count }, (_, i) => `word${i}`).join(" ");
 }
 
-type PanelContext = { category: "1" | "2"; prompt: string; response: string; imageName?: string };
+type PanelContext = {
+	category: TaskCategory;
+	prompt: string;
+	response: string;
+	imageName?: string;
+};
 
 let cleanups: Array<() => void> = [];
 

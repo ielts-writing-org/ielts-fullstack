@@ -17,6 +17,7 @@
 	import EvaluationCriteria from "./EvaluationCriteria.svelte";
 	import { evaluateRequestSchema, type EvaluateRequest } from "#lib/domain/evaluate-request.ts";
 	import { getPromptAcceptableWordCount } from "#lib/domain/task-prompt.ts";
+	import type { TaskCategory } from "#lib/domain/task-category.ts";
 
 	type Props = {
 		practiceSessionId: string;
@@ -69,7 +70,7 @@
 		return items;
 	});
 
-	function createEmptyEvaluation(category: "1" | "2"): Evaluation {
+	function createEmptyEvaluation(category: TaskCategory): Evaluation {
 		const common = {
 			summary: "",
 			estimatedBand: 0

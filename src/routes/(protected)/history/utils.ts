@@ -11,7 +11,7 @@ export type FilterKey = "q" | "task" | "subcategory" | "type" | "status" | "body
 
 export type HistoryFiltersData = {
 	q: string;
-	task: "1" | "2" | null;
+	task: TaskCategory | null;
 	subcategory: TaskSubcategory<TaskCategory> | null;
 	type: "timed" | "free" | null;
 	status: "evaluated" | "unevaluated" | null;

@@ -10,7 +10,7 @@ export type FilterKey = "q" | "task" | "subcategory" | "source" | "sort" | "page
 
 export type TaskFiltersData = {
 	q: string;
-	task: "1" | "2" | null;
+	task: TaskCategory | null;
 	subcategory: TaskSubcategory<TaskCategory> | null;
 	source: "mine" | "example" | null;
 	sort: "recent" | "oldest" | "name" | "practiced";

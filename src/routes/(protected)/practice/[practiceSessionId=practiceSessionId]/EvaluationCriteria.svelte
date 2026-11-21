@@ -82,7 +82,7 @@
 					<button
 						type="button"
 						class="btn mt-1 self-start btn-ghost text-primary btn-xs"
-						onclick={() => onAskTutor(`How can I improve my ${CRITERIA_LABELS[key]} band?"`)}>
+						onclick={() => onAskTutor(`How can I improve my ${CRITERIA_LABELS[key]} band?`)}>
 						<MessagesSquare class="size-3.5" />
 						Ask the tutor how to get there
 					</button>

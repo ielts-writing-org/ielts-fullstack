@@ -29,10 +29,15 @@ export const deleteTask = command(
 			error(404);
 		}
 
-		await db.batch([
-			db.delete(practiceSessions).where(eq(practiceSessions.taskId, taskId)),
-			db.delete(tasks).where(eq(tasks.id, taskId))
-		]);
+		const result1 = await db.delete(practiceSessions).where(eq(practiceSessions.taskId, taskId));
+		if (result1.meta.changes === 0) {
+			error(404);
+		}
+
+		const result2 = await db.delete(tasks).where(eq(tasks.id, taskId));
+		if (result2.meta.changes === 0) {
+			error(404);
+		}
 
 		if (task.imageName) {
 			await deleteObject(getImagePath(task.imageName));

@@ -6,7 +6,7 @@
 
 	type Props = {
 		practiceOptions: {
-			taskCategory: "1" | "2";
+			taskCategory: TaskCategory;
 			name: string;
 			description: string;
 			requirements: string;
