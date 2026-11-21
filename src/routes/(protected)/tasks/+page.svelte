@@ -2,7 +2,7 @@
 	import { goto, refreshAll } from "$app/navigation";
 	import { LibraryBig, Plus } from "@lucide/svelte";
 	import { closeModal, openModal } from "#lib/components/Modal.svelte";
-	import TaskCreateForm from "#lib/components/TaskCreateForm.svelte";
+	import TaskCreateForm from "./TaskCreateForm.svelte";
 	import { getTaskDependants } from "#lib/remotes/query/get-task-dependants.remote.js";
 	import { type TaskItem } from "./utils.ts";
 	import { buildResolveWithQuery } from "#lib/utils/links.ts";
@@ -29,7 +29,13 @@
 			title: "New task",
 			content: {
 				component: TaskCreateForm,
-				props: { submitLabel: "Save task", onSaved: refreshAll }
+				props: {
+					submitLabel: "Save task",
+					onSaved: async () => {
+						await closeModal();
+						await refreshAll();
+					}
+				}
 			}
 		});
 	}
@@ -82,7 +88,14 @@
 			title: { text: "Delete task", color: "error" },
 			content: {
 				component: TaskDeleteConfirm,
-				props: { task, sessions, onDeleted: refreshAll }
+				props: {
+					task,
+					sessions,
+					onDeleted: async () => {
+						await closeModal();
+						await refreshAll();
+					}
+				}
 			}
 		});
 	}

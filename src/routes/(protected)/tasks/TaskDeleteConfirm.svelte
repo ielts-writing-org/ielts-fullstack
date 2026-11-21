@@ -26,7 +26,6 @@
 
 		await deleteTask({ taskId: task.id });
 		await onDeleted?.();
-		await closeModal();
 	}
 </script>
 

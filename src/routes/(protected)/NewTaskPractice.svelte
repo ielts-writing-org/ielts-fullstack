@@ -3,8 +3,7 @@
 	import type { TaskCategory } from "#lib/domain/task-category.ts";
 	import type { PracticeType } from "#lib/domain/practice-type.ts";
 	import { createPractice } from "#lib/remotes/command/create-practice.remote.ts";
-	import { openModal } from "#lib/components/Modal.svelte";
-	import TaskCreateForm from "#lib/components/TaskCreateForm.svelte";
+	import { closeModal, openModal } from "#lib/components/Modal.svelte";
 	import PracticeTypePicker from "./PracticeTypePicker.svelte";
 
 	type Props = { category: TaskCategory; openKey: number };
@@ -18,15 +17,17 @@
 		practiceType = "timed";
 	});
 
-	async function startPractice(taskId: string) {
+	async function handleSubmit(e: Event) {
+		e.preventDefault();
 		try {
 			const result = await createPractice({
 				taskCategory: category,
-				taskId,
+				taskId: undefined,
 				practiceSessionType: practiceType
 			});
 			if (result.success) {
-				goto(result.location);
+				await goto(result.location);
+				await closeModal();
 			}
 		} catch (error) {
 			openModal({
@@ -41,9 +42,16 @@
 <p class="mb-3 text-xs text-base-content/75">
 	Set up the task you want to write about, pick a practice style, and start.
 </p>
-<TaskCreateForm {category} submitLabel="Start practice" onSaved={startPractice}>
+<form onsubmit={handleSubmit}>
 	<fieldset class="fieldset">
 		<legend class="fieldset-legend">Practice style</legend>
 		<PracticeTypePicker bind:value={practiceType} {category} />
 	</fieldset>
-</TaskCreateForm>
+
+	<div class="modal-action">
+		<button type="reset" class="btn btn-ghost btn-error" onclick={closeModal}>Cancel</button>
+		<button type="submit" class="btn btn-primary" disabled={createPractice.pending > 0}>
+			{createPractice.pending > 0 ? "Creating..." : "Create"}
+		</button>
+	</div>
+</form>

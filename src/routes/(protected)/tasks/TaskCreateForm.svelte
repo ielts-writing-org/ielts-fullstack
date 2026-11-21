@@ -1,5 +1,4 @@
 <script lang="ts">
-	import type { Snippet } from "svelte";
 	import { onDestroy } from "svelte";
 	import type { TaskCategory } from "#lib/domain/task-category.ts";
 	import { closeModal } from "#lib/components/Modal.svelte";
@@ -9,11 +8,10 @@
 	type Props = {
 		category?: TaskCategory;
 		submitLabel?: string;
-		onSaved?: (taskId: string) => void | Promise<void>;
-		children?: Snippet;
+		onSaved?: () => void | Promise<void>;
 	};
 
-	let { category, submitLabel = "Save task", onSaved, children }: Props = $props();
+	let { category, submitLabel = "Save task", onSaved }: Props = $props();
 
 	let selectedCategory = $derived<TaskCategory>(
 		(category || createTask.fields.category.value()) ?? "1"
@@ -44,16 +42,11 @@
 <form
 	{...createTask.enhance(async (f) => {
 		if (await f.submit()) {
-			const taskId = createTask.result?.taskId;
-			await closeModal();
-			if (taskId) {
-				await onSaved?.(taskId);
-			}
+			await onSaved?.();
 		}
 	})}
 	class="flex max-h-[75dvh] flex-col gap-3 overflow-y-auto p-2"
-	enctype="multipart/form-data"
-	oninput={() => createTask.validate()}>
+	enctype="multipart/form-data">
 	{#if category}
 		<input {...createTask.fields.category.as("hidden", selectedCategory)} />
 	{:else}
@@ -110,8 +103,6 @@
 			{/if}
 		</fieldset>
 	{/if}
-
-	{@render children?.()}
 
 	{#each createTask.fields.allIssues() as issue (issue.message)}
 		<p class="text-xs text-error" role="alert">{issue.message}</p>

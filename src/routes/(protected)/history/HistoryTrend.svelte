@@ -54,11 +54,11 @@
 			{#if bandTarget > 0}
 				<div
 					class="absolute inset-x-0 flex items-center"
-					style:top={`${(94 - (Math.min(9, bandTarget) / 9) * 88).toFixed(2)}%`}>
-					<span class="h-px flex-1 border-t border-dashed border-warning"></span>
-					<span class="ms-1 text-[10px] font-semibold whitespace-nowrap text-warning">
+					style:top={`${(89 - (Math.min(9, bandTarget) / 9) * 88).toFixed(2)}%`}>
+					<span class="me-1 text-[10px] font-semibold whitespace-nowrap text-warning">
 						Target {bandTarget}
 					</span>
+					<span class="h-px flex-1 border-t border-dashed border-warning"></span>
 				</div>
 			{/if}
 

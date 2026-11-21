@@ -45,7 +45,7 @@ export const practiceSessions = sqliteTable(
 			.references(() => users.id, { onDelete: "cascade" }),
 		taskId: text("task_id")
 			.notNull()
-			.references(() => tasks.id, { onDelete: "restrict" }),
+			.references(() => tasks.id, { onDelete: "cascade" }),
 
 		name: text("name").notNull(),
 		type: text("type", { enum: ["free", "timed"] }).notNull(),

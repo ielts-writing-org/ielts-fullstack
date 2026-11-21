@@ -53,6 +53,6 @@ export const createTask = form(
 			await db.update(tasks).set({ imageName }).where(eq(tasks.id, createdTask.id));
 		}
 
-		return { success: true, taskId: createdTask.id };
+		return { success: true };
 	}
 );
