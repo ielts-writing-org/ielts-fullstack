@@ -16,10 +16,11 @@
 	const { data } = $props();
 
 	const filters = $derived(data.filters);
-	const bandTarget = $derived((await getProfile()).bandTarget ?? 0);
 	const hasFilters = $derived(
 		Boolean(filters.task || filters.subcategory || filters.type || filters.status || filters.q)
 	);
+
+	const profile = getProfile();
 
 	function handleRename(session: SessionItem) {
 		openModal({
@@ -71,9 +72,9 @@
 		</a>
 	</div>
 
-	<HistoryTrend trend={data.trend} {bandTarget} />
+	<HistoryTrend trend={data.trend} bandTarget={profile.current?.bandTarget ?? 0} />
 
-	<HistoryStats stats={data.stats} {bandTarget} />
+	<HistoryStats stats={data.stats} bandTarget={profile.current?.bandTarget ?? 0} />
 
 	<HistoryFilters
 		{filters}
@@ -107,7 +108,11 @@
 			</div>
 		{:else}
 			{#each data.practiceSessions as session (session.id)}
-				<SessionCard {session} {bandTarget} onRename={handleRename} onDelete={handleDelete} />
+				<SessionCard
+					{session}
+					bandTarget={profile.current?.bandTarget ?? 0}
+					onRename={handleRename}
+					onDelete={handleDelete} />
 			{/each}
 		{/if}
 	</section>
