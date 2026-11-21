@@ -2,11 +2,12 @@ import type { RequestHandler } from "./$types";
 import { error } from "@sveltejs/kit";
 import { getApiSession } from "#lib/server/auth/session.ts";
 import { getObjectAsStream } from "#lib/server/bindings/bucket.ts";
+import { getImagePath } from "#lib/utils/paths.ts";
 
 export const GET: RequestHandler = async ({ locals, params }) => {
 	getApiSession(locals);
 
-	const stream = await getObjectAsStream(`images/${params.imageName}`);
+	const stream = await getObjectAsStream(getImagePath(params.imageName));
 	if (!stream) {
 		error(404);
 	}
