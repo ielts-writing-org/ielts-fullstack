@@ -4,7 +4,7 @@
 	import { deleteTask } from "#lib/remotes/command/delete-task.remote.js";
 	import type { getTaskDependants } from "#lib/remotes/query/get-task-dependants.remote.js";
 	import { formatRelativeTime } from "#lib/utils/time.js";
-	import { practiceHref, type TaskItem } from "./links.ts";
+	import { practiceHref, type TaskItem } from "./utils.ts";
 
 	type DependantSession = Awaited<ReturnType<typeof getTaskDependants>>["sessions"][number];
 

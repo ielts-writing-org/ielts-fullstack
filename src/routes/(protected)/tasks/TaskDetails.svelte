@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { getImageUrl } from "#lib/utils/paths.ts";
-	import { type TaskItem } from "./links.ts";
+	import { type TaskItem } from "./utils.ts";
 
 	type Props = {
 		task: TaskItem;

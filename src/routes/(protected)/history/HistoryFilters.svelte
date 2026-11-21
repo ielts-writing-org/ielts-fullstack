@@ -4,7 +4,8 @@
 	import { Search, X } from "@lucide/svelte";
 	import type { TaskCategory } from "#lib/domain/task-category.ts";
 	import { getTaskSubcategoryLabel, type TaskSubcategory } from "#lib/domain/task-subcategory.ts";
-	import { buildHref, buildHistoryHref, type FilterKey, type HistoryFiltersData } from "./utils.ts";
+	import { buildHref, type FilterKey, type HistoryFiltersData } from "./utils.ts";
+	import { buildResolveWithQuery } from "#lib/utils/links.ts";
 
 	type Props = {
 		filters: HistoryFiltersData;
@@ -45,7 +46,9 @@
 	});
 
 	function update(overrides: Partial<Record<FilterKey, string>>) {
-		goto(buildHistoryHref(buildHref(filters, 1, { page: "1", ...overrides })), { reset: false });
+		goto(buildResolveWithQuery("history", buildHref(filters, 1, { page: "1", ...overrides })), {
+			reset: false
+		});
 	}
 
 	function onSearchInput(value: string) {
@@ -194,7 +197,7 @@
 			{/each}
 			<button
 				class="btn btn-ghost btn-xs"
-				onclick={() => goto(buildHistoryHref(), { reset: false })}>
+				onclick={() => goto(buildResolveWithQuery("history"), { reset: false })}>
 				Clear all
 			</button>
 		</div>

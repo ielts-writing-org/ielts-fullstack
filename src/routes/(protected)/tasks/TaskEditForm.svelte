@@ -4,7 +4,7 @@
 	import { closeModal } from "#lib/components/Modal.svelte";
 	import { getTaskSubcategories, getTaskSubcategoryLabel } from "#lib/domain/task-subcategory.ts";
 	import { updateTask } from "#lib/remotes/form/update-task.remote.js";
-	import { type TaskItem } from "./links.ts";
+	import { type TaskItem } from "./utils.ts";
 	import { getImageUrl } from "#lib/utils/paths.ts";
 
 	type Props = { task: TaskItem; onSaved?: () => void | Promise<void> };

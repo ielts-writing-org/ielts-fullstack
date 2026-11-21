@@ -1,12 +1,15 @@
 <script lang="ts">
 	import { goto } from "$app/navigation";
-	import { buildQuery, buildTasksHref, type TaskFiltersData } from "./links.ts";
+	import { buildQuery, type TaskFiltersData } from "./utils.ts";
+	import { buildResolveWithQuery } from "#lib/utils/links.ts";
 
 	type Props = { filters: TaskFiltersData; page: number; totalPages: number };
 	let { filters, page, totalPages }: Props = $props();
 
 	function goToPage(next: number) {
-		goto(buildTasksHref(buildQuery(filters, page, { page: String(next) })), { reset: false });
+		goto(buildResolveWithQuery("tasks", buildQuery(filters, page, { page: String(next) })), {
+			reset: false
+		});
 	}
 </script>
 

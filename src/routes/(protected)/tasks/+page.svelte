@@ -4,7 +4,8 @@
 	import { closeModal, openModal } from "#lib/components/Modal.svelte";
 	import TaskCreateForm from "#lib/components/TaskCreateForm.svelte";
 	import { getTaskDependants } from "#lib/remotes/query/get-task-dependants.remote.js";
-	import { buildTasksHref, type TaskItem } from "./links.ts";
+	import { type TaskItem } from "./utils.ts";
+	import { buildResolveWithQuery } from "#lib/utils/links.ts";
 	import TaskListItem from "./TaskListItem.svelte";
 	import TaskStats from "./TaskStats.svelte";
 	import TaskDeleteConfirm from "./TaskDeleteConfirm.svelte";
@@ -122,7 +123,7 @@
 				<p class="text-xs">Try a different search term or clear the filters.</p>
 				<button
 					class="btn mt-2 btn-outline btn-primary btn-sm"
-					onclick={() => goto(buildTasksHref(), { reset: false })}>
+					onclick={() => goto(buildResolveWithQuery("tasks"), { reset: false })}>
 					Clear filters
 				</button>
 			</div>

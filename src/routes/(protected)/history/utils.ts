@@ -19,14 +19,6 @@ export type HistoryFiltersData = {
 	sort: "recent" | "oldest" | "band" | "words";
 };
 
-export function buildHistoryHref(query?: string) {
-	if (query) {
-		return resolve(`/(protected)/history?${query}`);
-	}
-
-	return resolve("/(protected)/history");
-}
-
 export const newPracticeHref = resolve("/(protected)");
 
 export function practiceHref(practiceSessionId: string) {

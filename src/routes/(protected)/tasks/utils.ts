@@ -16,13 +16,6 @@ export type TaskFiltersData = {
 	sort: "recent" | "oldest" | "name" | "practiced";
 };
 
-export function buildTasksHref(query?: string) {
-	if (query) {
-		return resolve(`/(protected)/tasks?${query}`);
-	}
-	return resolve("/(protected)/tasks");
-}
-
 /** Builds a query string for the given filter state with optional overrides. */
 export function buildQuery(
 	filters: TaskFiltersData,

@@ -4,7 +4,7 @@
 	import { createPractice } from "#lib/remotes/command/create-practice.remote.js";
 	import type { PracticeType } from "#lib/domain/practice-type.ts";
 	import PracticeTypePicker from "../PracticeTypePicker.svelte";
-	import type { TaskItem } from "./links.ts";
+	import type { TaskItem } from "./utils.ts";
 
 	type Props = { task: TaskItem };
 	let { task }: Props = $props();

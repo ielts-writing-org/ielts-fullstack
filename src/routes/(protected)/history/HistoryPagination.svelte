@@ -1,12 +1,15 @@
 <script lang="ts">
 	import { goto } from "$app/navigation";
-	import { buildHref, buildHistoryHref, pageWindow, type HistoryFiltersData } from "./utils.ts";
+	import { buildHref, pageWindow, type HistoryFiltersData } from "./utils.ts";
+	import { buildResolveWithQuery } from "#lib/utils/links.ts";
 
 	type Props = { filters: HistoryFiltersData; page: number; totalPages: number };
 	let { filters, page, totalPages }: Props = $props();
 
 	function goToPage(next: number) {
-		goto(buildHistoryHref(buildHref(filters, page, { page: String(next) })), { reset: false });
+		goto(buildResolveWithQuery("history", buildHref(filters, page, { page: String(next) })), {
+			reset: false
+		});
 	}
 </script>
 
