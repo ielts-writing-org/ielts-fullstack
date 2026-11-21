@@ -14,6 +14,11 @@ it("should contains VT for Van Tu", async () => {
 	await expect.element(page.getByRole("img")).toHaveTextContent("VT");
 });
 
+it("should contains T for Tu", async () => {
+	await render(InitialsAvatar, { name: "Tu" });
+	await expect.element(page.getByRole("img")).toHaveTextContent("T");
+});
+
 it("should contains IW for undefined name", async () => {
 	await render(InitialsAvatar, { name: undefined! });
 	await expect.element(page.getByRole("img")).toHaveTextContent("IW");

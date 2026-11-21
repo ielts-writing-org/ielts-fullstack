@@ -10,6 +10,9 @@
 		if (!name || !name.trim()) return "IW";
 
 		const splitedName = name.trim().split(" ");
+		if (splitedName.length === 1) {
+			return splitedName[0][0].toUpperCase();
+		}
 		return splitedName[0][0].toUpperCase() + splitedName[splitedName.length - 1][0].toUpperCase();
 	});
 </script>
