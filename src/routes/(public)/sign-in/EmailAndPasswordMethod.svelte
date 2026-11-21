@@ -23,7 +23,6 @@
 	let showConfirmPassword = $state(false);
 	let rememberMe = $state(false);
 
-	let signingIn = $state(false);
 	let pendingState = $state<AuthMode | null>(null);
 
 	async function handleAuthSubmit(event: SubmitEvent) {
@@ -69,8 +68,8 @@
 			}
 		} catch (e) {
 			openModal({
-				title: { text: "Unable to sign up", color: "error" },
-				content: `Unable to sign up: ${e}`,
+				title: { text: "Unable to sign in", color: "error" },
+				content: String(e),
 				primaryButton: "Close"
 			});
 		} finally {
@@ -111,7 +110,7 @@
 		} catch (e) {
 			openModal({
 				title: { text: "Unable to sign up", color: "error" },
-				content: `Unable to sign up: ${e}`,
+				content: String(e),
 				primaryButton: "Close"
 			});
 		} finally {
@@ -174,7 +173,7 @@
 			await closeModal();
 			await openModal({
 				title: { text: "Unable to reset password", color: "error" },
-				content: `Unable to sign up: ${e}`,
+				content: String(e),
 				primaryButton: "Close"
 			});
 		} finally {
@@ -318,7 +317,7 @@
 	<button
 		type="submit"
 		class="btn w-full btn-primary group-invalid:btn-disabled"
-		disabled={signingIn || pendingState !== null}>
+		disabled={pendingState !== null}>
 		{#if pendingState === "change-password"}
 			Sending...
 		{:else if pendingState === "sign-in"}

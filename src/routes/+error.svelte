@@ -10,10 +10,28 @@
 					subMessage: "You sent a bad request."
 				};
 
+			case 401:
+				return {
+					message: "Unauthorized",
+					subMessage: "You are not authorized to view this content."
+				};
+
+			case 403:
+				return {
+					message: "Forbidden",
+					subMessage: "You do not have permission to view this content."
+				};
+
 			case 404:
 				return {
 					message: "Page Not Found",
 					subMessage: "The page you're looking for doesn't exist or has been moved."
+				};
+
+			case 429:
+				return {
+					message: "Rate Limited",
+					subMessage: "You are rate limited. Try again later."
 				};
 
 			default:
@@ -33,7 +51,7 @@
 <main
 	id="main-content"
 	class="flex w-full max-w-xl flex-1 flex-col items-center justify-center gap-6 self-center bg-base-100 px-4 py-12 text-center font-mono">
-	<div class="flex flex-col items-center gap-2 sm:flex-row" aria-hidden="true">
+	<div class="flex flex-col items-center gap-2 sm:flex-row">
 		<h2 class="text-7xl font-extrabold text-primary">
 			{page.error?.status}
 		</h2>

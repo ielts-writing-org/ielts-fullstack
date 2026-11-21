@@ -10,30 +10,38 @@
 	async function handleSignInSocial(provider: "github") {
 		signingIn = true;
 
-		const result = await authClient.signIn.social({ provider: provider });
+		try {
+			const result = await authClient.signIn.social({ provider: provider });
 
-		if (result.error) {
-			untrack(() => {
-				openModal({
-					title: {
-						text: `Unable to Sign in`,
-						color: "error"
-					},
-					content: {
-						component: AuthError,
-						props: {
-							statusCode: result.error.status,
-							status: result.error.statusText,
-							errorCode: result.error.code,
-							errorMessage: result.error.message
-						}
-					},
-					primaryButton: "Close"
+			if (result.error) {
+				untrack(() => {
+					openModal({
+						title: {
+							text: `Unable to Sign in`,
+							color: "error"
+						},
+						content: {
+							component: AuthError,
+							props: {
+								statusCode: result.error.status,
+								status: result.error.statusText,
+								errorCode: result.error.code,
+								errorMessage: result.error.message
+							}
+						},
+						primaryButton: "Close"
+					});
 				});
+			}
+		} catch (e) {
+			openModal({
+				title: { text: "Unable to sign in", color: "error" },
+				content: String(e),
+				primaryButton: "Close"
 			});
+		} finally {
+			signingIn = false;
 		}
-
-		signingIn = false;
 	}
 </script>
 
