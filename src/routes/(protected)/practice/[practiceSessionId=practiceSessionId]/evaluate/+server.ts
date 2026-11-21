@@ -63,7 +63,7 @@ export const POST: RequestHandler = async ({ locals, params, request }) => {
 			request.signal,
 			{
 				seed: runtime.seed,
-				instantMode: true,
+				instantMode: !runtime.enableThinking,
 				temperature: runtime.temperature,
 				maxCompletionToken: runtime.maxOutputTokens,
 				responseSchema: evaluationSchema.toJSONSchema(),
