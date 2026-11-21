@@ -99,11 +99,7 @@
 
 <PreventLeaving canLeave={!isBusy || Boolean(current?.bypassBusy)} />
 
-<dialog
-	class="modal"
-	bind:this={modal}
-	// TODO: Implement close by ESC
-	closedby="none">
+<dialog class="modal" bind:this={modal} closedby="none">
 	{#if current}
 		<div class="modal-box overflow-hidden">
 			<!-- Close Button -->
