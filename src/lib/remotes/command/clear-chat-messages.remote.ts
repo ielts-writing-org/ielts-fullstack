@@ -1,38 +1,25 @@
 import { getApiSession } from "#lib/server/auth/session.ts";
-import { chatMessages, practiceSessions } from "#lib/server/db/app.schema.ts";
+import { chatMessages } from "#lib/server/db/app.schema.ts";
 import { getDatabase } from "#lib/server/db/index.ts";
 import { command, getRequestEvent } from "$app/server";
 import { error } from "@sveltejs/kit";
-import { and, eq, exists } from "drizzle-orm";
+import { eq } from "drizzle-orm";
 import z from "zod";
 
 export const clearChatMessages = command(
-	z.object({
-		practiceSessionId: z.uuidv7()
-	}),
+	z.object({ practiceSessionId: z.uuidv7() }),
 	async ({ practiceSessionId }) => {
 		const { locals } = getRequestEvent();
 		const { user } = getApiSession(locals);
 
 		const db = getDatabase();
-		const result = await db.delete(chatMessages).where(
-			exists(
-				db
-					.select({ id: practiceSessions.id })
-					.from(practiceSessions)
-					.where(
-						and(
-							eq(chatMessages.practiceSessionId, practiceSessionId),
-							eq(practiceSessions.userId, user.id)
-						)
-					)
-			)
-		);
+		const session = await db.query.practiceSessions.findFirst({
+			columns: { id: true },
+			where: { id: practiceSessionId, userId: user.id }
+		});
+		if (!session) error(404, "Practice session not found.");
 
-		if (!result.meta.changes) {
-			error(404);
-		}
-
+		await db.delete(chatMessages).where(eq(chatMessages.practiceSessionId, practiceSessionId));
 		return { success: true };
 	}
 );
