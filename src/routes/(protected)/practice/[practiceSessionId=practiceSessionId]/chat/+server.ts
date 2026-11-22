@@ -12,6 +12,7 @@ import { failAiRequest, reserveAiRequest, trackAiStream } from "#lib/server/ai-t
 import type { TaskCategory } from "#lib/domain/task-category.ts";
 import { computeDeterministicStats } from "#lib/utils/stats.ts";
 import { getImagePath } from "#lib/utils/paths.ts";
+import { sql } from "drizzle-orm";
 
 export const POST: RequestHandler = async ({ locals, params, request }) => {
 	const { user } = getApiSession(locals);
@@ -101,6 +102,7 @@ async function getValidatedPracticeSession(id: string, userId: string) {
 			evaluation: { columns: { result: true } },
 			chatMessages: {
 				columns: { from: true, message: true },
+				orderBy: (_chatMessages, { desc }) => desc(sql`rowid`),
 				limit: 10
 			}
 		}
