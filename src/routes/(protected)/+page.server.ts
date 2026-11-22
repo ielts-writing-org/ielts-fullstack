@@ -93,14 +93,14 @@ export const load = (async () => {
 			cc: sql<number>`coalesce(avg(case when ${tasks.category} = '1' then ${evaluations.result} ->> '$.criteria.coherenceAndCohesion.band' end), 0)`,
 			lr: sql<number>`coalesce(avg(case when ${tasks.category} = '1' then ${evaluations.result} ->> '$.criteria.lexicalResource.band' end), 0)`,
 			gra: sql<number>`coalesce(avg(case when ${tasks.category} = '1' then ${evaluations.result} ->> '$.criteria.grammaticalRangeAndAccuracy.band' end), 0)`,
-			estimatedBand: sql<number>`coalesce(avg(case when ${tasks.category} = '1' then ${evaluations.result} ->> '$.estimatedBand' end), 0)`
+			estimatedBand: sql<number | null>`avg(case when ${tasks.category} = '1' then ${evaluations.result} ->> '$.estimatedBand' end)`
 		},
 		task2: {
 			tr: sql<number>`coalesce(avg(case when ${tasks.category} = '2' then ${evaluations.result} ->> '$.criteria.taskResponse.band' end), 0)`,
 			cc: sql<number>`coalesce(avg(case when ${tasks.category} = '2' then ${evaluations.result} ->> '$.criteria.coherenceAndCohesion.band' end), 0)`,
 			lr: sql<number>`coalesce(avg(case when ${tasks.category} = '2' then ${evaluations.result} ->> '$.criteria.lexicalResource.band' end), 0)`,
 			gra: sql<number>`coalesce(avg(case when ${tasks.category} = '2' then ${evaluations.result} ->> '$.criteria.grammaticalRangeAndAccuracy.band' end), 0)`,
-			estimatedBand: sql<number>`coalesce(avg(case when ${tasks.category} = '2' then ${evaluations.result} ->> '$.estimatedBand' end), 0)`
+			estimatedBand: sql<number | null>`avg(case when ${tasks.category} = '2' then ${evaluations.result} ->> '$.estimatedBand' end)`
 		}
 	})
 	.from(practiceSessions)
@@ -108,7 +108,19 @@ export const load = (async () => {
 	.innerJoin(tasks, eq(tasks.id, practiceSessions.taskId))
 	.where(eq(practiceSessions.userId, user.id));
 
-	const rawOverallBand = (stats.task1.estimatedBand * 1) / 3 + (stats.task2.estimatedBand * 2) / 3;
+	/**
+	 * Nếu người học chưa làm task nào thì điểm trung bình task đó là `null`
+	 *
+	 * - TH1: Người học chưa làm task nào => overall 0
+	 *
+	 * - TH2: Người học làm 1 trong 2 task => lấy avg 1 task làm overall
+	 *
+	 * - TH3: Người học làm cả 2 tasks => tính như công thức
+	 */
+	const rawOverallBand =
+		stats.task1.estimatedBand !== null && stats.task2.estimatedBand !== null
+			? (stats.task1.estimatedBand + stats.task2.estimatedBand * 2) / 3
+			: (stats.task1.estimatedBand ?? stats.task2.estimatedBand ?? 0);
 
 	// Activity aggregates: totals across all sessions, plus evaluations count
 	// for the progress card's empty state.
