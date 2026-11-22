@@ -2,9 +2,12 @@ import { defineConfig } from "@playwright/test";
 
 export default defineConfig({
 	workers: 1,
+	globalSetup: "./src/lib/testing/global-setup.ts",
 	webServer: {
 		command: "npm run build && npm run preview:e2e",
-		port: 5173
+		port: 5173,
+		stdout: "pipe",
+		stderr: "pipe"
 	},
 	use: { baseURL: "http://localhost:5173/" },
 	testMatch: "**/*.e2e.{ts,js}"

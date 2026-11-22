@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { onMount } from "svelte";
 	import type { LayoutProps } from "./$types";
 	import { page } from "$app/state";
 	import Modal from "#lib/components/Modal.svelte";
@@ -13,6 +14,11 @@
 
 	const inPracticeSession = $derived(Boolean(page.data.metadata));
 	const showTabBar = $derived(data.session && data.user && !page.data.metadata);
+
+	// Hydration Signal (see https://www.sveltest.dev/docs/e2e-testing#the-solution-hydration-signal).
+	onMount(() => {
+		document.documentElement.toggleAttribute("hydrated", true);
+	});
 </script>
 
 <Modal />
