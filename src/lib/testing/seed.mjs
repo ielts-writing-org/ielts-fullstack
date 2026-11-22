@@ -250,6 +250,8 @@ function pickDatabaseFile() {
  * folder so the e2e tables always match src/lib/server/db/{auth,app}.schema.ts.
  * Dropping and re-applying the migrations on every seed keeps the suite
  * immune to schema drift between the app schema and this file.
+ *
+ * @param {DatabaseSync} db
  */
 function resetSchema(db) {
 	db.exec("PRAGMA foreign_keys = OFF");
