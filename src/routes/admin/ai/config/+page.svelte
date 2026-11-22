@@ -288,8 +288,8 @@
 				<div>
 					<h2 class="text-lg font-bold">Prompt configuration</h2>
 					<p class="mt-1 text-sm text-base-content/70">
-						Prompts are stored in the database and loaded on each AI request. Editing a prompt
-						saves it to the database.
+						Prompts are stored in the database and loaded on each AI request. Editing a prompt saves
+						it to the database.
 					</p>
 				</div>
 				{#each prompts as prompt (prompt.key)}

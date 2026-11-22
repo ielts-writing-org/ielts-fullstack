@@ -45,9 +45,7 @@
 			responseEditor?.saveNow() ?? true
 		]);
 		if (results.some((saved) => !saved)) {
-			throw new Error(
-				"Could not save your latest changes. Check the editor status and try again."
-			);
+			throw new Error("Could not save your latest changes. Check the editor status and try again.");
 		}
 	}
 
