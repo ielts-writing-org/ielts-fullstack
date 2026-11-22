@@ -28,7 +28,7 @@
 	let showTask = $state<boolean>(true);
 	let showAssistant = $state<boolean>(true);
 
-	type EditorHandle = { saveNow: () => Promise<void> };
+	type EditorHandle = { saveNow: () => Promise<boolean> };
 	let taskEditor = $state<EditorHandle>();
 	let responseEditor = $state<EditorHandle>();
 
@@ -36,6 +36,19 @@
 
 	async function handleSaveAll() {
 		await Promise.all([taskEditor?.saveNow(), responseEditor?.saveNow()]);
+	}
+
+	/** Persists the prompt and response so the evaluator grades what is on screen. */
+	async function persistEditors() {
+		const results = await Promise.all([
+			taskEditor?.saveNow() ?? true,
+			responseEditor?.saveNow() ?? true
+		]);
+		if (results.some((saved) => !saved)) {
+			throw new Error(
+				"Could not save your latest changes. Check the editor status and try again."
+			);
+		}
 	}
 
 	let timedUpAction = $derived(data.timedUpAction);
@@ -137,7 +150,8 @@
 				evaluation={data.evaluation}
 				messages={data.chatMessages}
 				bind:isChatBusy
-				bind:isEvaluationBusy />
+				bind:isEvaluationBusy
+				onBeforeEvaluate={persistEditors} />
 		</aside>
 	{/if}
 </main>

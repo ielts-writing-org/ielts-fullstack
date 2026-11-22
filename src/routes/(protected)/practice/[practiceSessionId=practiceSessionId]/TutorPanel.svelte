@@ -15,6 +15,7 @@
 		messages?: ChatMessage[];
 		isChatBusy?: boolean;
 		isEvaluationBusy?: boolean;
+		onBeforeEvaluate: () => Promise<void>;
 	};
 
 	let {
@@ -23,7 +24,8 @@
 		evaluation: initialEvaluation,
 		messages: initialMessages,
 		isChatBusy = $bindable(false),
-		isEvaluationBusy = $bindable(false)
+		isEvaluationBusy = $bindable(false),
+		onBeforeEvaluate
 	}: Props = $props();
 
 	let evaluation = $state<Evaluation | undefined>(untrack(() => initialEvaluation));
@@ -101,6 +103,7 @@
 			{practiceSessionContext}
 			bind:evaluation
 			bind:isBusy={isEvaluationBusy}
-			onAskTutor={askTutor} />
+			onAskTutor={askTutor}
+			{onBeforeEvaluate} />
 	</div>
 </div>

@@ -26,6 +26,7 @@
 		isBusy: boolean;
 		bandTarget: number | null;
 		onAskTutor: (question: string) => void;
+		onBeforeEvaluate?: () => Promise<void>;
 	};
 
 	let { evaluation = $bindable(), isBusy = $bindable(), ...props }: Props = $props();
@@ -162,6 +163,8 @@
 					primaryButton: "Close"
 				});
 			}
+
+			await props.onBeforeEvaluate?.();
 
 			const response = await fetch(`${page.url.pathname}/evaluate`, {
 				method: "POST",

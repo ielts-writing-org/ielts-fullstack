@@ -41,14 +41,16 @@
 
 	const saveState = $derived(saver.status);
 
-	export async function saveNow() {
+	export async function saveNow(): Promise<boolean> {
 		if (!isDirty) {
-			return;
+			return true;
 		}
 
-		if (await saver.saveNow()) {
+		const saved = await saver.saveNow();
+		if (saved) {
 			isDirty = false;
 		}
+		return saved;
 	}
 
 	function handleKeydown(event: KeyboardEvent) {
