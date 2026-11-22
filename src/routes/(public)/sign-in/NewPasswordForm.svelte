@@ -14,6 +14,7 @@
 
 	let password = $state("");
 	let showPassword = $state(false);
+	let confirmPassword = $state<HTMLInputElement>();
 	let showConfirmPassword = $state(false);
 	let resetting = $state(false);
 
@@ -77,6 +78,16 @@
 
 		closeModal();
 	}
+
+	function validateConfirmPassword() {
+		if (!confirmPassword) return;
+
+		if (confirmPassword.value === password) {
+			confirmPassword.setCustomValidity("");
+		} else {
+			confirmPassword.setCustomValidity("Passwords do not match yet.");
+		}
+	}
 </script>
 
 <form class="group mt-5 flex w-full flex-col gap-2" onsubmit={handleResetSubmit}>
@@ -103,7 +114,8 @@
 				autocomplete="new-password"
 				minlength={8}
 				required
-				bind:value={password} />
+				bind:value={password}
+				oninput={validateConfirmPassword} />
 			<button
 				type="button"
 				class="btn btn-circle btn-ghost btn-xs"
@@ -128,7 +140,8 @@
 				type={showConfirmPassword ? "text" : "password"}
 				placeholder="Re-enter your new password"
 				autocomplete="new-password"
-				pattern={password}
+				bind:this={confirmPassword}
+				oninput={validateConfirmPassword}
 				required />
 			<button
 				type="button"
