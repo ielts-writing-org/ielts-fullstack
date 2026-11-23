@@ -21,7 +21,7 @@
 	let registeredEmail = $derived(page.url.searchParams.get("registered-email") ?? "");
 
 	async function handleAccountCreated(email: string) {
-		await goto(resolve(`/(public)/sign-in?registered-email=${email}`), {
+		await goto(resolve(`/(public)/sign-in?registered-email=${encodeURIComponent(email)}`), {
 			replace: true
 		});
 		mode = "sign-in";
@@ -83,9 +83,14 @@
 								primaryButton: {
 									text: "Close",
 									onclick: () => {
-										goto(resolve(`/(public)/sign-in?registered-email=${registeredEmail}`), {
-											replace: true
-										});
+										goto(
+											resolve(
+												`/(public)/sign-in?registered-email=${encodeURIComponent(registeredEmail)}`
+											),
+											{
+												replace: true
+											}
+										);
 									}
 								},
 								bypassBusy: true

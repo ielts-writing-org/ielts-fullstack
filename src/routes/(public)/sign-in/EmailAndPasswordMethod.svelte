@@ -143,7 +143,7 @@
 		try {
 			const result = await authClient.requestPasswordReset({
 				email,
-				redirectTo: `${page.url.origin}${page.url.pathname}?registered-email=${email}`
+				redirectTo: `${page.url.origin}${page.url.pathname}?registered-email=${encodeURIComponent(email)}`
 			});
 
 			await closeModal();
