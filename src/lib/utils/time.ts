@@ -49,7 +49,7 @@ export function formatRelativeTime(value: Date | number, now: Date | number = Da
 
 	const days = Math.abs(calendarDaysBetween(date, reference));
 
-	if (!isFuture && days <= 1) {
+	if (!isFuture && days === 1) {
 		return "Yesterday";
 	}
 

@@ -3,7 +3,7 @@
 	import { closeModal } from "#lib/components/Modal.svelte";
 	import { deleteTask } from "#lib/remotes/command/delete-task.remote.js";
 	import type { getTaskDependants } from "#lib/remotes/query/get-task-dependants.remote.js";
-	import { formatRelativeTime } from "#lib/utils/time.js";
+	import RelativeTime from "#lib/components/RelativeTime.svelte";
 	import { practiceHref, type TaskItem } from "./utils.ts";
 
 	type DependantSession = Awaited<ReturnType<typeof getTaskDependants>>["sessions"][number];
@@ -57,7 +57,7 @@
 						{#if session.estimatedBand}
 							Band {session.estimatedBand.toFixed(1)}
 						{:else}
-							{formatRelativeTime(session.updatedAt)}
+							<RelativeTime value={session.updatedAt} />
 						{/if}
 					</span>
 				</a>

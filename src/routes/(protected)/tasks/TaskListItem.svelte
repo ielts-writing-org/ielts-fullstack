@@ -8,7 +8,7 @@
 		PenLine,
 		Trash
 	} from "@lucide/svelte";
-	import { formatRelativeTime } from "#lib/utils/time.js";
+	import RelativeTime from "#lib/components/RelativeTime.svelte";
 	import { getTaskSubcategoryLabel } from "#lib/domain/task-subcategory.ts";
 	import { type TaskItem } from "./utils.ts";
 	import { getImageUrl } from "#lib/utils/paths.ts";
@@ -91,14 +91,12 @@
 			{/if}
 			<span class="flex items-center gap-1">
 				<CalendarDays size="1em" />
-				<time datetime={task.updatedAt.toISOString()} title={task.updatedAt.toLocaleString()}>
-					{formatRelativeTime(task.updatedAt)}
-				</time>
+				<RelativeTime value={task.updatedAt} />
 			</span>
 			{#if task.lastPracticedAt}
 				<span class="flex items-center gap-1">
 					<AlarmClock size="1em" />
-					Practiced {formatRelativeTime(task.lastPracticedAt)}
+					Practiced <RelativeTime value={task.lastPracticedAt} />
 				</span>
 			{/if}
 		</div>

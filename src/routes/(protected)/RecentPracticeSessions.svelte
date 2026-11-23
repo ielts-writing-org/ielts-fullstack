@@ -1,14 +1,15 @@
 <script lang="ts">
 	import { resolve } from "$app/paths";
 	import { ChevronRight, RotateCcwClock } from "@lucide/svelte";
+	import RelativeTime from "#lib/components/RelativeTime.svelte";
 
 	type Props = {
 		practiceSessions: {
 			band: number | null | undefined;
 			category: string;
 			id: string;
-			meta: string;
 			name: string;
+			updatedAt: Date | number;
 		}[];
 		bandTarget: number;
 	};
@@ -45,7 +46,7 @@
 					{practiceSession.category}
 				</span>
 				<span class="truncate font-semibold">{practiceSession.name}</span>
-				<small class="hidden text-xs sm:block">{practiceSession.meta}</small>
+				<small class="hidden text-xs sm:block"><RelativeTime value={practiceSession.updatedAt} /></small>
 				<span
 					class={[
 						"text-right text-xs",

@@ -17,7 +17,7 @@
 	import { getResponseIdealWordCount } from "#lib/domain/task-response.ts";
 	import { getTaskSubcategoryLabel } from "#lib/domain/task-subcategory.ts";
 	import { CRITERIA_LABELS } from "#lib/domain/criteria.js";
-	import { formatRelativeTime } from "#lib/utils/time.js";
+	import RelativeTime from "#lib/components/RelativeTime.svelte";
 	import { practiceHref, type SessionItem } from "./utils.ts";
 
 	type Props = {
@@ -101,9 +101,7 @@
 			{/if}
 			<span class="flex items-center gap-1">
 				<CalendarDays size="1em" />
-				<time datetime={session.updatedAt.toISOString()} title={session.updatedAt.toLocaleString()}>
-					{formatRelativeTime(session.updatedAt)}
-				</time>
+				<RelativeTime value={session.updatedAt} />
 			</span>
 			<span class="flex items-center gap-1">
 				<Clock3 size="1em" />
