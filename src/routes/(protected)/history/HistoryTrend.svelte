@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { TrendingUp } from "@lucide/svelte";
 	import type { TrendPoint } from "./utils.ts";
+	import { getBandFraction } from "#lib/domain/band.ts";
 
 	type Props = { trend: TrendPoint[]; bandTarget: number };
 	let { trend, bandTarget }: Props = $props();
@@ -14,7 +15,7 @@
 		const stepX = trend.length > 1 ? 94 / (trend.length - 1) : 0;
 		return trend.map((point, i) => ({
 			x: 3 + i * stepX,
-			y: 94 - (Math.max(0, Math.min(9, point.band)) / 9) * 88,
+			y: 94 - getBandFraction(point.band) * 88,
 			band: point.band,
 			date: point.date
 		}));
@@ -54,7 +55,7 @@
 			{#if bandTarget > 0}
 				<div
 					class="absolute inset-x-0 flex items-center"
-					style:top={`${(89 - (Math.min(9, bandTarget) / 9) * 88).toFixed(2)}%`}>
+					style:top={`${(89 - getBandFraction(bandTarget) * 88).toFixed(2)}%`}>
 					<span class="me-1 text-[10px] font-semibold whitespace-nowrap text-warning">
 						Target {bandTarget}
 					</span>

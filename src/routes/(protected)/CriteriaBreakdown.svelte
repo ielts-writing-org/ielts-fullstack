@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { roundToNearestHalf } from "#lib/utils/math.ts";
+	import { getBandPercentage, roundToNearestHalfBand } from "#lib/domain/band.ts";
 
 	type Props = {
 		criteria: {
@@ -28,11 +28,11 @@
 	<div class="flex flex-col items-center">
 		<div
 			class={["radial-progress", taskAvg < bandTarget ? "text-warning" : "text-success"]}
-			style:--value={(taskAvg / 9) * 100}
+			style:--value={getBandPercentage(taskAvg)}
 			style:--size="2em"
 			aria-valuenow={taskAvg}
 			role="progressbar">
-			{roundToNearestHalf(taskAvg).toFixed(1)}
+			{roundToNearestHalfBand(taskAvg).toFixed(1)}
 		</div>
 		<div class="text-xs text-base-content/75">Task {taskCategory}</div>
 	</div>

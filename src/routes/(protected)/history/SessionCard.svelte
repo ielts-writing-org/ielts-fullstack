@@ -13,7 +13,8 @@
 		TriangleAlert
 	} from "@lucide/svelte";
 	import { openModal } from "#lib/components/Modal.svelte";
-	import { getTimeLimitInMinutes } from "#lib/utils/ielts.js";
+	import { getBandPercentage } from "#lib/domain/band.ts";
+	import { getTimeLimitInMinutes } from "#lib/domain/ielts-timing.ts";
 	import { getResponseIdealWordCount } from "#lib/domain/task-response.ts";
 	import { getTaskSubcategoryLabel } from "#lib/domain/task-subcategory.ts";
 	import { CRITERIA_LABELS } from "#lib/domain/criteria.js";
@@ -142,7 +143,7 @@
 							session.estimatedBand < bandTarget ? "text-warning" : "text-success",
 							"sm:[--size:3.25em]"
 						]}
-						style:--value={(session.estimatedBand / 9) * 100}
+						style:--value={getBandPercentage(session.estimatedBand)}
 						role="progressbar"
 						aria-label="Overall band"
 						aria-valuenow={session.estimatedBand}
@@ -161,7 +162,7 @@
 									"radial-progress text-xs",
 									ring.band < bandTarget ? "text-warning" : "text-success"
 								]}
-								style:--value={(ring.band / 9) * 100}
+								style:--value={getBandPercentage(ring.band)}
 								style:--size="2.25em"
 								role="progressbar"
 								aria-label={ring.label}

@@ -3,7 +3,7 @@ import { getDatabase } from "#lib/server/db/index.ts";
 import type { PageServerLoad } from "./$types";
 import type { ChatMessage } from "#lib/domain/chat-message.ts";
 import { getPageSession } from "#lib/server/auth/session.ts";
-import { getTimeLimitInMinutes } from "#lib/utils/ielts.ts";
+import { getDeadlineEpochSeconds, getRemainingSeconds } from "#lib/domain/ielts-timing.ts";
 
 export const load = (async ({ locals, params, depends }) => {
 	depends("data:practiceSession");
@@ -25,6 +25,7 @@ export const load = (async ({ locals, params, depends }) => {
 	}
 
 	const category = practiceSession.task.category;
+	const endAt = getDeadlineEpochSeconds(practiceSession.startedAt, category);
 
 	return {
 		type: practiceSession.type,
@@ -42,9 +43,10 @@ export const load = (async ({ locals, params, depends }) => {
 		chatMessages: practiceSession.chatMessages.map(
 			(m) => ({ from: m.from, message: m.message }) satisfies ChatMessage
 		),
-		endAt:
-			getTimeLimitInMinutes(category) * 60 + Math.floor(practiceSession.startedAt.getTime() / 1000),
-		timedUpAction: practiceSession.timeUpAction,
+		endAt,
+		timedUpAction:
+			practiceSession.timeUpAction ??
+			(practiceSession.type === "timed" && getRemainingSeconds(endAt) === 0 ? "stop" : null),
 		metadata: {
 			title: practiceSession.name,
 			taskCategory: category,

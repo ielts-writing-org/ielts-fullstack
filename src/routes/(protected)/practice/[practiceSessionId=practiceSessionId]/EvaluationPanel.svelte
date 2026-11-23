@@ -5,7 +5,7 @@
 	import type { Evaluation, EvaluationCriterion } from "#lib/domain/evaluation.ts";
 	import type { PracticeSessionContext } from "#lib/domain/task-context.ts";
 	import { openModal } from "#lib/components/Modal.svelte";
-	import { convertBandToProgressValue } from "#lib/utils/ielts.ts";
+	import { getBandPercentage } from "#lib/domain/band.ts";
 	import { getResponseAcceptableWordCount } from "#lib/domain/task-response.ts";
 	import { countWords } from "#lib/utils/stats.ts";
 	import type { Criteria } from "#lib/domain/criteria.ts";
@@ -295,7 +295,7 @@
 										? "text-success"
 										: "text-warning"
 								]}
-								style:--value={convertBandToProgressValue(estimatedBand)}
+								style:--value={getBandPercentage(estimatedBand)}
 								role="progressbar"
 								aria-label="Estimated band"
 								aria-valuenow={estimatedBand}

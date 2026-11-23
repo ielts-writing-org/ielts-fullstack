@@ -1,7 +1,7 @@
 <script lang="ts">
 	import type { Component } from "svelte";
 	import { CircleCheck, FileText, PenLine, PieChart } from "@lucide/svelte";
-	import { roundToNearestHalf } from "#lib/utils/math.ts";
+	import { roundToNearestHalfBand } from "#lib/domain/band.ts";
 	import { type HistoryStats } from "./utils.ts";
 
 	type Props = { stats: HistoryStats; bandTarget: number | null };
@@ -72,11 +72,11 @@
 				<span class="text-base-content/75">/</span>
 				<span
 					class={[
-						bandTarget && roundToNearestHalf(props.average) >= bandTarget
+						bandTarget && roundToNearestHalfBand(props.average) >= bandTarget
 							? "text-success"
 							: "text-warning"
 					]}>
-					{roundToNearestHalf(props.average).toFixed(1)}
+					{roundToNearestHalfBand(props.average).toFixed(1)}
 				</span>
 			{:else}
 				-

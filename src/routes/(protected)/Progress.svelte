@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { Target } from "@lucide/svelte";
-	import { convertBandToProgressValue } from "#lib/utils/ielts.ts";
+	import { getBandPercentage } from "#lib/domain/band.ts";
 	import BandTarget from "./BandTarget.svelte";
 	import BandTrend from "./BandTrend.svelte";
 	import CriteriaBreakdown from "./CriteriaBreakdown.svelte";
@@ -50,7 +50,7 @@
 						"radial-progress font-bold",
 						statistics.estimatedBand < bandTarget ? "text-warning" : "text-success"
 					]}
-					style:--value={convertBandToProgressValue(statistics.estimatedBand)}
+					style:--value={getBandPercentage(statistics.estimatedBand)}
 					style:--size="3.75em"
 					role="progressbar"
 					aria-label="Overall average band"

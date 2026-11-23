@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { Clock } from "@lucide/svelte";
-	import { onDestroy, onMount } from "svelte";
+	import { onMount, untrack } from "svelte";
+	import { getRemainingSeconds } from "#lib/domain/ielts-timing.ts";
 
 	type Props = {
 		endAt: number;
@@ -10,8 +11,8 @@
 	const props: Props = $props();
 
 	let timerInterval = $state<ReturnType<typeof setInterval>>();
-
-	let timeRemaining = $derived<number>(calculateRemainingTime(props.endAt));
+	let timeRemaining = $state(untrack(() => getRemainingSeconds(props.endAt)));
+	let fired = false;
 
 	function formatTime(seconds: number): string {
 		const mins = Math.floor(seconds / 60);
@@ -19,35 +20,41 @@
 		return `${mins.toString().padStart(2, "0")}:${secs.toString().padStart(2, "0")}`;
 	}
 
-	function startTimer() {
-		if (timerInterval) {
-			return;
-		}
-
-		timerInterval = setInterval(() => {
-			if (timeRemaining <= 1) {
-				clearInterval(timerInterval);
-				timerInterval = undefined;
-				props.onTimedUp();
-				timeRemaining = 0;
-			} else {
-				timeRemaining = calculateRemainingTime(props.endAt);
-			}
-		}, 1000);
-	}
-
-	function calculateRemainingTime(time: number) {
-		return time - Math.floor(Date.now() / 1000);
-	}
-
-	onMount(async () => {
-		startTimer();
-	});
-
-	onDestroy(() => {
+	function stopTimer() {
 		if (timerInterval) {
 			clearInterval(timerInterval);
+			timerInterval = undefined;
 		}
+	}
+
+	function tick() {
+		timeRemaining = getRemainingSeconds(props.endAt);
+
+		if (timeRemaining === 0 && !fired) {
+			fired = true;
+			stopTimer();
+			props.onTimedUp();
+		}
+	}
+
+	onMount(() => {
+		tick();
+		timerInterval = setInterval(tick, 1000);
+
+		// Hidden tabs throttle timers; re-sync the moment the tab is visible again.
+		const resync = () => {
+			if (document.visibilityState === "visible") {
+				tick();
+			}
+		};
+		document.addEventListener("visibilitychange", resync);
+		window.addEventListener("focus", resync);
+
+		return () => {
+			stopTimer();
+			document.removeEventListener("visibilitychange", resync);
+			window.removeEventListener("focus", resync);
+		};
 	});
 </script>
 
@@ -58,5 +65,5 @@
 		timeRemaining <= 60 && timeRemaining > 0 && "animate-pulse"
 	]}>
 	<Clock size="1em" />
-	<span>{timeRemaining >= 0 ? formatTime(timeRemaining) : formatTime(0)}</span>
+	<span>{formatTime(timeRemaining)}</span>
 </div>

@@ -3,7 +3,7 @@
 	import { resolve } from "$app/paths";
 	import type { TaskCategory } from "#lib/domain/task-category.ts";
 	import { openModal } from "#lib/components/Modal.svelte";
-	import { getTimeLimitInMinutes } from "#lib/utils/ielts.ts";
+	import { getTimeLimitInMinutes } from "#lib/domain/ielts-timing.ts";
 	import { getResponseIdealWordCount } from "#lib/domain/task-response.ts";
 	import {
 		Eye,

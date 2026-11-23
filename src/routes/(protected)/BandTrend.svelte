@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { Minus, TrendingDown, TrendingUp } from "@lucide/svelte";
+	import { getBandFraction } from "#lib/domain/band.ts";
 
 	type Props = {
 		/** Overall bands of the most recent evaluated sessions, oldest first. */
@@ -35,8 +36,7 @@
 		return trend
 			.map((band, i) => {
 				const x = 2 + i * stepX;
-				const clamped = Math.max(0, Math.min(9, band));
-				const y = 26 - (clamped / 9) * 22;
+				const y = 26 - getBandFraction(band) * 22;
 				return `${i === 0 ? "M" : "L"}${x.toFixed(1)} ${y.toFixed(1)}`;
 			})
 			.join(" ");

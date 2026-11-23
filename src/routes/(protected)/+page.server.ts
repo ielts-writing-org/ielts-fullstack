@@ -3,8 +3,7 @@ import { getDatabase } from "#lib/server/db/index.ts";
 import { getRequestEvent } from "$app/server";
 import { desc, eq, sql } from "drizzle-orm";
 import type { PageServerLoad } from "./$types";
-import { roundToNearestHalf } from "#lib/utils/math.ts";
-import { formatRelativeTime } from "#lib/utils/time.ts";
+import { combineWritingBands, roundToNearestHalfBand } from "#lib/domain/band.ts";
 import { getPageSession } from "#lib/server/auth/session.ts";
 
 const PRACTICE_OPTIONS = [
@@ -117,10 +116,7 @@ export const load = (async () => {
 	 *
 	 * - TH3: Người học làm cả 2 tasks => tính như công thức
 	 */
-	const rawOverallBand =
-		stats.task1.estimatedBand !== null && stats.task2.estimatedBand !== null
-			? (stats.task1.estimatedBand + stats.task2.estimatedBand * 2) / 3
-			: (stats.task1.estimatedBand ?? stats.task2.estimatedBand ?? 0);
+	const rawOverallBand = combineWritingBands(stats.task1.estimatedBand, stats.task2.estimatedBand);
 
 	// Activity aggregates: totals across all sessions, plus evaluations count
 	// for the progress card's empty state.
@@ -161,7 +157,7 @@ export const load = (async () => {
 			band: p.evaluation?.result.estimatedBand,
 			category: `Task ${p.task.category}`,
 			id: p.id,
-			meta: formatRelativeTime(p.updatedAt),
+			updatedAt: p.updatedAt,
 			name: p.name
 		})),
 		activity: {
@@ -195,7 +191,7 @@ export const load = (async () => {
 					task2: stats.task2.gra
 				}
 			],
-			estimatedBand: roundToNearestHalf(rawOverallBand)
+			estimatedBand: roundToNearestHalfBand(rawOverallBand)
 		}
 	};
 }) satisfies PageServerLoad;

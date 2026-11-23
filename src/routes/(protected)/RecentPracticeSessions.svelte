@@ -46,7 +46,8 @@
 					{practiceSession.category}
 				</span>
 				<span class="truncate font-semibold">{practiceSession.name}</span>
-				<small class="hidden text-xs sm:block"><RelativeTime value={practiceSession.updatedAt} /></small>
+				<small class="hidden text-xs sm:block"
+					><RelativeTime value={practiceSession.updatedAt} /></small>
 				<span
 					class={[
 						"text-right text-xs",
