@@ -59,10 +59,10 @@
 		if (!modal) throw new Error("Modal is missing");
 
 		if (current) {
+			stack.unshift(current);
+
 			modal.requestClose();
 			await waitForTransition(modal);
-
-			stack.unshift(current);
 		}
 
 		current = config as unknown as ModalConfig<GenericSnippet, GenericComponent>;
