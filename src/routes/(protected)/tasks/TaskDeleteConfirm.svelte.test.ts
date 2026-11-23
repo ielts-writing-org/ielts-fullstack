@@ -46,7 +46,9 @@ async function mount(sessions: never) {
 	const modal = await render(Modal);
 	cleanups.push(modal.unmount);
 
-	const onDeleted = vi.fn(async () => {});
+	const onDeleted = vi.fn(async () => {
+		closeModal();
+	});
 	await openModal({
 		title: { text: "Delete task", color: "error" },
 		content: { component: TaskDeleteConfirm, props: { task, sessions, onDeleted } }
