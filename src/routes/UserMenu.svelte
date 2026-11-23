@@ -16,6 +16,8 @@
 	type Props = { user: User };
 	let { user }: Props = $props();
 
+	let menu = $state<HTMLUListElement>();
+
 	const profile = $derived(await getProfile());
 
 	async function openSignOutModal() {
@@ -68,6 +70,10 @@
 			content: { component: ChangeTheme, props: {} }
 		});
 	}
+
+	function closeMenu() {
+		menu?.hidePopover();
+	}
 </script>
 
 <div class="navbar-end flex-1 gap-2 overflow-hidden">
@@ -104,10 +110,11 @@
 			class="menu dropdown rounded-box bg-base-100 text-nowrap shadow-sm"
 			style="position-anchor: --avatar"
 			id="avatar-popover"
-			popover="auto">
+			popover="auto"
+			bind:this={menu}>
 			{#if user.role === "admin"}
 				<li>
-					<a class="justify-end" href={resolve("/admin")}>
+					<a class="justify-end" href={resolve("/admin")} onclick={closeMenu}>
 						Admin
 						<Shield class="size-[1em]" />
 					</a>
@@ -116,7 +123,10 @@
 			<li>
 				<button
 					class="justify-end active:bg-primary active:text-primary-content"
-					onclick={openThemeModal}>
+					onclick={() => {
+						closeMenu();
+						openThemeModal();
+					}}>
 					Change theme
 					<Palette class="size-[1em]" />
 				</button>
@@ -127,7 +137,10 @@
 			<li>
 				<button
 					class="w-full justify-end text-error hover:bg-error hover:text-error-content active:bg-error active:text-error-content"
-					onclick={openSignOutModal}>
+					onclick={() => {
+						closeMenu();
+						openSignOutModal();
+					}}>
 					Sign Out
 					<LogOut class="size-[1em]" />
 				</button>
