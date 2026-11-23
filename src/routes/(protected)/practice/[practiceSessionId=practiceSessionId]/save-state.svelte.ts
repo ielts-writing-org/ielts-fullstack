@@ -5,7 +5,7 @@ type SavePhase = "Not saved" | "Saved" | "Saving" | "Failed";
 export class EditorSaver {
 	current = $state<SavePhase>("Saved");
 	#save: () => Promise<void>;
-	#debouncedSave: () => void;
+	#debouncedSave: ReturnType<typeof debounce>;
 
 	constructor(save: () => Promise<void>) {
 		this.#save = save;
@@ -35,6 +35,7 @@ export class EditorSaver {
 	async saveNow(): Promise<boolean> {
 		this.current = "Saving";
 		try {
+			this.#debouncedSave.cancel();
 			await this.#save();
 			this.current = "Saved";
 			return true;
