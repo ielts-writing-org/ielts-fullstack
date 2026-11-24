@@ -4,7 +4,7 @@
 
 skinparam DefaultFontName Segoe UI
 
-LAYOUT_LEFT_RIGHT()
+' LAYOUT_LEFT_RIGHT()
 
 Deployment_Node(client, "Client Device", "Desktop or mobile device"){
 	Deployment_Node(browser, "Web Browser", "Chrome, Firefox, Safari or Edge"){
@@ -45,10 +45,10 @@ Deployment_Node(mailNode, "TenTen Mail Infrastructure", "Third-party SMTP provid
 	System_Ext(smtp, "TenTen SMTP Mail Server", "Delivers verification, password-reset and duplicate-signup notification emails.")
 }
 
-Rel(spa, appDomain, "Requests pages, remote functions and SSE streams", "HTTPS / SSE")
+Rel_D(spa, appDomain, "Requests pages, remote functions and SSE streams", "HTTPS / SSE")
 Rel(appDomain, app, "Routes requests to the deployed Worker", "Custom domain route")
-Rel(app, spa, "Responds with SSR HTML and streamed data", "HTTPS / SSE")
-Rel(assets, spa, "Delivers static assets", "HTTPS")
+Rel_U(app, spa, "Responds with SSR HTML and streamed data", "HTTPS / SSE")
+Rel_U(assets, spa, "Delivers static assets", "HTTPS")
 
 Rel(spa, r2Domain, "Fetches task images directly", "HTTPS")
 Rel(r2Domain, r2, "Serves stored objects", "Public bucket domain")

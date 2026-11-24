@@ -21,15 +21,12 @@ class User {
 	-banExpires: Date | null
 	+isAdmin(): boolean
 	+isLocked(): boolean
-	+canBeDemoted(activeAdminCount): boolean
-	+canBeLocked(activeAdminCount): boolean
 }
 
 class Profile {
 	-bandTarget: number | null
 	-theme: string
 	+hasBandTarget(): boolean
-	+isBandTargetValid(band): boolean
 	+setBandTarget(band): void
 }
 
@@ -41,33 +38,25 @@ class Task {
 	-published: boolean
 	-prompt: string
 	+isExample(): boolean
-	+hasImage(): boolean
 	+isImageRequired(): boolean
-	+canPublish(requested, imageAvailable): boolean
-	+supportsSubcategory(subcategory): boolean
-	+availableSubcategories(): TaskSubcategory[]
 	+idealResponseWords(): number
 	+acceptableResponseWords(): [number, number]
 	+isPromptValid(): boolean
-	+imagePath(): string
-	+imageUrl(): string
 }
 
 class PracticeSession {
 	-name: string
 	-type: PracticeType
 	-response: string
-	-timeUpAction: "stop" | "continue" | null
+	-timeUpAction: "stop" | null
 	-startedAt: Date
 	+stats(): DeterministicStats
 	+wordCount(): number
 	+isTimed(): boolean
-	+deadlineEpochSeconds(): number
 	+remainingSeconds(nowMs): number
 	+isWithinWordRange(): boolean
 	+isNameValid(name): boolean
 	+rename(name): void
-	+applyTimeUpAction(action): void
 }
 
 class ChatMessage {
@@ -84,10 +73,8 @@ class Evaluation {
 	-summary: string
 	-estimatedBand: number
 	+isTask1(): boolean
-	+criterionFor(key): EvaluationCriterion
-	+criterionBands(): Partial<Record<Criteria, number>> | null
 	+roundedBand(): number
-	+combineWritingBands(task1Band, task2Band): number
+	+combineWritingBands(band1, band2): number
 }
 
 class EvaluationCriterion {
@@ -142,16 +129,12 @@ class AiRequest {
 	-inputTokens: number | null
 	-outputTokens: number | null
 	-errorSummary: string | null
-	+reserve(...): { id: string; startedAt: number } | null
-	+complete(...): void
 	+fail(summary): void
 }
 
 class AiSetting {
 	-key: string
 	-value: string
-	+stored(keys): Map<string, string>
-	+upsert(...): void
 	+chatPrompt(taskCategory): string
 	+evaluationPrompt(taskCategory): string
 	+runtimeConfig(defaults): AiRuntimeConfig
@@ -160,8 +143,6 @@ class AiSetting {
 class AdminAuditLog {
 	-action: string
 	-targetType: string
-	-metadata: Record<string, string | number | boolean | null>
-	+record(...): void
 	+recent(limit): AdminAuditLog[]
 }
 
