@@ -282,7 +282,7 @@ test.describe("UC36 · Thêm đề bài (add a task)", () => {
 		// forms currently break with kit/form_field_unbound (see UC36 create).
 		const field = page.getByPlaceholder("Paste or type the task prompt...");
 		await field.fill("Too short");
-		await field.blur();
+		await page.getByRole("button", { name: "Save task" }).click();
 
 		await expect(page.getByText("Task prompt must be between 15 and 85 words")).toBeVisible();
 	});
