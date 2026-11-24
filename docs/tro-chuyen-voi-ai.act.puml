@@ -15,15 +15,20 @@ else (Có)
 		:Hiển thị hộp thoại "Unable to chat"\nkèm thông báo quá nhiều yêu cầu;
 		stop
 	else (Có)
-		:Chuẩn bị ngữ cảnh: đề bài, bài viết,\nđánh giá và 10 tin nhắn gần nhất;
+		if (Còn hạn ngạch trò chuyện trong ngày?) then (Không)
+			:Hiển thị hộp thoại "Unable to chat"\nkèm thông báo đạt hạn ngạch\n(đặt lại lúc 00:00 UTC);
+			stop
+		else (Có)
+			:Chuẩn bị ngữ cảnh: đề bài, bài viết,\nđánh giá và 10 tin nhắn gần nhất;
 
-		|Cloudflare Workers AI|
-		:Sinh câu trả lời cho câu hỏi;
+			|Cloudflare Workers AI|
+			:Sinh câu trả lời cho câu hỏi;
 
-		|Hệ thống|
-		:Hiển thị câu trả lời theo luồng (stream);
-		:Lưu cặp tin nhắn vào lịch sử;
-		stop
+			|Hệ thống|
+			:Hiển thị câu trả lời theo luồng (stream);
+			:Lưu cặp tin nhắn vào lịch sử;
+			stop
+		endif
 	endif
 endif
 

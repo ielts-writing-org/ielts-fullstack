@@ -3,158 +3,166 @@
 skinparam DefaultFontName Segoe UI
 skinparam classAttributeIconSize 0
 
+' Operations are implemented as plain module functions (#lib/domain: task, task-image,
+' evaluation, practice-session, chat-message, text-stats, ai-config, theme, save-state;
+' #lib/server/data: tasks, practice-sessions, chat-messages, evaluations, ai-requests,
+' ai-settings, users, profiles, admin-audit-logs) - the runtime uses modules, not classes.
+' Associations express ownership and references; bookkeeping columns (ids, timestamps)
+' are implementation detail and intentionally omitted.
+
 class User {
-	+id: string
-	+name: string
-	+email: string
-	+emailVerified: boolean
-	+image: string | null
-	+role: string | null
-	+banned: boolean
-	+banReason: string | null
-	+banExpires: Date | null
-	+lastActiveAt: Date | null
-	+createdAt: Date
-	+updatedAt: Date
+	-name: string
+	-email: string
+	-emailVerified: boolean
+	-image: string | null
+	-role: string | null
+	-banned: boolean
+	-banReason: string | null
+	-banExpires: Date | null
 	+isAdmin(): boolean
 	+isLocked(): boolean
-	+canBeDemoted(activeAdminCount: number): boolean
-	+canBeLocked(activeAdminCount: number): boolean
+	+canBeDemoted(activeAdminCount): boolean
+	+canBeLocked(activeAdminCount): boolean
 }
 
 class Profile {
-	+id: string
-	+userId: string
-	+bandTarget: number | null
-	+theme: string
-	+createdAt: Date
-	+updatedAt: Date
-	+deletedAt: Date | null
+	-bandTarget: number | null
+	-theme: string
 	+hasBandTarget(): boolean
-	+isBandTargetValid(band: number): boolean
-	+setBandTarget(band: number): void
+	+isBandTargetValid(band): boolean
+	+setBandTarget(band): void
 }
 
 class Task {
-	+id: string
-	+userId: string | null
-	+category: TaskCategory
-	+subcategory: TaskSubcategory | null
-	+topic: string | null
-	+difficulty: "beginner" | "intermediate" | "advanced" | null
-	+published: boolean
-	+prompt: string
-	+imageName: string | null
-	+createdAt: Date
-	+updatedAt: Date
-	+deletedAt: Date | null
+	-category: TaskCategory
+	-subcategory: TaskSubcategory | null
+	-topic: string | null
+	-difficulty: TaskDifficulty | null
+	-published: boolean
+	-prompt: string
 	+isExample(): boolean
 	+hasImage(): boolean
 	+isImageRequired(): boolean
-	+canPublish(requested: boolean, imageAvailable: boolean): boolean
-	+supportsSubcategory(subcategory: TaskSubcategory): boolean
+	+canPublish(requested, imageAvailable): boolean
+	+supportsSubcategory(subcategory): boolean
 	+availableSubcategories(): TaskSubcategory[]
 	+idealResponseWords(): number
 	+acceptableResponseWords(): [number, number]
 	+isPromptValid(): boolean
-	+imagePath(): string | null
-	+imageUrl(): string | null
+	+imagePath(): string
+	+imageUrl(): string
 }
 
 class PracticeSession {
-	+id: string
-	+userId: string
-	+taskId: string
-	+name: string
-	+type: PracticeType
-	+response: string
-	+timeUpAction: "stop" | "continue" | null
-	+startedAt: Date
-	+createdAt: Date
-	+updatedAt: Date
-	+deletedAt: Date | null
+	-name: string
+	-type: PracticeType
+	-response: string
+	-timeUpAction: "stop" | "continue" | null
+	-startedAt: Date
 	+stats(): DeterministicStats
 	+wordCount(): number
 	+isTimed(): boolean
+	+deadlineEpochSeconds(): number
+	+remainingSeconds(nowMs): number
 	+isWithinWordRange(): boolean
-	+isNameValid(name: string): boolean
-	+rename(name: string): void
-	+applyTimeUpAction(action: "stop" | "continue"): void
+	+isNameValid(name): boolean
+	+rename(name): void
+	+applyTimeUpAction(action): void
 }
 
 class ChatMessage {
-	+id: string
-	+practiceSessionId: string
-	+from: "assistant" | "user"
-	+message: string
-	+createdAt: Date
-	+updatedAt: Date
-	+deletedAt: Date | null
+	-from: "assistant" | "user"
+	-message: string
 	+wordCount(): number
 	+isWithinWordLimit(): boolean
 	+isFromUser(): boolean
 }
 
 class Evaluation {
-	+taskCategory: TaskCategory
-	+criteria: EvaluationCriterion[]
-	+summary: string
-	+estimatedBand: number
+	-taskCategory: TaskCategory
+	-criteria: Record<Criteria, EvaluationCriterion>
+	-summary: string
+	-estimatedBand: number
 	+isTask1(): boolean
-	+criterionFor(key: Criteria): EvaluationCriterion | null
-	+criterionBands(): Map<Criteria, number>
+	+criterionFor(key): EvaluationCriterion
+	+criterionBands(): Partial<Record<Criteria, number>> | null
 	+roundedBand(): number
+	+combineWritingBands(task1Band, task2Band): number
 }
 
 class EvaluationCriterion {
-	+band: number
-	+checks: CriterionCheck[]
-	+strengths: CriterionStrength[]
-	+weaknesses: CriterionWeakness[]
-	+why: string
-	+nextBandGap: string | null
+	-band: number
+	-why: string
+	-nextBandGap: string | null
 	+label(): string
-	+metCheckCount(): number
-	+allChecksMet(): boolean
 }
 
 class CriterionCheck {
-	+title: string
-	+status: CriterionCheckStatus
-	+evidence: string
+	-title: string
+	-status: CriterionCheckStatus
+	-evidence: string
 	+isMet(): boolean
 	+statusLabel(): string
 }
 
 class CriterionStrength {
-	+title: string
-	+evidence: string
-	+describe(): string
+	-title: string
+	-evidence: string
 }
 
 class CriterionWeakness {
-	+title: string
-	+evidence: string
-	+advice: string
-	+describe(): string
+	-title: string
+	-evidence: string
+	-advice: string
 }
 
 class TaskImage {
-	+fileName: string
-	+sizeBytes: number
+	-file: File
 	+isValidSize(): boolean
 	+isValidExtension(): boolean
-	+isValidName(): boolean
-	{static} +allowedMimeTypes(): string[]
+	+isValidName(name): boolean
 	+path(): string
+	+allowedMimeTypes(): string[]
+	+createName(): string
 }
 
 class DeterministicStats {
-	+words: number
-	+characters: number
-	+sentences: number
-	+paragraphs: number
-	+isEmpty(): boolean
+	-words: number
+	-characters: number
+	-sentences: number
+	-paragraphs: number
+}
+
+class AiRequest {
+	-kind: AiRequestKind
+	-status: "pending" | "success" | "error"
+	-model: string
+	-startedAt: Date
+	-durationMs: number | null
+	-inputTokens: number | null
+	-outputTokens: number | null
+	-errorSummary: string | null
+	+reserve(...): { id: string; startedAt: number } | null
+	+complete(...): void
+	+fail(summary): void
+}
+
+class AiSetting {
+	-key: string
+	-value: string
+	+stored(keys): Map<string, string>
+	+upsert(...): void
+	+chatPrompt(taskCategory): string
+	+evaluationPrompt(taskCategory): string
+	+runtimeConfig(defaults): AiRuntimeConfig
+}
+
+class AdminAuditLog {
+	-action: string
+	-targetType: string
+	-metadata: Record<string, string | number | boolean | null>
+	+record(...): void
+	+recent(limit): AdminAuditLog[]
 }
 
 enum TaskCategory {
@@ -178,6 +186,12 @@ enum TaskSubcategory {
 	two-part-question-essay
 }
 
+enum TaskDifficulty {
+	beginner
+	intermediate
+	advanced
+}
+
 enum PracticeType {
 	free
 	timed
@@ -197,6 +211,22 @@ enum CriterionCheckStatus {
 	not_met
 }
 
+enum AiRequestKind {
+	grading
+	chat
+}
+
+class AiRuntimeConfig {
+	-chatModel: AiModel
+	-gradingModel: AiGradingModel
+	-enableThinking: boolean
+	-maxOutputTokens: number
+	-seed: number
+	-temperature: number
+	-chatDailyLimit: number
+	-gradingDailyLimit: number
+}
+
 User "1" -- "0..1" Profile : has >
 User "1" -- "0..*" Task : owns >
 User "1" -- "0..*" PracticeSession : practices >
@@ -205,6 +235,10 @@ Task "1" -- "0..1" TaskImage : has >
 PracticeSession "1" -- "0..1" Evaluation : is graded by >
 PracticeSession "1" -- "0..*" ChatMessage : contains >
 PracticeSession ..> DeterministicStats : analyses >
+User "1" -- "0..*" AiRequest : triggers >
+PracticeSession "1" -- "0..*" AiRequest : serves >
+User "1" -- "0..*" AdminAuditLog : acts in >
+User "1" -- "0..*" AiSetting : configures >
 
 Evaluation *-- "4" EvaluationCriterion : groups >
 EvaluationCriterion *-- "1..*" CriterionCheck : checks >
@@ -213,10 +247,12 @@ EvaluationCriterion *-- "0..*" CriterionWeakness : flags >
 
 Task --> TaskCategory
 Task --> TaskSubcategory
+Task --> TaskDifficulty
 PracticeSession --> PracticeType
 Evaluation --> TaskCategory
-Evaluation ..> Criteria
 EvaluationCriterion ..> Criteria
 CriterionCheck --> CriterionCheckStatus
+AiRequest --> AiRequestKind
+AiSetting --> AiRuntimeConfig
 
 @enduml

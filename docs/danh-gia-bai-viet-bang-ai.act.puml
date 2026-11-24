@@ -15,15 +15,20 @@ else (Có)
 		:Hiển thị hộp thoại "Unable to evaluate"\nthông báo đạt giới hạn và thử lại sau;
 		stop
 	else (Có)
-		:Chuẩn bị dữ liệu bài làm: đề bài, ảnh (Task 1)\nvà bài viết;
+		if (Còn hạn ngạch đánh giá trong ngày?) then (Không)
+			:Hiển thị hộp thoại "Unable to evaluate"\nkèm thông báo đạt hạn ngạch\n(đặt lại lúc 00:00 UTC);
+			stop
+		else (Có)
+			:Chuẩn bị dữ liệu bài làm: đề bài, ảnh (Task 1)\nvà bài viết;
 
-		|Cloudflare Workers AI|
-		:Đánh giá bài viết theo 4 tiêu chí;
+			|Cloudflare Workers AI|
+			:Đánh giá bài viết theo 4 tiêu chí;
 
-		|Hệ thống|
-		:Hiển thị kết quả đánh giá theo luồng (stream);
-		:Lưu đánh giá của AI;
-		stop
+			|Hệ thống|
+			:Hiển thị kết quả đánh giá theo luồng (stream);
+			:Lưu đánh giá của AI;
+			stop
+		endif
 	endif
 endif
 
