@@ -1,5 +1,5 @@
-import type { TaskCategory } from "#lib/domain/task-category.ts";
-import type { TaskSubcategory } from "#lib/domain/task-subcategory.ts";
+import type { TaskCategory } from "#lib/domain/task.ts";
+import type { TaskSubcategory } from "#lib/domain/task.ts";
 import { resolve } from "$app/paths";
 import type { PageData } from "./$types";
 

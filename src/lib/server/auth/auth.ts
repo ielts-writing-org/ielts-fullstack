@@ -14,7 +14,7 @@ import { admin } from "better-auth/plugins";
 import { sveltekitCookies } from "better-auth/svelte-kit";
 import { waitUntil } from "cloudflare:workers";
 import { getDb } from "../db";
-import { profiles } from "../db/app.schema";
+import { insertProfile } from "../data/profiles";
 import { sendEmail } from "../bindings/email";
 
 export const createAuth = (d1: D1Database) => {
@@ -95,8 +95,7 @@ export const createAuth = (d1: D1Database) => {
 						return { data: user };
 					},
 					after: async (user) => {
-						const db = getDb(d1);
-						await db.insert(profiles).values({ userId: user.id });
+						await insertProfile(user.id);
 					}
 				}
 			}

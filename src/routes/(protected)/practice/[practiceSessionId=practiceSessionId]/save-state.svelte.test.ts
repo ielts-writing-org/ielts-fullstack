@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, expect, test, vi } from "vitest";
-import { EditorSaver } from "./save-state.svelte.ts";
+import { createEditorSaver } from "./save-state.svelte.ts";
 
 /**
  * Auto-save state machine behind both editors: idle -> unsaved (typing) ->
@@ -15,7 +15,7 @@ afterEach(() => {
 
 test("starts out saved and marks content unsaved on typing", () => {
 	const save = vi.fn(async () => {});
-	const saver = new EditorSaver(save);
+	const saver = createEditorSaver(save);
 
 	expect(saver.status).toBe("saved");
 
@@ -25,7 +25,7 @@ test("starts out saved and marks content unsaved on typing", () => {
 
 test("saves automatically after the debounce window", async () => {
 	const save = vi.fn(async () => {});
-	const saver = new EditorSaver(save);
+	const saver = createEditorSaver(save);
 
 	saver.scheduleSaving();
 	await vi.advanceTimersByTimeAsync(4999);
@@ -44,7 +44,7 @@ test("keeps the saving state while a save is in flight", async () => {
 				releaseSave = resolve;
 			})
 	);
-	const saver = new EditorSaver(save);
+	const saver = createEditorSaver(save);
 
 	saver.scheduleSaving();
 	await vi.advanceTimersByTimeAsync(5000);
@@ -61,7 +61,7 @@ test("keeps the saving state while a save is in flight", async () => {
 
 test("saveNow saves immediately and reports success", async () => {
 	const save = vi.fn(async () => {});
-	const saver = new EditorSaver(save);
+	const saver = createEditorSaver(save);
 
 	saver.scheduleSaving();
 	await expect(saver.saveNow()).resolves.toBe(true);
@@ -73,7 +73,7 @@ test("saveNow reports failure and moves to the failed state", async () => {
 	const save = vi.fn(async () => {
 		throw new Error("network down");
 	});
-	const saver = new EditorSaver(save);
+	const saver = createEditorSaver(save);
 
 	saver.scheduleSaving();
 	await expect(saver.saveNow()).resolves.toBe(false);
@@ -84,7 +84,7 @@ test("a failing auto-save ends in the failed state", async () => {
 	const save = vi.fn(async () => {
 		throw new Error("network down");
 	});
-	const saver = new EditorSaver(save);
+	const saver = createEditorSaver(save);
 
 	saver.scheduleSaving();
 	await vi.advanceTimersByTimeAsync(5000);
@@ -99,7 +99,7 @@ test("recovers from failed back to saved on a later successful save", async () =
 			throw new Error("network down");
 		})
 		.mockImplementationOnce(async () => {});
-	const saver = new EditorSaver(save);
+	const saver = createEditorSaver(save);
 
 	saver.scheduleSaving();
 	await vi.advanceTimersByTimeAsync(5000);

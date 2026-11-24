@@ -1,8 +1,8 @@
 <script lang="ts">
 	import { AlarmClock, AlarmClockOff, Check } from "@lucide/svelte";
-	import type { TaskCategory } from "#lib/domain/task-category.ts";
-	import type { PracticeType } from "#lib/domain/practice-type.ts";
-	import { getTimeLimitInMinutes } from "#lib/domain/ielts-timing.ts";
+	import type { TaskCategory } from "#lib/domain/task.ts";
+	import type { PracticeType } from "#lib/domain/practice-session.ts";
+	import { getTimeLimitInMinutes } from "#lib/domain/practice-session.ts";
 
 	type Props = {
 		category: TaskCategory;

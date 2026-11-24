@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { Clock } from "@lucide/svelte";
 	import { onMount, untrack } from "svelte";
-	import { getRemainingSeconds } from "#lib/domain/ielts-timing.ts";
+	import { getRemainingSeconds } from "#lib/domain/practice-session.ts";
 
 	type Props = {
 		endAt: number;

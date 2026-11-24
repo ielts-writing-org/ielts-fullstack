@@ -1,3 +1,4 @@
+/** Delays invoking `fn` until `delay` ms have passed without another call. */
 export function debounce<T extends (...args: Parameters<T>) => ReturnType<T>>(
 	fn: T,
 	delay: number

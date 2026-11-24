@@ -6,7 +6,7 @@
 <script lang="ts">
 	import type { ChatMessage } from "#lib/domain/chat-message.ts";
 	import type { Evaluation } from "#lib/domain/evaluation.ts";
-	import type { PracticeSessionContext } from "#lib/domain/task-context.ts";
+	import type { PracticeSessionContext } from "#lib/domain/practice-session.ts";
 	import { untrack } from "svelte";
 	import ChatPanel from "./ChatPanel.svelte";
 

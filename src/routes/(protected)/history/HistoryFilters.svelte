@@ -2,8 +2,8 @@
 	import { onDestroy } from "svelte";
 	import { goto } from "$app/navigation";
 	import { Search, X } from "@lucide/svelte";
-	import type { TaskCategory } from "#lib/domain/task-category.ts";
-	import { getTaskSubcategoryLabel, type TaskSubcategory } from "#lib/domain/task-subcategory.ts";
+	import type { TaskCategory } from "#lib/domain/task.ts";
+	import { getTaskSubcategoryLabel, type TaskSubcategory } from "#lib/domain/task.ts";
 	import { buildHref, type FilterKey, type HistoryFiltersData } from "./utils.ts";
 	import { buildResolveWithQuery } from "#lib/utils/links.ts";
 

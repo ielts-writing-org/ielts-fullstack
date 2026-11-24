@@ -1,9 +1,7 @@
+import { getTaskImagePath } from "#lib/domain/task-image.ts";
 import { R2_ENDPOINT } from "$app/env/public";
 
-export function getImageUrl(imageName: string) {
-	return `${R2_ENDPOINT}/${getImagePath(imageName)}` as const;
-}
-
-export function getImagePath(imageName: string) {
-	return `images/${imageName}` as const;
+/** Public URL from which a stored task image is served. */
+export function getTaskImageUrl(imageName: string) {
+	return `${R2_ENDPOINT}/${getTaskImagePath(imageName)}` as const;
 }

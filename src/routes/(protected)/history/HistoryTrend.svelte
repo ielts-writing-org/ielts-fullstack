@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { TrendingUp } from "@lucide/svelte";
 	import type { TrendPoint } from "./utils.ts";
-	import { getBandFraction } from "#lib/domain/band.ts";
+	import { getBandFraction } from "#lib/domain/evaluation.ts";
 
 	type Props = { trend: TrendPoint[]; bandTarget: number };
 	let { trend, bandTarget }: Props = $props();

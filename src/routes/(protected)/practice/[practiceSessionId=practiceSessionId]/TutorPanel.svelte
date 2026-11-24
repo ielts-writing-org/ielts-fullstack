@@ -2,11 +2,11 @@
 	import { untrack } from "svelte";
 	import type { ChatMessage } from "#lib/domain/chat-message.ts";
 	import type { Evaluation } from "#lib/domain/evaluation.ts";
-	import type { PracticeSessionContext } from "#lib/domain/task-context.ts";
+	import type { PracticeSessionContext } from "#lib/domain/practice-session.ts";
 	import { ListCheck, MessagesSquare } from "@lucide/svelte";
 	import ChatPanel from "./ChatPanel.svelte";
 	import EvaluationPanel from "./EvaluationPanel.svelte";
-	import { getProfile } from "#lib/remotes/query/get-profile.remote.ts";
+	import { getProfile } from "#lib/remotes/profile.remote.ts";
 
 	type Props = {
 		practiceSessionId: string;

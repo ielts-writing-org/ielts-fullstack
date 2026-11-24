@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { countCharacters, countWords } from "#lib/utils/stats.ts";
+	import { countCharacters, countWords } from "#lib/domain/text-stats.ts";
 	import { Check, RotateCcw, TriangleAlert } from "@lucide/svelte";
 	import { type EditorFontFamily, FONT_OPTIONS } from "./editor-display.ts";
 	import { getSaveStateLabel, type SaveState } from "#lib/domain/save-state.ts";

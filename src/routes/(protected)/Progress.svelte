@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { Target } from "@lucide/svelte";
-	import { getBandPercentage } from "#lib/domain/band.ts";
+	import { getBandPercentage } from "#lib/domain/evaluation.ts";
 	import BandTarget from "./BandTarget.svelte";
 	import BandTrend from "./BandTrend.svelte";
 	import CriteriaBreakdown from "./CriteriaBreakdown.svelte";

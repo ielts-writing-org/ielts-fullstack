@@ -1,7 +1,7 @@
 <script lang="ts">
 	import type { Component } from "svelte";
 	import { CircleCheck, FileText, PenLine, PieChart } from "@lucide/svelte";
-	import { roundToNearestHalfBand } from "#lib/domain/band.ts";
+	import { roundToNearestHalfBand } from "#lib/domain/evaluation.ts";
 	import { type HistoryStats } from "./utils.ts";
 
 	type Props = { stats: HistoryStats; bandTarget: number | null };

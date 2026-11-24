@@ -1,8 +1,8 @@
 <script lang="ts">
 	import { TriangleAlert } from "@lucide/svelte";
 	import { closeModal } from "#lib/components/Modal.svelte";
-	import { deleteTask } from "#lib/remotes/command/delete-task.remote.js";
-	import type { getTaskDependants } from "#lib/remotes/query/get-task-dependants.remote.js";
+	import { deleteTask } from "#lib/remotes/task.remote.ts";
+	import type { getTaskDependants } from "#lib/remotes/task.remote.ts";
 	import RelativeTime from "#lib/components/RelativeTime.svelte";
 	import { practiceHref, type TaskItem } from "./utils.ts";
 

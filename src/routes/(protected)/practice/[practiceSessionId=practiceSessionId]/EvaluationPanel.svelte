@@ -3,21 +3,21 @@
 	import JSONParser from "@streamparser/json/jsonparser.js";
 	import { Info, ListChecks } from "@lucide/svelte";
 	import type { Evaluation, EvaluationCriterion } from "#lib/domain/evaluation.ts";
-	import type { PracticeSessionContext } from "#lib/domain/task-context.ts";
+	import type { PracticeSessionContext } from "#lib/domain/practice-session.ts";
 	import { openModal } from "#lib/components/Modal.svelte";
-	import { getBandPercentage } from "#lib/domain/band.ts";
-	import { getResponseAcceptableWordCount } from "#lib/domain/task-response.ts";
-	import { countWords } from "#lib/utils/stats.ts";
-	import type { Criteria } from "#lib/domain/criteria.ts";
-	import { isCriteriaKey } from "#lib/domain/criteria.ts";
+	import { getBandPercentage } from "#lib/domain/evaluation.ts";
+	import { getResponseAcceptableWordCount } from "#lib/domain/task.ts";
+	import { countWords } from "#lib/domain/text-stats.ts";
+	import type { Criteria } from "#lib/domain/evaluation.ts";
+	import { isCriteriaKey } from "#lib/domain/evaluation.ts";
 	import { getZodErrors } from "#lib/utils/error.ts";
 	import ValidationErrors from "#lib/components/ValidationErrors.svelte";
-	import { saveEvaluation } from "#lib/remotes/command/save-evaluation.remote.ts";
+	import { saveEvaluation } from "#lib/remotes/practice-session.remote.ts";
 	import { readAiStream } from "#lib/utils/stream.ts";
 	import EvaluationCriteria from "./EvaluationCriteria.svelte";
-	import { evaluateRequestSchema, type EvaluateRequest } from "#lib/domain/evaluate-request.ts";
-	import { getPromptAcceptableWordCount } from "#lib/domain/task-prompt.ts";
-	import type { TaskCategory } from "#lib/domain/task-category.ts";
+	import { evaluateRequestSchema, type EvaluateRequest } from "#lib/domain/evaluation.ts";
+	import { getPromptAcceptableWordCount } from "#lib/domain/task.ts";
+	import type { TaskCategory } from "#lib/domain/task.ts";
 
 	type Props = {
 		practiceSessionId: string;

@@ -1,8 +1,8 @@
 <script lang="ts">
 	import { onMount } from "svelte";
-	import { getAdminSessionDetail, getAdminSessions } from "#lib/remotes/query/admin-data.remote.ts";
-	import { deleteAdminSession } from "#lib/remotes/command/admin.remote.ts";
-	import { getImageUrl } from "#lib/utils/paths.ts";
+	import { getAdminSessionDetail, getAdminSessions } from "#lib/remotes/admin-sessions.remote.ts";
+	import { deleteAdminSession } from "#lib/remotes/admin-sessions.remote.ts";
+	import { getTaskImageUrl } from "#lib/utils/paths.ts";
 
 	type Result = Awaited<ReturnType<typeof getAdminSessions>>;
 	type Detail = Awaited<ReturnType<typeof getAdminSessionDetail>>;
@@ -225,7 +225,7 @@
 				</div>
 			</div>
 			{#if detail.image}<img
-					src={getImageUrl(detail.image)}
+					src={getTaskImageUrl(detail.image)}
 					alt="Task visual"
 					class="max-h-64 w-full rounded-box bg-base-200 object-contain" />{/if}
 			<section class="rounded-2xl bg-base-200/50 p-4">

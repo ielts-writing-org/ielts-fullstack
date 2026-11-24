@@ -2,7 +2,7 @@
 	import { page } from "$app/state";
 	import { resolve } from "$app/paths";
 	import { ArrowLeft } from "@lucide/svelte";
-	import { getTaskSubcategoryLabel } from "#lib/domain/task-subcategory.ts";
+	import { getTaskSubcategoryLabel } from "#lib/domain/task.ts";
 
 	const session = $derived(page.data.metadata);
 </script>

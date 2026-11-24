@@ -2,10 +2,10 @@
 	import { onDestroy } from "svelte";
 	import { Trash } from "@lucide/svelte";
 	import { closeModal } from "#lib/components/Modal.svelte";
-	import { getTaskSubcategories, getTaskSubcategoryLabel } from "#lib/domain/task-subcategory.ts";
-	import { updateTask } from "#lib/remotes/form/update-task.remote.js";
+	import { getTaskSubcategories, getTaskSubcategoryLabel } from "#lib/domain/task.ts";
+	import { updateTask } from "#lib/remotes/task.remote.ts";
 	import { type TaskItem } from "./utils.ts";
-	import { getImageUrl } from "#lib/utils/paths.ts";
+	import { getTaskImageUrl } from "#lib/utils/paths.ts";
 
 	type Props = { task: TaskItem; onSaved?: () => void | Promise<void> };
 	let { task, onSaved }: Props = $props();
@@ -107,7 +107,7 @@
 						class="max-h-40 w-full rounded-box border border-base-content/10 object-contain" />
 				{:else if imageName}
 					<img
-						src={getImageUrl(imageName)}
+						src={getTaskImageUrl(imageName)}
 						alt="Current task visual"
 						class="max-h-40 w-full rounded-box border border-base-content/10 bg-base-200/50 object-contain" />
 					<button

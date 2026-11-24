@@ -9,9 +9,9 @@
 		Trash
 	} from "@lucide/svelte";
 	import RelativeTime from "#lib/components/RelativeTime.svelte";
-	import { getTaskSubcategoryLabel } from "#lib/domain/task-subcategory.ts";
+	import { getTaskSubcategoryLabel } from "#lib/domain/task.ts";
 	import { type TaskItem } from "./utils.ts";
-	import { getImageUrl } from "#lib/utils/paths.ts";
+	import { getTaskImageUrl } from "#lib/utils/paths.ts";
 
 	type Props = {
 		task: TaskItem;
@@ -39,7 +39,7 @@
 		onclick={onDetails}>
 		{#if task.imageName}
 			<img
-				src={getImageUrl(task.imageName)}
+				src={getTaskImageUrl(task.imageName)}
 				alt="Task visual"
 				class="size-full object-contain"
 				loading="lazy" />

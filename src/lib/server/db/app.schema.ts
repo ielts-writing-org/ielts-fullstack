@@ -1,7 +1,7 @@
 import { index, integer, real, sqliteTable, text } from "drizzle-orm/sqlite-core";
 import type { Evaluation } from "#lib/domain/evaluation.ts";
-import type { TaskCategory } from "#lib/domain/task-category.ts";
-import type { TaskSubcategory } from "#lib/domain/task-subcategory.ts";
+import type { TaskCategory } from "#lib/domain/task.ts";
+import type { TaskSubcategory } from "#lib/domain/task.ts";
 import { users } from "./auth.schema";
 import { now, withBaseColumns } from "./common";
 

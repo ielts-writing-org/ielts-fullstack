@@ -1,18 +1,16 @@
 import type { RequestHandler } from "./$types";
 import { error } from "@sveltejs/kit";
+import { chatMessageSchema } from "#lib/domain/chat-message.ts";
+import { computeDeterministicStats } from "#lib/domain/text-stats.ts";
+import { DEFAULT_AI_RUNTIME } from "#lib/domain/ai-config.ts";
 import { getApiSession } from "#lib/server/auth/session.ts";
 import { getRateLimiter, rateLimit } from "#lib/server/bindings/rate-limit.ts";
-import { getDatabase } from "#lib/server/db/index.ts";
-import { chatMessageSchema } from "#lib/domain/chat-message.ts";
-import { getObjectAsBlob } from "#lib/server/bindings/bucket.ts";
-import { compressImageAsBase64 } from "#lib/server/bindings/images.ts";
 import { getAiCompletionAsStream } from "#lib/server/bindings/ai.ts";
-import { DEFAULT_AI_RUNTIME, getAiRuntimeConfig, getChatPrompt } from "#lib/server/ai-settings.ts";
-import { failAiRequest, reserveAiRequest, trackAiStream } from "#lib/server/ai-telemetry.ts";
-import type { TaskCategory } from "#lib/domain/task-category.ts";
-import { computeDeterministicStats } from "#lib/utils/stats.ts";
-import { getImagePath } from "#lib/utils/paths.ts";
-import { sql } from "drizzle-orm";
+import { getAiRuntimeConfig, getChatPrompt } from "#lib/server/services/ai-settings.ts";
+import { failAiRequest, reserveAiRequest } from "#lib/server/data/ai-requests.ts";
+import { trackAiStream } from "#lib/server/services/ai-telemetry.ts";
+import { findAiChatContext } from "#lib/server/data/practice-sessions.ts";
+import { getTaskImageAsBase64DataUrl } from "#lib/server/services/task-images.ts";
 
 export const POST: RequestHandler = async ({ locals, params, request }) => {
 	const { user } = getApiSession(locals);
@@ -20,13 +18,20 @@ export const POST: RequestHandler = async ({ locals, params, request }) => {
 
 	const chatMessage = getValidatedChatMessage(await request.json());
 	const ps = await getValidatedPracticeSession(params.practiceSessionId, user.id);
-	const imageBase64 = await getTaskImageAsBase64(ps.task.category, ps.task.imageName);
+	const imageBase64 = await getTaskImageAsBase64DataUrl(ps.task.imageName);
 	const runtime = await getAiRuntimeConfig({
 		...DEFAULT_AI_RUNTIME,
 		seed: 2026,
 		temperature: 0.7
 	});
-	const telemetry = await reserveAiRequest(user.id, ps.id, "chat", runtime.chatModel, runtime);
+	const telemetry = await reserveAiRequest(
+		user.id,
+		ps.id,
+		"chat",
+		runtime.chatModel,
+		runtime.chatDailyLimit
+	);
+	if (!telemetry) error(429, `Daily chat quota reached. Resets at 00:00 UTC.`);
 
 	let stream: ReadableStream;
 	try {
@@ -85,37 +90,7 @@ function getValidatedChatMessage(json: unknown) {
 }
 
 async function getValidatedPracticeSession(id: string, userId: string) {
-	const db = getDatabase();
-	const ps = await db.query.practiceSessions.findFirst({
-		columns: { id: true, response: true },
-		where: {
-			id: id,
-			userId: userId,
-			deletedAt: {
-				isNull: true
-			}
-		},
-		with: {
-			task: {
-				columns: { category: true, prompt: true, imageName: true }
-			},
-			evaluation: { columns: { result: true } },
-			chatMessages: {
-				columns: { from: true, message: true },
-				orderBy: (_chatMessages, { desc }) => desc(sql`rowid`),
-				limit: 10
-			}
-		}
-	});
-
+	const ps = await findAiChatContext(userId, id);
 	if (!ps) error(404);
 	return ps;
-}
-
-async function getTaskImageAsBase64(category: TaskCategory, name: string | null) {
-	if (category !== "1" || !name) return undefined;
-
-	const image = await getObjectAsBlob(getImagePath(name));
-	if (!image) error(400);
-	return compressImageAsBase64(image);
 }

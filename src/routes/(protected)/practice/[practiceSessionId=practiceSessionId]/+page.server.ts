@@ -1,9 +1,9 @@
 import { error } from "@sveltejs/kit";
-import { getDatabase } from "#lib/server/db/index.ts";
 import type { PageServerLoad } from "./$types";
 import type { ChatMessage } from "#lib/domain/chat-message.ts";
 import { getPageSession } from "#lib/server/auth/session.ts";
-import { getDeadlineEpochSeconds, getRemainingSeconds } from "#lib/domain/ielts-timing.ts";
+import { getDeadlineEpochSeconds, getRemainingSeconds } from "#lib/domain/practice-session.ts";
+import { findOwnedPracticeSessionDetail } from "#lib/server/data/practice-sessions.ts";
 
 export const load = (async ({ locals, params, depends }) => {
 	depends("data:practiceSession");
@@ -11,14 +11,7 @@ export const load = (async ({ locals, params, depends }) => {
 	const { practiceSessionId } = params;
 	const { user } = getPageSession(locals);
 
-	const db = getDatabase();
-	const practiceSession = await db.query.practiceSessions.findFirst({
-		where: {
-			id: practiceSessionId,
-			userId: user.id
-		},
-		with: { task: true, evaluation: true, chatMessages: true }
-	});
+	const practiceSession = await findOwnedPracticeSessionDetail(user.id, practiceSessionId);
 
 	if (!practiceSession) {
 		error(404);

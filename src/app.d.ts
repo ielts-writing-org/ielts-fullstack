@@ -1,7 +1,7 @@
 import type { createAuth } from "#lib/server/auth";
 import type { auth } from "#lib/server/auth/cli.ts";
-import type { TaskCategory } from "#lib/domain/task-category.ts";
-import type { TaskSubcategory } from "#lib/domain/task-subcategory.ts";
+import type { TaskCategory } from "#lib/domain/task.ts";
+import type { TaskSubcategory } from "#lib/domain/task.ts";
 
 // See https://svelte.dev/docs/kit/types#app.d.ts
 // for information about these interfaces

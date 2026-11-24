@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { getBandPercentage, roundToNearestHalfBand } from "#lib/domain/band.ts";
+	import { getBandPercentage, roundToNearestHalfBand } from "#lib/domain/evaluation.ts";
 
 	type Props = {
 		criteria: {

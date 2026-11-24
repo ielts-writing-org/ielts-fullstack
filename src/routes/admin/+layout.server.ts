@@ -1,5 +1,5 @@
 import type { LayoutServerLoad } from "./$types";
-import { getAdminSession } from "#lib/server/auth/admin.ts";
+import { getAdminSession } from "#lib/server/auth/session.ts";
 import { redirect } from "@sveltejs/kit";
 import { resolve } from "$app/paths";
 

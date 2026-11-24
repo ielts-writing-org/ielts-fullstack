@@ -3,8 +3,7 @@ import { afterEach, expect, test, vi } from "vitest";
 import { render } from "vitest-browser-svelte";
 import ChatTestHost from "./ChatTestHost.svelte";
 import Modal, { closeModal } from "#lib/components/Modal.svelte";
-import { saveChatMessages } from "#lib/remotes/command/save-chat-message.remote.ts";
-import { clearChatMessages } from "#lib/remotes/command/clear-chat-messages.remote.ts";
+import { saveChatMessages, clearChatMessages } from "#lib/remotes/practice-session.remote.ts";
 import type { ChatMessage } from "#lib/domain/chat-message.ts";
 import { createMockString } from "#lib/testing/test.ts";
 
@@ -14,11 +13,8 @@ vi.mock("$app/state", () => ({
 
 vi.mock("#lib/utils/dom.ts", async () => await import("#lib/testing/dom.mock.ts"));
 
-vi.mock("#lib/remotes/command/save-chat-message.remote.ts", () => ({
-	saveChatMessages: vi.fn(async () => {})
-}));
-
-vi.mock("#lib/remotes/command/clear-chat-messages.remote.ts", () => ({
+vi.mock("#lib/remotes/practice-session.remote.ts", () => ({
+	saveChatMessages: vi.fn(async () => {}),
 	clearChatMessages: vi.fn(async () => {})
 }));
 

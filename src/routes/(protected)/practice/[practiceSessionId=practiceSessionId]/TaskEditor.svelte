@@ -5,11 +5,9 @@
 	import { openModal } from "#lib/components/Modal.svelte";
 	import Editor from "#lib/components/harper-editor/Editor.svelte";
 	import { getAllowedImageMimeTypes } from "#lib/domain/task-image.ts";
-	import { saveTaskPrompt } from "#lib/remotes/command/save-task-prompt.remote.js";
-	import { saveTaskImage } from "#lib/remotes/form/save-task-image.remote.ts";
-	import { clearTaskImage } from "#lib/remotes/command/clear-task-image.remote.ts";
-	import { EditorSaver } from "./save-state.svelte.ts";
-	import { getImageUrl } from "#lib/utils/paths.ts";
+	import { getTaskImageUrl } from "#lib/utils/paths.ts";
+	import { saveTaskPrompt, saveTaskImage, clearTaskImage } from "#lib/remotes/task.remote.ts";
+	import { createEditorSaver } from "./save-state.svelte.ts";
 
 	type Props = {
 		class?: string;
@@ -34,7 +32,7 @@
 
 	let isReady = $state<boolean>(false);
 
-	const saver = new EditorSaver(async () => {
+	const saver = createEditorSaver(async () => {
 		await saveTaskPrompt({ taskId: props.taskId, prompt: content });
 		isDirty = false;
 	});
@@ -174,7 +172,7 @@
 		{#if isReady && imageName}
 			<div class="flex min-h-fit flex-1 flex-col items-center justify-center gap-2">
 				<img
-					src={getImageUrl(imageName)}
+					src={getTaskImageUrl(imageName)}
 					alt={imageName}
 					class="placeholder max-w-full rounded-br-box" />
 			</div>

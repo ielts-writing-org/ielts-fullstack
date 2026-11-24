@@ -1,9 +1,9 @@
 <script lang="ts">
 	import { onDestroy } from "svelte";
-	import type { TaskCategory } from "#lib/domain/task-category.ts";
+	import type { TaskCategory } from "#lib/domain/task.ts";
 	import { closeModal } from "#lib/components/Modal.svelte";
-	import { getTaskSubcategories, getTaskSubcategoryLabel } from "#lib/domain/task-subcategory.ts";
-	import { createTask } from "#lib/remotes/form/create-task.remote.ts";
+	import { getTaskSubcategories, getTaskSubcategoryLabel } from "#lib/domain/task.ts";
+	import { createTask } from "#lib/remotes/task.remote.ts";
 
 	type Props = {
 		category?: TaskCategory;

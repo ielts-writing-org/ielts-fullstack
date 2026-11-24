@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { closeModal } from "#lib/components/Modal.svelte";
-	import { changeSessionName } from "#lib/remotes/command/change-session-name.remote.js";
+	import { changeSessionName } from "#lib/remotes/practice-session.remote.ts";
 	import type { SessionItem } from "./utils.ts";
 
 	type Props = { session: SessionItem; onSaved?: () => void | Promise<void> };

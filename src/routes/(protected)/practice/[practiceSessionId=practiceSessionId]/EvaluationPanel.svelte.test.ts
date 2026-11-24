@@ -3,15 +3,15 @@ import { afterEach, expect, test, vi } from "vitest";
 import { render } from "vitest-browser-svelte";
 import EvaluationPanel from "./EvaluationPanel.svelte";
 import Modal, { closeModal } from "#lib/components/Modal.svelte";
-import { saveEvaluation } from "#lib/remotes/command/save-evaluation.remote.ts";
+import { saveEvaluation } from "#lib/remotes/practice-session.remote.ts";
 import type { Evaluation } from "#lib/domain/evaluation.ts";
-import type { TaskCategory } from "#lib/domain/task-category.ts";
+import type { TaskCategory } from "#lib/domain/task.ts";
 
 vi.mock("$app/state", () => ({
 	page: { url: new URL("http://localhost:5173/practice/session-2") }
 }));
 
-vi.mock("#lib/remotes/command/save-evaluation.remote.ts", () => ({
+vi.mock("#lib/remotes/practice-session.remote.ts", () => ({
 	saveEvaluation: vi.fn(async () => {})
 }));
 

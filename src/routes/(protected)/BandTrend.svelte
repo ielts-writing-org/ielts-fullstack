@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { Minus, TrendingDown, TrendingUp } from "@lucide/svelte";
-	import { getBandFraction } from "#lib/domain/band.ts";
+	import { getBandFraction } from "#lib/domain/evaluation.ts";
 
 	type Props = {
 		/** Overall bands of the most recent evaluated sessions, oldest first. */
