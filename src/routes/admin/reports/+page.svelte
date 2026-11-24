@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { onMount } from "svelte";
-	import { getAdminAuditLogs, getAdminReport } from "#lib/remotes/query/admin-data.remote.ts";
+	import { getAdminAuditLogs, getAdminReport } from "#lib/remotes/admin-reports.remote.ts";
 
 	type Report = Awaited<ReturnType<typeof getAdminReport>>;
 	type Audit = Awaited<ReturnType<typeof getAdminAuditLogs>>;

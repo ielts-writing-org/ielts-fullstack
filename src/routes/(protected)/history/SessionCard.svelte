@@ -13,11 +13,11 @@
 		TriangleAlert
 	} from "@lucide/svelte";
 	import { openModal } from "#lib/components/Modal.svelte";
-	import { getBandPercentage } from "#lib/domain/band.ts";
-	import { getTimeLimitInMinutes } from "#lib/domain/ielts-timing.ts";
-	import { getResponseIdealWordCount } from "#lib/domain/task-response.ts";
-	import { getTaskSubcategoryLabel } from "#lib/domain/task-subcategory.ts";
-	import { CRITERIA_LABELS } from "#lib/domain/criteria.js";
+	import { getBandPercentage } from "#lib/domain/evaluation.ts";
+	import { getTimeLimitInMinutes } from "#lib/domain/practice-session.ts";
+	import { getResponseIdealWordCount } from "#lib/domain/task.ts";
+	import { getTaskSubcategoryLabel } from "#lib/domain/task.ts";
+	import { CRITERIA_LABELS } from "#lib/domain/evaluation.ts";
 	import RelativeTime from "#lib/components/RelativeTime.svelte";
 	import { practiceHref, type SessionItem } from "./utils.ts";
 

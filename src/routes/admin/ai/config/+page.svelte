@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { onMount } from "svelte";
-	import { getAdminAiConfig } from "#lib/remotes/query/admin-data.remote.ts";
-	import { saveAdminAiConfig, saveAdminPrompt } from "#lib/remotes/command/admin.remote.ts";
+	import { getAdminAiConfig } from "#lib/remotes/admin-ai.remote.ts";
+	import { saveAdminAiConfig, saveAdminPrompt } from "#lib/remotes/admin-ai.remote.ts";
 
 	type Config = Awaited<ReturnType<typeof getAdminAiConfig>>;
 	type Model = "@cf/google/gemma-4-26b-a4b-it" | "@cf/meta/llama-4-scout-17b-16e-instruct";

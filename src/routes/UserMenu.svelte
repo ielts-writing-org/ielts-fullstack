@@ -5,7 +5,7 @@
 	import { authClient } from "#lib/auth/auth-client.ts";
 	import { openModal } from "#lib/components/Modal.svelte";
 	import { resetTheme } from "#lib/components/ThemeController.svelte";
-	import { getProfile } from "#lib/remotes/query/get-profile.remote.ts";
+	import { getProfile } from "#lib/remotes/profile.remote.ts";
 	import InitialsAvatar from "#lib/components/InitialsAvatar.svelte";
 	import ChangeBandTarget from "./ChangeBandTarget.svelte";
 	import ChangeTheme from "./ChangeTheme.svelte";

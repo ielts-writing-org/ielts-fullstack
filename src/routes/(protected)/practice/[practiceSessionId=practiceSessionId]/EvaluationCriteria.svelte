@@ -1,8 +1,8 @@
 <script lang="ts">
 	import { MessagesSquare } from "@lucide/svelte";
 	import type { Evaluation } from "#lib/domain/evaluation.ts";
-	import type { Criteria } from "#lib/domain/criteria.ts";
-	import { CRITERIA_LABELS, CRITERION_CHECK_STATUS_LABELS } from "#lib/domain/criteria.ts";
+	import type { Criteria } from "#lib/domain/evaluation.ts";
+	import { CRITERIA_LABELS, CRITERION_CHECK_STATUS_LABELS } from "#lib/domain/evaluation.ts";
 
 	type Props = {
 		evaluation: Evaluation;

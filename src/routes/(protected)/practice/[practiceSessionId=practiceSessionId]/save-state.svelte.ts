@@ -1,49 +1,43 @@
 import { debounce } from "#lib/utils/debounce.ts";
+import type { SaveState } from "#lib/domain/save-state.ts";
 
-type SavePhase = "Not saved" | "Saved" | "Saving" | "Failed";
-
-export class EditorSaver {
-	current = $state<SavePhase>("Saved");
-	#save: () => Promise<void>;
-	#debouncedSave: ReturnType<typeof debounce>;
-
-	constructor(save: () => Promise<void>) {
-		this.#save = save;
-		this.#debouncedSave = debounce(() => void this.saveNow(), 5000);
-	}
-
-	/** Save state surfaced in the editor status bar. */
-	get status(): "unsaved" | "saving" | "saved" | "failed" {
-		return this.current === "Not saved"
-			? "unsaved"
-			: this.current === "Saving"
-				? "saving"
-				: this.current === "Saved"
-					? "saved"
-					: "failed";
-	}
+/**
+ * Auto-save state machine behind both editors: saved -> unsaved (typing) ->
+ * saving (after the debounce) -> saved, with failed -> retry via saveNow.
+ */
+export function createEditorSaver(save: () => Promise<void>) {
+	let state = $state<SaveState>("saved");
+	const debouncedSave = debounce(() => void saveNow(), 5000);
 
 	/** Records unsaved content and reschedules the autosave. */
-	scheduleSaving() {
-		if (this.current !== "Saving") {
-			this.current = "Not saved";
+	function scheduleSaving() {
+		if (state !== "saving") {
+			state = "unsaved";
 		}
-		this.#debouncedSave();
+		debouncedSave();
 	}
 
 	/** Saves immediately. Resolves to true when the content was persisted. */
-	async saveNow(): Promise<boolean> {
-		this.current = "Saving";
+	async function saveNow(): Promise<boolean> {
+		state = "saving";
 		try {
-			this.#debouncedSave.cancel();
-			await this.#save();
-			this.current = "Saved";
+			debouncedSave.cancel();
+			await save();
+			state = "saved";
 			return true;
 		} catch {
 			// Keep the content dirty so it is retried by the next autosave or the
 			// explicit Retry button in the status bar.
-			this.current = "Failed";
+			state = "failed";
 			return false;
 		}
 	}
+
+	return {
+		get status(): SaveState {
+			return state;
+		},
+		scheduleSaving,
+		saveNow
+	};
 }

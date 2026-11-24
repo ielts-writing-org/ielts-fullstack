@@ -1,10 +1,10 @@
 <script lang="ts">
 	import { goto } from "$app/navigation";
 	import { resolve } from "$app/paths";
-	import type { TaskCategory } from "#lib/domain/task-category.ts";
+	import type { TaskCategory } from "#lib/domain/task.ts";
 	import { openModal } from "#lib/components/Modal.svelte";
-	import { getTimeLimitInMinutes } from "#lib/domain/ielts-timing.ts";
-	import { getResponseIdealWordCount } from "#lib/domain/task-response.ts";
+	import { getTimeLimitInMinutes } from "#lib/domain/practice-session.ts";
+	import { getResponseIdealWordCount } from "#lib/domain/task.ts";
 	import {
 		Eye,
 		EyeOff,
@@ -18,7 +18,7 @@
 		Undo2
 	} from "@lucide/svelte";
 	import ChangeSessionName from "../../../ChangeSessionName.svelte";
-	import { deletePracticeSession } from "#lib/remotes/command/delete-practice-session.remote.ts";
+	import { deletePracticeSession } from "#lib/remotes/practice-session.remote.ts";
 	import Timer from "./Timer.svelte";
 
 	type Props = {

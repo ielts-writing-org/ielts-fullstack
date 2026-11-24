@@ -2,8 +2,8 @@
 	import { Pen, PenOff } from "@lucide/svelte";
 	import type { WorkerLinter } from "harper.js";
 	import Editor from "#lib/components/harper-editor/Editor.svelte";
-	import { savePracticeResponse } from "#lib/remotes/command/save-practice-response.remote.js";
-	import { EditorSaver } from "./save-state.svelte.ts";
+	import { savePracticeResponse } from "#lib/remotes/practice-session.remote.ts";
+	import { createEditorSaver } from "./save-state.svelte.ts";
 
 	type Props = {
 		class?: string;
@@ -26,7 +26,7 @@
 
 	let isReady = $state<boolean>(false);
 
-	const saver = new EditorSaver(async () => {
+	const saver = createEditorSaver(async () => {
 		await savePracticeResponse({
 			practiceSessionId: props.practiceSessionId,
 			response: content

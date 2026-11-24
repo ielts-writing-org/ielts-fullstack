@@ -1,4 +1,4 @@
-import { countWords } from "#lib/utils/stats.ts";
+import { countWords } from "./text-stats.ts";
 import { z } from "zod";
 
 const userContentSchema = z.string().superRefine((val, ctx) => {

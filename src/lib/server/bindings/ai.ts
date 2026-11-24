@@ -1,5 +1,29 @@
-import { abortableStream } from "#lib/utils/abortable-stream.ts";
 import { env } from "cloudflare:workers";
+
+/**
+ * Cancels the provider stream on client abort so upstream usage stops.
+ * A locked stream is left alone; cancellation then propagates upstream on its own.
+ */
+async function abortableStream(
+	promise: Promise<ReadableStream>,
+	signal: AbortSignal
+): Promise<ReadableStream> {
+	const stream = await promise;
+	if (signal.aborted) {
+		cancelStream(stream);
+		return stream;
+	}
+	signal.addEventListener("abort", () => cancelStream(stream), { once: true });
+	return stream;
+}
+
+function cancelStream(stream: ReadableStream) {
+	try {
+		void stream.cancel().catch(() => {});
+	} catch {
+		// already locked by the response pipeline; cancellation propagates upstream on its own
+	}
+}
 
 export function getAiCompletionAsStream(
 	model: keyof AiModels,

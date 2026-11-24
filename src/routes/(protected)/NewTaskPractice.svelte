@@ -1,8 +1,8 @@
 <script lang="ts">
 	import { goto } from "$app/navigation";
-	import type { TaskCategory } from "#lib/domain/task-category.ts";
-	import type { PracticeType } from "#lib/domain/practice-type.ts";
-	import { createPractice } from "#lib/remotes/command/create-practice.remote.ts";
+	import type { TaskCategory } from "#lib/domain/task.ts";
+	import type { PracticeType } from "#lib/domain/practice-session.ts";
+	import { createPractice } from "#lib/remotes/practice-session.remote.ts";
 	import { closeModal, openModal } from "#lib/components/Modal.svelte";
 	import PracticeTypePicker from "./PracticeTypePicker.svelte";
 

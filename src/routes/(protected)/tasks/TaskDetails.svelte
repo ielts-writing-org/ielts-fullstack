@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { getImageUrl } from "#lib/utils/paths.ts";
+	import { getTaskImageUrl } from "#lib/utils/paths.ts";
 	import { type TaskItem } from "./utils.ts";
 
 	type Props = {
@@ -14,7 +14,7 @@
 <div class="mt-4"></div>
 {#if task.imageName}
 	<img
-		src={getImageUrl(task.imageName)}
+		src={getTaskImageUrl(task.imageName)}
 		alt="Task visual"
 		class="max-h-64 w-full border border-base-content/10 bg-base-200/50 object-contain" />
 {/if}

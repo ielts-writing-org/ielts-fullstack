@@ -3,9 +3,9 @@ import { afterEach, expect, test, vi } from "vitest";
 import { render } from "vitest-browser-svelte";
 import Modal, { closeModal, openModal } from "#lib/components/Modal.svelte";
 import TaskDeleteConfirm from "./TaskDeleteConfirm.svelte";
-import { deleteTask } from "#lib/remotes/command/delete-task.remote.js";
+import { deleteTask } from "#lib/remotes/task.remote.ts";
 
-vi.mock("#lib/remotes/command/delete-task.remote.js", () => ({
+vi.mock("#lib/remotes/task.remote.ts", () => ({
 	deleteTask: vi.fn(async () => {})
 }));
 

@@ -3,7 +3,7 @@
 	import { LibraryBig, Plus } from "@lucide/svelte";
 	import { closeModal, openModal } from "#lib/components/Modal.svelte";
 	import TaskCreateForm from "./TaskCreateForm.svelte";
-	import { getTaskDependants } from "#lib/remotes/query/get-task-dependants.remote.js";
+	import { getTaskDependants } from "#lib/remotes/task.remote.ts";
 	import { type TaskItem } from "./utils.ts";
 	import { buildResolveWithQuery } from "#lib/utils/links.ts";
 	import TaskListItem from "./TaskListItem.svelte";
@@ -14,7 +14,7 @@
 	import TaskFilters from "./TaskFilters.svelte";
 	import TaskPagination from "./TaskPagination.svelte";
 	import TaskPracticeSetup from "./TaskPracticeSetup.svelte";
-	import { getProfile } from "#lib/remotes/query/get-profile.remote.ts";
+	import { getProfile } from "#lib/remotes/profile.remote.ts";
 
 	const { data } = $props();
 

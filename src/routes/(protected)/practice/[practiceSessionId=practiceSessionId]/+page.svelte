@@ -2,11 +2,11 @@
 	import { page } from "$app/state";
 	import { WorkerLinter } from "harper.js";
 	import { onMount, untrack } from "svelte";
-	import type { TaskCategory } from "#lib/domain/task-category.js";
+	import type { TaskCategory } from "#lib/domain/task.ts";
 	import PreventLeaving from "#lib/components/PreventLeaving.svelte";
 	import { openModal } from "#lib/components/Modal.svelte";
-	import { getResponseIdealWordCount } from "#lib/domain/task-response.js";
-	import { setTimedUpAction } from "#lib/remotes/command/set-timed-up-action.remote.js";
+	import { getResponseIdealWordCount } from "#lib/domain/task.ts";
+	import { setTimedUpAction } from "#lib/remotes/practice-session.remote.ts";
 	import { getLinters } from "#lib/components/harper-editor/linters.js";
 	import DocumentBar from "./DocumentBar.svelte";
 	import ResponseEditor from "./ResponseEditor.svelte";

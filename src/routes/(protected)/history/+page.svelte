@@ -2,7 +2,7 @@
 	import { goto, refreshAll } from "$app/navigation";
 	import { ArrowRight, PenLine, RotateCcwClock } from "@lucide/svelte";
 	import { openModal } from "#lib/components/Modal.svelte";
-	import { deletePracticeSession } from "#lib/remotes/command/delete-practice-session.remote.js";
+	import { deletePracticeSession } from "#lib/remotes/practice-session.remote.ts";
 	import { newPracticeHref, type SessionItem } from "./utils.ts";
 	import { buildResolveWithQuery } from "#lib/utils/links.ts";
 	import HistoryFilters from "./HistoryFilters.svelte";
@@ -11,7 +11,7 @@
 	import HistoryTrend from "./HistoryTrend.svelte";
 	import RenameSessionModal from "./RenameSessionModal.svelte";
 	import SessionCard from "./SessionCard.svelte";
-	import { getProfile } from "#lib/remotes/query/get-profile.remote.ts";
+	import { getProfile } from "#lib/remotes/profile.remote.ts";
 
 	const { data } = $props();
 

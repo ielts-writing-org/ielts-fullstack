@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { onMount } from "svelte";
-	import { getAdminDashboard } from "#lib/remotes/query/admin-data.remote.ts";
+	import { getAdminDashboard } from "#lib/remotes/admin-reports.remote.ts";
 
 	type Dashboard = Awaited<ReturnType<typeof getAdminDashboard>>;
 	let data = $state<Dashboard | null>(null);

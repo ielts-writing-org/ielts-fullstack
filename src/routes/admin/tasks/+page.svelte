@@ -1,9 +1,9 @@
 <script lang="ts">
 	import { onDestroy, onMount, tick } from "svelte";
-	import type { TaskCategory } from "#lib/domain/task-category.ts";
-	import type { TaskSubcategory } from "#lib/domain/task-subcategory.ts";
-	import { getTaskSubcategories, getTaskSubcategoryLabel } from "#lib/domain/task-subcategory.ts";
-	import { getAdminTasks } from "#lib/remotes/query/admin-data.remote.ts";
+	import type { TaskCategory } from "#lib/domain/task.ts";
+	import type { TaskSubcategory } from "#lib/domain/task.ts";
+	import { getTaskSubcategories, getTaskSubcategoryLabel } from "#lib/domain/task.ts";
+	import { getAdminTasks } from "#lib/remotes/admin-tasks.remote.ts";
 	import {
 		archiveAdminTask,
 		createAdminTask,
@@ -11,9 +11,9 @@
 		restoreAdminTask,
 		setAdminTaskVisibility,
 		updateAdminTask
-	} from "#lib/remotes/command/admin.remote.ts";
-	import { saveAdminTaskImage } from "#lib/remotes/form/admin-task-image.remote.ts";
-	import { getImageUrl } from "#lib/utils/paths.ts";
+	} from "#lib/remotes/admin-tasks.remote.ts";
+	import { saveAdminTaskImage } from "#lib/remotes/admin-tasks.remote.ts";
+	import { getTaskImageUrl } from "#lib/utils/paths.ts";
 
 	type Result = Awaited<ReturnType<typeof getAdminTasks>>;
 	type Task = Result["tasks"][number];
@@ -417,7 +417,7 @@
 						</p>
 					</div>
 					{#if editor.taskId && hasImage && editor.imageName}<img
-							src={getImageUrl(editor.imageName)}
+							src={getTaskImageUrl(editor.imageName)}
 							alt="Current task chart"
 							class="max-h-56 w-full object-contain" />{/if}
 					<form
@@ -506,7 +506,7 @@
 							>{task.deletedAt ? "Archived" : task.published ? "Shown" : "Hidden"}</span>
 					</div>
 					{#if task.image}<img
-							src={getImageUrl(task.image)}
+							src={getTaskImageUrl(task.image)}
 							alt="Question chart"
 							class="max-h-48 w-full rounded-box bg-base-200/50 object-contain"
 							loading="lazy" />{/if}

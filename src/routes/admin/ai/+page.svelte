@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { onMount } from "svelte";
-	import { getAdminAiRequests, getAdminDashboard } from "#lib/remotes/query/admin-data.remote.ts";
+	import { getAdminAiRequests } from "#lib/remotes/admin-ai.remote.ts";
+	import { getAdminDashboard } from "#lib/remotes/admin-reports.remote.ts";
 
 	type Requests = Awaited<ReturnType<typeof getAdminAiRequests>>;
 	type Dashboard = Awaited<ReturnType<typeof getAdminDashboard>>;

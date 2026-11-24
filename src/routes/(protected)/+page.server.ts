@@ -1,10 +1,17 @@
-import { evaluations, practiceSessions, tasks } from "#lib/server/db/app.schema.ts";
-import { getDatabase } from "#lib/server/db/index.ts";
 import { getRequestEvent } from "$app/server";
-import { desc, eq, sql } from "drizzle-orm";
 import type { PageServerLoad } from "./$types";
-import { combineWritingBands, roundToNearestHalfBand } from "#lib/domain/band.ts";
+import { combineWritingBands, roundToNearestHalfBand } from "#lib/domain/evaluation.ts";
+import { computePracticeStreak } from "#lib/domain/practice-session.ts";
 import { getPageSession } from "#lib/server/auth/session.ts";
+import {
+	getLearnerActivitySummary,
+	getLearnerCriteriaAverages,
+	listLearnerOverallBands,
+	listLearnerPracticeDays,
+	listRecentPracticeSessionSummaries
+} from "#lib/server/data/practice-sessions.ts";
+
+const WEEK_MS = 7 * 24 * 60 * 60 * 1000;
 
 const PRACTICE_OPTIONS = [
 	{
@@ -39,73 +46,17 @@ const PRACTICE_OPTIONS = [
 	}
 ];
 
-const WEEK_MS = 7 * 24 * 60 * 60 * 1000;
-
-/** Counts consecutive practice days ending today or yesterday, from ISO day strings. */
-function computeStreak(days: string[]): number {
-	if (days.length === 0) {
-		return 0;
-	}
-
-	const daySet = new Set(days);
-	const dayKey = (date: Date) => date.toISOString().slice(0, 10);
-	const cursor = new Date();
-
-	if (!daySet.has(dayKey(cursor))) {
-		cursor.setUTCDate(cursor.getUTCDate() - 1);
-		if (!daySet.has(dayKey(cursor))) {
-			return 0;
-		}
-	}
-
-	let streak = 0;
-	while (daySet.has(dayKey(cursor))) {
-		streak++;
-		cursor.setUTCDate(cursor.getUTCDate() - 1);
-	}
-	return streak;
-}
-
 export const load = (async () => {
 	const { locals } = getRequestEvent();
 	const { user } = getPageSession(locals);
 
-	const db = getDatabase();
-	const practices = await db.query.practiceSessions.findMany({
-		where: {
-			userId: user.id
-		},
-		with: {
-			task: true,
-			evaluation: true
-		},
-		orderBy: (practiceSessions, { desc }) => [desc(practiceSessions.updatedAt)],
-		limit: 4
-	});
-
-	// Statistics
-	// prettier-ignore
-	const [stats] = await db
-	.select({
-		task1: {
-			ta: sql<number>`coalesce(avg(case when ${tasks.category} = '1' then ${evaluations.result} ->> '$.criteria.taskAchievement.band' end), 0)`,
-			cc: sql<number>`coalesce(avg(case when ${tasks.category} = '1' then ${evaluations.result} ->> '$.criteria.coherenceAndCohesion.band' end), 0)`,
-			lr: sql<number>`coalesce(avg(case when ${tasks.category} = '1' then ${evaluations.result} ->> '$.criteria.lexicalResource.band' end), 0)`,
-			gra: sql<number>`coalesce(avg(case when ${tasks.category} = '1' then ${evaluations.result} ->> '$.criteria.grammaticalRangeAndAccuracy.band' end), 0)`,
-			estimatedBand: sql<number | null>`avg(case when ${tasks.category} = '1' then ${evaluations.result} ->> '$.estimatedBand' end)`
-		},
-		task2: {
-			tr: sql<number>`coalesce(avg(case when ${tasks.category} = '2' then ${evaluations.result} ->> '$.criteria.taskResponse.band' end), 0)`,
-			cc: sql<number>`coalesce(avg(case when ${tasks.category} = '2' then ${evaluations.result} ->> '$.criteria.coherenceAndCohesion.band' end), 0)`,
-			lr: sql<number>`coalesce(avg(case when ${tasks.category} = '2' then ${evaluations.result} ->> '$.criteria.lexicalResource.band' end), 0)`,
-			gra: sql<number>`coalesce(avg(case when ${tasks.category} = '2' then ${evaluations.result} ->> '$.criteria.grammaticalRangeAndAccuracy.band' end), 0)`,
-			estimatedBand: sql<number | null>`avg(case when ${tasks.category} = '2' then ${evaluations.result} ->> '$.estimatedBand' end)`
-		}
-	})
-	.from(practiceSessions)
-	.innerJoin(evaluations, eq(practiceSessions.id, evaluations.practiceSessionId))
-	.innerJoin(tasks, eq(tasks.id, practiceSessions.taskId))
-	.where(eq(practiceSessions.userId, user.id));
+	const [practices, criteriaAverages, activity, practiceDays, bandTrend] = await Promise.all([
+		listRecentPracticeSessionSummaries(user.id, 4),
+		getLearnerCriteriaAverages(user.id),
+		getLearnerActivitySummary(user.id, Date.now() - WEEK_MS),
+		listLearnerPracticeDays(user.id, 90),
+		listLearnerOverallBands(user.id, 8)
+	]);
 
 	/**
 	 * Nếu người học chưa làm task nào thì điểm trung bình task đó là `null`
@@ -116,79 +67,44 @@ export const load = (async () => {
 	 *
 	 * - TH3: Người học làm cả 2 tasks => tính như công thức
 	 */
-	const rawOverallBand = combineWritingBands(stats.task1.estimatedBand, stats.task2.estimatedBand);
-
-	// Activity aggregates: totals across all sessions, plus evaluations count
-	// for the progress card's empty state.
-	const weekStart = Date.now() - WEEK_MS;
-	const [activity] = await db
-		.select({
-			totalSessions: sql<number>`count(*)`,
-			sessionsThisWeek: sql<number>`count(case when "practice_sessions"."started_at" >= ${weekStart} then 1 end)`,
-			evaluated: sql<number>`count("evaluations"."id")`,
-			totalWords: sql<number>`coalesce(sum(case when trim("practice_sessions"."response") = '' then 0 else length(trim(replace(replace(replace("practice_sessions"."response", char(13), ' '), char(10), ' '), char(9), ' '))) - length(replace(trim(replace(replace(replace("practice_sessions"."response", char(13), ' '), char(10), ' '), char(9), ' ')), ' ', '')) + 1 end), 0)`
-		})
-		.from(practiceSessions)
-		.leftJoin(evaluations, eq(evaluations.practiceSessionId, practiceSessions.id))
-		.where(eq(practiceSessions.userId, user.id));
-
-	// Distinct practice days (UTC) for the streak, newest first, capped at 90.
-	const dayRows = await db
-		.selectDistinct({
-			day: sql<string>`date("practice_sessions"."started_at" / 1000, 'unixepoch')`
-		})
-		.from(practiceSessions)
-		.where(eq(practiceSessions.userId, user.id))
-		.orderBy(desc(sql`date("practice_sessions"."started_at" / 1000, 'unixepoch')`))
-		.limit(90);
-
-	// Overall bands of the most recent evaluated sessions, chronological order.
-	const bandRows = await db
-		.select({ band: sql<number>`json_extract("evaluations"."result", '$.estimatedBand')` })
-		.from(practiceSessions)
-		.innerJoin(evaluations, eq(evaluations.practiceSessionId, practiceSessions.id))
-		.where(eq(practiceSessions.userId, user.id))
-		.orderBy(desc(practiceSessions.startedAt))
-		.limit(8);
+	const rawOverallBand = combineWritingBands(
+		criteriaAverages.task1.estimatedBand,
+		criteriaAverages.task2.estimatedBand
+	);
 
 	return {
 		practiceOptions: PRACTICE_OPTIONS,
 		practices: practices.map((p) => ({
-			band: p.evaluation?.result.estimatedBand,
-			category: `Task ${p.task.category}`,
+			band: p.estimatedBand,
+			category: `Task ${p.category}`,
 			id: p.id,
 			updatedAt: p.updatedAt,
 			name: p.name
 		})),
-		activity: {
-			totalWords: activity?.totalWords ?? 0,
-			sessionsThisWeek: activity?.sessionsThisWeek ?? 0,
-			totalSessions: activity?.totalSessions ?? 0,
-			evaluated: activity?.evaluated ?? 0
-		},
-		streakDays: computeStreak(dayRows.map((row) => row.day)),
-		bandTrend: bandRows.map((row) => row.band).reverse(),
+		activity,
+		streakDays: computePracticeStreak(practiceDays),
+		bandTrend,
 		statistics: {
 			criteria: [
 				{
 					name: "Task Achievement / Task Response",
-					task1: stats.task1.ta,
-					task2: stats.task2.tr
+					task1: criteriaAverages.task1.ta,
+					task2: criteriaAverages.task2.tr
 				},
 				{
 					name: "Coherence & Cohesion",
-					task1: stats.task1.cc,
-					task2: stats.task2.cc
+					task1: criteriaAverages.task1.cc,
+					task2: criteriaAverages.task2.cc
 				},
 				{
 					name: "Lexical Resource",
-					task1: stats.task1.lr,
-					task2: stats.task2.lr
+					task1: criteriaAverages.task1.lr,
+					task2: criteriaAverages.task2.lr
 				},
 				{
 					name: "Grammar Range & Accuracy",
-					task1: stats.task1.gra,
-					task2: stats.task2.gra
+					task1: criteriaAverages.task1.gra,
+					task2: criteriaAverages.task2.gra
 				}
 			],
 			estimatedBand: roundToNearestHalfBand(rawOverallBand)

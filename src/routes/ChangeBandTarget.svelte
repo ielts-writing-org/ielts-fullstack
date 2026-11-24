@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { closeModal } from "#lib/components/Modal.svelte";
-	import { saveBandTarget } from "#lib/remotes/command/save-band-target.remote.ts";
+	import { saveBandTarget } from "#lib/remotes/profile.remote.ts";
 
 	type Props = {
 		bandTarget: number;

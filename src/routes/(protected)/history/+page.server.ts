@@ -1,14 +1,17 @@
-import { getDatabase } from "#lib/server/db/index.ts";
 import type { PageServerLoad } from "./$types";
-import type { Evaluation } from "#lib/domain/evaluation.ts";
-import { countWords } from "#lib/utils/stats.ts";
-import { evaluations, practiceSessions, tasks } from "#lib/server/db/app.schema.ts";
-import { and, asc, desc, eq, isNotNull, isNull, like, or, sql } from "drizzle-orm";
+import { getCriterionBands } from "#lib/domain/evaluation.ts";
+import { countWords } from "#lib/domain/text-stats.ts";
+import { TASK_CATEGORIES } from "#lib/domain/task.ts";
+import { PRACTICE_TYPES } from "#lib/domain/practice-session.ts";
+import { getAllTaskSubcategories, taskSubcategorySchema } from "#lib/domain/task.ts";
 import { getPageSession } from "#lib/server/auth/session.ts";
-import type { Criteria } from "#lib/domain/criteria.ts";
-import { TASK_CATEGORIES, type TaskCategory } from "#lib/domain/task-category.ts";
-import { PRACTICE_TYPES } from "#lib/domain/practice-type.ts";
-import { taskSubcategorySchema, getAllTaskSubcategories } from "#lib/domain/task-subcategory.ts";
+import {
+	countLearnerHistorySessions,
+	countLearnerSessions,
+	getLearnerCategoryBandStats,
+	getLearnerHistoryTrend,
+	listLearnerHistorySessions
+} from "#lib/server/data/practice-sessions.ts";
 
 const PER_PAGE = 5;
 const SORTS = ["recent", "oldest", "band", "words"] as const;
@@ -16,37 +19,8 @@ const STATUSES = ["evaluated", "unevaluated"] as const;
 
 type Sort = (typeof SORTS)[number];
 
-/**
- * Per-criterion bands keyed by their criterion key.
- *
- * Only one of `taskAchievement` (Task 1) or `taskResponse` (Task 2) is present,
- * so the record is partial. Returns `null` when the session has no evaluation.
- */
-function criterionBands(result: Evaluation | undefined): Partial<Record<Criteria, number>> | null {
-	if (!result) {
-		return null;
-	}
-
-	const { coherenceAndCohesion, lexicalResource, grammaticalRangeAndAccuracy } = result.criteria;
-
-	return result.taskCategory === "1"
-		? {
-				taskAchievement: result.criteria.taskAchievement.band,
-				coherenceAndCohesion: coherenceAndCohesion.band,
-				lexicalResource: lexicalResource.band,
-				grammaticalRangeAndAccuracy: grammaticalRangeAndAccuracy.band
-			}
-		: {
-				taskResponse: result.criteria.taskResponse.band,
-				coherenceAndCohesion: coherenceAndCohesion.band,
-				lexicalResource: lexicalResource.band,
-				grammaticalRangeAndAccuracy: grammaticalRangeAndAccuracy.band
-			};
-}
-
 export const load = (async ({ locals, url }) => {
 	const { user } = getPageSession(locals);
-	const db = getDatabase();
 
 	const searchParams = url.searchParams;
 	const q = searchParams.get("q")?.trim() ?? "";
@@ -60,107 +34,29 @@ export const load = (async ({ locals, url }) => {
 	const requestedPage = Number.parseInt(searchParams.get("page") ?? "1", 10);
 	const page = Number.isFinite(requestedPage) && requestedPage > 0 ? requestedPage : 1;
 
-	const conditions = [eq(practiceSessions.userId, user.id)];
-	if (task) conditions.push(eq(tasks.category, task));
-	if (subcategory) conditions.push(eq(tasks.subcategory, subcategory));
-	if (type) conditions.push(eq(practiceSessions.type, type));
-	if (status === "evaluated") conditions.push(isNotNull(evaluations.id));
-	if (status === "unevaluated") conditions.push(isNull(evaluations.id));
-	if (q) {
-		const pattern = `%${q}%`;
-		const textMatches = [
-			like(practiceSessions.name, pattern),
-			like(practiceSessions.type, pattern),
-			like(tasks.prompt, pattern)
-		];
-		if (includeBody) {
-			textMatches.push(like(practiceSessions.response, pattern));
-		}
-		conditions.push(or(...textMatches)!);
-	}
-	const where = and(...conditions);
+	const filters = {
+		q,
+		task: task ?? null,
+		subcategory: subcategory ?? null,
+		type: type ?? null,
+		status: status ?? null,
+		includeBody,
+		sort
+	};
 
-	const [countRow] = await db
-		.select({ total: sql<number>`count(*)` })
-		.from(practiceSessions)
-		.innerJoin(tasks, eq(practiceSessions.taskId, tasks.id))
-		.leftJoin(evaluations, eq(evaluations.practiceSessionId, practiceSessions.id))
-		.where(where);
-
-	const total = countRow?.total ?? 0;
+	const total = await countLearnerHistorySessions(user.id, filters);
 	const totalPages = Math.max(1, Math.ceil(total / PER_PAGE));
 	const safePage = Math.min(page, totalPages);
 
-	const estimatedBand = sql`json_extract(${evaluations.result}, '$.estimatedBand')`;
-	const normalizedResponse = sql`replace(replace(replace(${practiceSessions.response}, char(13), ' '), char(10), ' '), char(9), ' ')`;
-	const wordCount = sql`(length(trim(${normalizedResponse})) - length(replace(trim(${normalizedResponse}), ' ', '')) + 1)`;
+	const [rows, totalSessions, trend, categoryStats] = await Promise.all([
+		listLearnerHistorySessions(user.id, filters, { page: safePage, perPage: PER_PAGE }),
+		countLearnerSessions(user.id),
+		getLearnerHistoryTrend(user.id, 15),
+		getLearnerCategoryBandStats(user.id)
+	]);
 
-	const orderBy = {
-		recent: [desc(practiceSessions.updatedAt)],
-		oldest: [asc(practiceSessions.updatedAt)],
-		band: [desc(estimatedBand)],
-		words: [desc(wordCount)]
-	}[sort];
-
-	const rows = await db
-		.select({
-			id: practiceSessions.id,
-			name: practiceSessions.name,
-			type: practiceSessions.type,
-			updatedAt: practiceSessions.updatedAt,
-			response: practiceSessions.response,
-			taskCategory: tasks.category,
-			taskSubcategory: tasks.subcategory,
-			taskPrompt: tasks.prompt,
-			evaluationResult: evaluations.result
-		})
-		.from(practiceSessions)
-		.innerJoin(tasks, eq(practiceSessions.taskId, tasks.id))
-		.leftJoin(evaluations, eq(evaluations.practiceSessionId, practiceSessions.id))
-		.where(where)
-		.orderBy(...orderBy)
-		.limit(PER_PAGE)
-		.offset((safePage - 1) * PER_PAGE);
-
-	const totalSessions = await db.$count(practiceSessions, eq(practiceSessions.userId, user.id));
-
-	// Overall bands of the most recent evaluated sessions (oldest first) for
-	// the progress-over-time chart.
-	const trendRows = await db
-		.select({
-			band: sql<number>`json_extract("evaluations"."result", '$.estimatedBand')`,
-			startedAt: practiceSessions.startedAt
-		})
-		.from(practiceSessions)
-		.innerJoin(evaluations, eq(evaluations.practiceSessionId, practiceSessions.id))
-		.where(eq(practiceSessions.userId, user.id))
-		.orderBy(desc(practiceSessions.startedAt))
-		.limit(15);
-
-	const categoryRows = await db
-		.select({
-			category: tasks.category,
-			evaluated: sql<number>`count(${estimatedBand})`,
-			average: sql<number | null>`avg(${estimatedBand})`,
-			best: sql<number | null>`max(${estimatedBand})`
-		})
-		.from(practiceSessions)
-		.innerJoin(tasks, eq(practiceSessions.taskId, tasks.id))
-		.leftJoin(evaluations, eq(evaluations.practiceSessionId, practiceSessions.id))
-		.where(eq(practiceSessions.userId, user.id))
-		.groupBy(tasks.category);
-
-	const statsFor = (category: TaskCategory) => {
-		const row = categoryRows.find((item) => item.category === category);
-		return {
-			evaluated: row?.evaluated ?? 0,
-			average: row?.average ?? 0,
-			best: row?.best ?? 0
-		};
-	};
-
-	const task1 = statsFor("1");
-	const task2 = statsFor("2");
+	const task1 = categoryStats.task1;
+	const task2 = categoryStats.task2;
 
 	return {
 		practiceSessions: rows.map((row) => {
@@ -177,7 +73,7 @@ export const load = (async ({ locals, url }) => {
 				response: row.response,
 				words: countWords(row.response),
 				estimatedBand: result?.estimatedBand,
-				criteria: criterionBands(result)
+				criteria: getCriterionBands(result)
 			};
 		}),
 		availableSubcategories: getAllTaskSubcategories(),
@@ -188,7 +84,7 @@ export const load = (async ({ locals, url }) => {
 			task2
 		},
 		pagination: { page: safePage, perPage: PER_PAGE, total, totalPages },
-		trend: trendRows.map((row) => ({ band: row.band, date: row.startedAt })).reverse(),
+		trend,
 		filters: {
 			q,
 			task: task ?? null,

@@ -4,7 +4,7 @@
 	import { onMount } from "svelte";
 	import { LibraryBig, PenLine } from "@lucide/svelte";
 	import { openModal } from "#lib/components/Modal.svelte";
-	import { getProfile } from "#lib/remotes/query/get-profile.remote.js";
+	import { getProfile } from "#lib/remotes/profile.remote.ts";
 	import About from "./About.svelte";
 	import PracticeOptions from "./PracticeOptions.svelte";
 	import Progress from "./Progress.svelte";

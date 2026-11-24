@@ -2,7 +2,7 @@
 	import { invalidate } from "$app/navigation";
 	import { page } from "$app/state";
 	import { SavePen } from "@lucide/svelte";
-	import { changeSessionName } from "../lib/remotes/command/change-session-name.remote";
+	import { changeSessionName } from "#lib/remotes/practice-session.remote.ts";
 	import { closeModal, openModal } from "#lib/components/Modal.svelte";
 
 	let newName = $state(page.data.metadata?.title ?? "");

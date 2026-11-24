@@ -1,11 +1,11 @@
 <script lang="ts">
 	import { onMount } from "svelte";
-	import { getAdminUsers } from "#lib/remotes/query/admin-data.remote.ts";
+	import { getAdminUsers } from "#lib/remotes/admin-users.remote.ts";
 	import {
 		revokeAdminUserSessions,
 		setAdminUserLocked,
 		setAdminUserRole
-	} from "#lib/remotes/command/admin.remote.ts";
+	} from "#lib/remotes/admin-users.remote.ts";
 	import InitialsAvatar from "#lib/components/InitialsAvatar.svelte";
 
 	type Result = Awaited<ReturnType<typeof getAdminUsers>>;

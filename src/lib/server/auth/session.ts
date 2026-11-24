@@ -20,3 +20,16 @@ export function getPageSession(locals: App.Locals) {
 
 	return { session, user };
 }
+
+export async function getAdminSession(locals: App.Locals) {
+	const { user } = getApiSession(locals);
+
+	if (!user || user.role !== "admin") {
+		error(403, "You do not have permission to access Admin.");
+	}
+	if (user.banned && (!user.banExpires || user.banExpires.getTime() > Date.now())) {
+		error(403, "This account is locked.");
+	}
+
+	return { user };
+}

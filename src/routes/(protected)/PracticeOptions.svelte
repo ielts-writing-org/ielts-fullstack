@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { ArrowRight, Clock3 } from "@lucide/svelte";
-	import type { TaskCategory } from "#lib/domain/task-category.ts";
+	import type { TaskCategory } from "#lib/domain/task.ts";
 	import { openModal } from "#lib/components/Modal.svelte";
 	import NewTaskPractice from "./NewTaskPractice.svelte";
 

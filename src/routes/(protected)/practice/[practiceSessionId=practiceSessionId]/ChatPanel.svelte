@@ -6,11 +6,11 @@
 	import { openModal } from "#lib/components/Modal.svelte";
 	import { chatMessageSchema, type ChatMessage } from "#lib/domain/chat-message.ts";
 	import type { Evaluation } from "#lib/domain/evaluation.ts";
-	import type { PracticeSessionContext } from "#lib/domain/task-context.ts";
+	import type { PracticeSessionContext } from "#lib/domain/practice-session.ts";
 	import { getZodErrors } from "#lib/utils/error.ts";
 	import ValidationErrors from "#lib/components/ValidationErrors.svelte";
-	import { saveChatMessages } from "#lib/remotes/command/save-chat-message.remote.ts";
-	import { clearChatMessages } from "#lib/remotes/command/clear-chat-messages.remote.ts";
+	import { saveChatMessages } from "#lib/remotes/practice-session.remote.ts";
+	import { clearChatMessages } from "#lib/remotes/practice-session.remote.ts";
 	import { readAiStream } from "#lib/utils/stream.ts";
 
 	type Props = {
