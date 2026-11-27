@@ -1,3 +1,4 @@
+import { svelteDevtools } from "@sveltejs/vite-devtools-svelte";
 import adapter from "@sveltejs/adapter-cloudflare";
 import { sveltekit } from "@sveltejs/kit/vite";
 import tailwindcss from "@tailwindcss/vite";
@@ -6,6 +7,7 @@ import { defineConfig } from "vitest/config";
 
 export default defineConfig({
 	plugins: [
+		svelteDevtools(),
 		tailwindcss(),
 		sveltekit({
 			compilerOptions: {
@@ -63,5 +65,6 @@ export default defineConfig({
 				"src/lib/testing/**/*.{js,ts}"
 			]
 		}
-	}
+	},
+	devtools: { apply: "serve", clientAuth: true }
 });
