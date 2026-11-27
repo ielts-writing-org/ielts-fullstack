@@ -5,12 +5,16 @@
 	import { getTaskSubcategories, getTaskSubcategoryLabel } from "#lib/domain/task.ts";
 	import { buildQuery, type FilterKey, type TaskFiltersData } from "./utils.ts";
 	import { buildResolveWithQuery } from "#lib/utils/links.ts";
+	import { debounce } from "#lib/utils/debounce.ts";
 
 	type Props = { filters: TaskFiltersData; resultCount: number; total: number };
 	let { filters, resultCount, total }: Props = $props();
 
-	let searchTimer: ReturnType<typeof setTimeout> | undefined;
-	onDestroy(() => clearTimeout(searchTimer));
+	const search = debounce((value: string) => {
+		const next = value.trim();
+		if (next !== filters.q) update({ q: next });
+	}, 2000);
+	onDestroy(() => search.cancel());
 
 	const currentTask = $derived(filters.task ?? "all");
 	const currentSource = $derived(filters.source ?? "all");
@@ -38,16 +42,8 @@
 		});
 	}
 
-	function onSearchInput(value: string) {
-		clearTimeout(searchTimer);
-		searchTimer = setTimeout(() => {
-			const next = value.trim();
-			if (next !== filters.q) update({ q: next });
-		}, 2000);
-	}
-
 	function clearSearch() {
-		clearTimeout(searchTimer);
+		search.cancel();
 		update({ q: "" });
 	}
 
@@ -69,7 +65,7 @@
 				type="search"
 				placeholder="Search by prompt or subcategory..."
 				value={filters.q}
-				oninput={(event) => onSearchInput(event.currentTarget.value)} />
+				oninput={(event) => search(event.currentTarget.value)} />
 			{#if filters.q}
 				<button
 					class="cursor-pointer"
