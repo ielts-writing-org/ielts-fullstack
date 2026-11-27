@@ -20,7 +20,7 @@
 		Boolean(filters.task || filters.subcategory || filters.type || filters.status || filters.q)
 	);
 
-	const profile = $derived(await getProfile());
+	const profileQuery = getProfile();
 
 	function handleRename(session: SessionItem) {
 		openModal({
@@ -72,9 +72,9 @@
 		</a>
 	</div>
 
-	<HistoryTrend trend={data.trend} bandTarget={profile.bandTarget ?? 0} />
+	<HistoryTrend trend={data.trend} bandTarget={profileQuery.current?.bandTarget ?? 0} />
 
-	<HistoryStats stats={data.stats} bandTarget={profile.bandTarget ?? 0} />
+	<HistoryStats stats={data.stats} bandTarget={profileQuery.current?.bandTarget ?? 0} />
 
 	<HistoryFilters
 		{filters}
@@ -110,7 +110,7 @@
 			{#each data.practiceSessions as session (session.id)}
 				<SessionCard
 					{session}
-					bandTarget={profile.bandTarget ?? 0}
+					bandTarget={profileQuery.current?.bandTarget ?? 0}
 					onRename={handleRename}
 					onDelete={handleDelete} />
 			{/each}

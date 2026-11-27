@@ -16,7 +16,7 @@
 
 	let menu = $state<HTMLUListElement>();
 
-	const profile = $derived(await getProfile());
+	const profileQuery = getProfile();
 
 	async function openSignOutModal() {
 		openModal({
@@ -57,7 +57,7 @@
 			title: "Change target band",
 			content: {
 				component: ChangeBandTarget,
-				props: { bandTarget: profile.bandTarget ?? 0 }
+				props: { bandTarget: profileQuery.current?.bandTarget ?? 0 }
 			}
 		});
 	}
@@ -83,8 +83,13 @@
 		<button
 			class="badge cursor-pointer badge-soft badge-xs font-semibold hover:bg-primary hover:text-primary-content"
 			onclick={openTargetModal}
+			aria-busy={profileQuery.current === undefined}
 			title="Change target">
-			Target Band: {profile.bandTarget ?? 0}
+			{#if profileQuery.current === undefined}
+				<span class="skeleton inline-block h-3 w-14 align-middle" aria-hidden="true"></span>
+			{:else}
+				Target Band: {profileQuery.current.bandTarget ?? 0}
+			{/if}
 		</button>
 	</div>
 

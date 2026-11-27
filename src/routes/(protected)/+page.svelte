@@ -1,7 +1,6 @@
 <script lang="ts">
 	import { resolve } from "$app/paths";
 	import { page } from "$app/state";
-	import { onMount } from "svelte";
 	import { LibraryBig, PenLine } from "@lucide/svelte";
 	import { openModal } from "#lib/components/Modal.svelte";
 	import { getProfile } from "#lib/remotes/profile.remote.ts";
@@ -11,19 +10,22 @@
 	import RecentPracticeSessions from "./RecentPracticeSessions.svelte";
 	import ActivityStats from "./ActivityStats.svelte";
 	import ChangeBandTarget from "../ChangeBandTarget.svelte";
+	import { untrack } from "svelte";
 
 	const { data } = $props();
 
 	const firstName = $derived((page.data.user?.name ?? "there").split(" ")[0]);
 	const isNewUser = $derived(data.activity.totalSessions === 0);
-	const profile = $derived(await getProfile());
+	const profileQuery = getProfile();
 
-	onMount(async () => {
-		if (profile.bandTarget === null) {
-			openModal({
-				title: "Welcome to IELTS Writing Practice Platform",
-				content: { component: ChangeBandTarget, props: { bandTarget: 0 } }
-			});
+	$effect(() => {
+		if (profileQuery.ready && profileQuery.current?.bandTarget === null) {
+			untrack(() =>
+				openModal({
+					title: "Welcome to IELTS Writing Practice Platform",
+					content: { component: ChangeBandTarget, props: { bandTarget: 0 } }
+				})
+			);
 		}
 	});
 </script>
@@ -59,7 +61,7 @@
 		<PracticeOptions practiceOptions={data.practiceOptions} />
 		<Progress
 			statistics={data.statistics}
-			bandTarget={profile.bandTarget ?? 0}
+			bandTarget={profileQuery.current?.bandTarget ?? 0}
 			trend={data.bandTrend}
 			evaluatedCount={data.activity.evaluated} />
 	</section>
@@ -67,7 +69,7 @@
 	<section class="mt-4 grid w-full grid-cols-1 gap-4 lg:grid-cols-[1.55fr_1fr]">
 		<RecentPracticeSessions
 			practiceSessions={data.practices}
-			bandTarget={profile.bandTarget ?? 0} />
+			bandTarget={profileQuery.current?.bandTarget ?? 0} />
 		<About />
 	</section>
 </main>

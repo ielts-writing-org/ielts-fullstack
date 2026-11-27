@@ -22,7 +22,7 @@
 	const hasFilters = $derived(
 		Boolean(filters.source || filters.task || filters.subcategory || filters.q)
 	);
-	const profile = $derived(await getProfile());
+	const profileQuery = getProfile();
 
 	function openCreateModal() {
 		return openModal({
@@ -159,7 +159,7 @@
 			{#each data.tasks as task (task.id)}
 				<TaskListItem
 					{task}
-					bandTarget={profile.bandTarget ?? 0}
+					bandTarget={profileQuery.current?.bandTarget ?? 0}
 					onDetails={() => openDetailsModal(task)}
 					onPractice={() => openPracticeModal(task)}
 					onEdit={() => openEditModal(task)}

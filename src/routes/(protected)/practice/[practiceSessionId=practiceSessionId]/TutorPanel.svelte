@@ -28,6 +28,8 @@
 		onBeforeEvaluate
 	}: Props = $props();
 
+	const profileQuery = getProfile();
+
 	let evaluation = $state<Evaluation | undefined>(untrack(() => initialEvaluation));
 	let messages = $state<ChatMessage[]>(untrack(() => initialMessages ?? []));
 	let chatDraft = $state("");
@@ -98,7 +100,7 @@
 	</label>
 	<div class="tab-content border-base-content/20">
 		<EvaluationPanel
-			bandTarget={(await getProfile()).bandTarget}
+			bandTarget={profileQuery.current?.bandTarget ?? null}
 			{practiceSessionId}
 			{practiceSessionContext}
 			bind:evaluation
