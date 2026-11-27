@@ -6,12 +6,13 @@
 
 	type Props = {
 		evaluation: Evaluation;
+		bandTarget: number;
 		isBusy: boolean;
 		openCriterionKey: Criteria | null;
 		onAskTutor: (question: string) => void;
 	};
 
-	let { evaluation, isBusy, openCriterionKey, onAskTutor }: Props = $props();
+	let { evaluation, bandTarget, isBusy, openCriterionKey, onAskTutor }: Props = $props();
 
 	const criteriaList = $derived.by(() => {
 		const { coherenceAndCohesion, lexicalResource, grammaticalRangeAndAccuracy } =
@@ -44,20 +45,13 @@
 
 			{#if criterion.band}
 				<div class="flex items-center gap-2">
-					<div
-						class={[
-							criterion.band >= 7.5 && "text-success",
-							criterion.band >= 5.5 && criterion.band < 7.5 && "text-warning",
-							criterion.band < 5.5 && "text-error"
-						]}>
+					<div class={criterion.band < bandTarget ? "text-warning" : "text-success"}>
 						{criterion.band.toPrecision(2)}
 					</div>
 					<progress
 						class={[
 							"progress w-[80%]",
-							criterion.band >= 7.5 && "progress-success",
-							criterion.band >= 5.5 && criterion.band < 7.5 && "progress-warning",
-							criterion.band < 5.5 && "progress-error"
+							criterion.band < bandTarget ? "progress-warning" : "progress-success"
 						]}
 						value={criterion.band}
 						max={9}>

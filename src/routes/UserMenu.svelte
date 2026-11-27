@@ -11,9 +11,7 @@
 	import ChangeTheme from "./ChangeTheme.svelte";
 	import type { LayoutProps } from "./$types";
 
-	type User = NonNullable<LayoutProps["data"]["user"]>;
-
-	type Props = { user: User };
+	type Props = { user: NonNullable<LayoutProps["data"]["user"]> };
 	let { user }: Props = $props();
 
 	let menu = $state<HTMLUListElement>();

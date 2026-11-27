@@ -322,6 +322,7 @@
 				{#if evaluation}
 					<EvaluationCriteria
 						{evaluation}
+						bandTarget={props.bandTarget ?? 0}
 						{isBusy}
 						{openCriterionKey}
 						onAskTutor={props.onAskTutor} />
