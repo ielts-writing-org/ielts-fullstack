@@ -209,9 +209,9 @@
 
 	$effect(() => {
 		if (isEditable) {
-			untrack(() => quill)?.enable();
+			quill?.enable();
 		} else {
-			untrack(() => quill)?.disable();
+			quill?.disable();
 		}
 
 		if (linters.length > 0) {
