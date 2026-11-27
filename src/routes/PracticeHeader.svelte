@@ -1,6 +1,5 @@
 <script lang="ts">
 	import { page } from "$app/state";
-	import { resolve } from "$app/paths";
 	import { ArrowLeft } from "@lucide/svelte";
 	import { getTaskSubcategoryLabel } from "#lib/domain/task.ts";
 
@@ -8,12 +7,12 @@
 </script>
 
 <div class="navbar-start min-w-0 gap-2">
-	<a
+	<button
 		class="btn btn-circle shrink-0 btn-ghost btn-sm"
-		href={resolve("/(protected)")}
+		onclick={() => window.history.back()}
 		aria-label="Back to dashboard">
 		<ArrowLeft class="size-[1em]" />
-	</a>
+	</button>
 	<div class="min-w-0 flex-1 overflow-hidden">
 		<h1 class="block truncate text-lg font-bold text-primary">
 			{page.data.title}
