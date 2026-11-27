@@ -56,7 +56,12 @@ export default defineConfig({
 	},
 	server: {
 		watch: {
-			ignored: ["src/**/*.svelte.{test,spec}.{js,ts}", "src/**/*.{test,spec}.{js,ts}"]
+			ignored: [
+				"src/**/*.svelte.{test,spec}.{js,ts}",
+				"src/**/*.{test,spec}.{js,ts}",
+				"src/**/*.e2e.{js,ts}",
+				"src/lib/testing/**/*.{js,ts}"
+			]
 		}
 	}
 });
