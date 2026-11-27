@@ -4,7 +4,7 @@
 	import { closeModal, openModal } from "#lib/components/Modal.svelte";
 	import TaskCreateForm from "./TaskCreateForm.svelte";
 	import { getTaskDependants } from "#lib/remotes/task.remote.ts";
-	import { type TaskItem } from "./utils.ts";
+	import { getProfile } from "#lib/remotes/profile.remote.ts";
 	import { buildResolveWithQuery } from "#lib/utils/links.ts";
 	import TaskListItem from "./TaskListItem.svelte";
 	import TaskStats from "./TaskStats.svelte";
@@ -14,7 +14,7 @@
 	import TaskFilters from "./TaskFilters.svelte";
 	import TaskPagination from "./TaskPagination.svelte";
 	import TaskPracticeSetup from "./TaskPracticeSetup.svelte";
-	import { getProfile } from "#lib/remotes/profile.remote.ts";
+	import { type TaskItem } from "./utils.ts";
 
 	const { data } = $props();
 
@@ -22,7 +22,7 @@
 	const hasFilters = $derived(
 		Boolean(filters.source || filters.task || filters.subcategory || filters.q)
 	);
-	const profile = getProfile();
+	const profile = $derived(await getProfile());
 
 	function openCreateModal() {
 		return openModal({
@@ -159,7 +159,7 @@
 			{#each data.tasks as task (task.id)}
 				<TaskListItem
 					{task}
-					bandTarget={profile.current?.bandTarget ?? 0}
+					bandTarget={profile.bandTarget ?? 0}
 					onDetails={() => openDetailsModal(task)}
 					onPractice={() => openPracticeModal(task)}
 					onEdit={() => openEditModal(task)}

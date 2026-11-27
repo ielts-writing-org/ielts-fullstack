@@ -16,10 +16,10 @@
 
 	const firstName = $derived((page.data.user?.name ?? "there").split(" ")[0]);
 	const isNewUser = $derived(data.activity.totalSessions === 0);
-	const profile = getProfile();
+	const profile = $derived(await getProfile());
 
 	onMount(async () => {
-		if (profile.current?.bandTarget === null) {
+		if (profile.bandTarget === null) {
 			openModal({
 				title: "Welcome to IELTS Writing Practice Platform",
 				content: { component: ChangeBandTarget, props: { bandTarget: 0 } }
@@ -59,7 +59,7 @@
 		<PracticeOptions practiceOptions={data.practiceOptions} />
 		<Progress
 			statistics={data.statistics}
-			bandTarget={profile.current?.bandTarget ?? 0}
+			bandTarget={profile.bandTarget ?? 0}
 			trend={data.bandTrend}
 			evaluatedCount={data.activity.evaluated} />
 	</section>
@@ -67,7 +67,7 @@
 	<section class="mt-4 grid w-full grid-cols-1 gap-4 lg:grid-cols-[1.55fr_1fr]">
 		<RecentPracticeSessions
 			practiceSessions={data.practices}
-			bandTarget={profile.current?.bandTarget ?? 0} />
+			bandTarget={profile.bandTarget ?? 0} />
 		<About />
 	</section>
 </main>

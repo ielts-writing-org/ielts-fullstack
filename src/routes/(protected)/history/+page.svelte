@@ -3,6 +3,7 @@
 	import { ArrowRight, PenLine, RotateCcwClock } from "@lucide/svelte";
 	import { openModal } from "#lib/components/Modal.svelte";
 	import { deletePracticeSession } from "#lib/remotes/practice-session.remote.ts";
+	import { getProfile } from "#lib/remotes/profile.remote.ts";
 	import { newPracticeHref, type SessionItem } from "./utils.ts";
 	import { buildResolveWithQuery } from "#lib/utils/links.ts";
 	import HistoryFilters from "./HistoryFilters.svelte";
@@ -11,7 +12,6 @@
 	import HistoryTrend from "./HistoryTrend.svelte";
 	import RenameSessionModal from "./RenameSessionModal.svelte";
 	import SessionCard from "./SessionCard.svelte";
-	import { getProfile } from "#lib/remotes/profile.remote.ts";
 
 	const { data } = $props();
 
@@ -20,7 +20,7 @@
 		Boolean(filters.task || filters.subcategory || filters.type || filters.status || filters.q)
 	);
 
-	const profile = getProfile();
+	const profile = $derived(await getProfile());
 
 	function handleRename(session: SessionItem) {
 		openModal({
@@ -72,9 +72,9 @@
 		</a>
 	</div>
 
-	<HistoryTrend trend={data.trend} bandTarget={profile.current?.bandTarget ?? 0} />
+	<HistoryTrend trend={data.trend} bandTarget={profile.bandTarget ?? 0} />
 
-	<HistoryStats stats={data.stats} bandTarget={profile.current?.bandTarget ?? 0} />
+	<HistoryStats stats={data.stats} bandTarget={profile.bandTarget ?? 0} />
 
 	<HistoryFilters
 		{filters}
@@ -110,7 +110,7 @@
 			{#each data.practiceSessions as session (session.id)}
 				<SessionCard
 					{session}
-					bandTarget={profile.current?.bandTarget ?? 0}
+					bandTarget={profile.bandTarget ?? 0}
 					onRename={handleRename}
 					onDelete={handleDelete} />
 			{/each}
