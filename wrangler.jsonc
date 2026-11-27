@@ -3,7 +3,6 @@
 	"name": "ielts-fullstack",
 	"compatibility_date": "2026-09-30",
 	"compatibility_flags": ["nodejs_compat"],
-	"main": ".svelte-kit/cloudflare/_worker.js",
 	"assets": {
 		"binding": "ASSETS",
 		"directory": ".svelte-kit/cloudflare"

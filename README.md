@@ -5,7 +5,7 @@ evaluation and conversational feedback through a streaming chat UX.
 
 ## Prerequisites
 
-- Node.js `20.19+` or `22.12+` (Node 22 LTS recommended) - required by Vite 8.
+- Node.js `22.12+`
 - npm.
 - A Cloudflare account.
 - A GitHub OAuth app (client ID/secret).
