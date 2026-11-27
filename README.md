@@ -44,7 +44,7 @@ Declared in `wrangler.jsonc` and read via `import { env } from "cloudflare:worke
 1. Clone the repo and install:
 
    ```bash
-   npm install --ignore-scripts
+   npm install
    ```
 
 2. Copy `.env.example` to `.env` and fill in the variables listed above.
