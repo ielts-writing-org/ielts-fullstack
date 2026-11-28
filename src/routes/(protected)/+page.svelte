@@ -1,7 +1,7 @@
 <script lang="ts">
-	import { resolve } from "$app/paths";
 	import { page } from "$app/state";
-	import { LibraryBig, PenLine } from "@lucide/svelte";
+	import { untrack } from "svelte";
+	import { PenLine } from "@lucide/svelte";
 	import { openModal } from "#lib/components/Modal.svelte";
 	import { getProfile } from "#lib/remotes/profile.remote.ts";
 	import About from "./About.svelte";
@@ -10,7 +10,6 @@
 	import RecentPracticeSessions from "./RecentPracticeSessions.svelte";
 	import ActivityStats from "./ActivityStats.svelte";
 	import ChangeBandTarget from "../ChangeBandTarget.svelte";
-	import { untrack } from "svelte";
 
 	const { data } = $props();
 
@@ -36,20 +35,14 @@
 </svelte:head>
 
 <main id="main-content" class="w-full flex-1 overflow-y-auto bg-base-100 p-3 sm:p-4 lg:px-9">
-	<div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-		<div class="min-w-0">
-			<p class="text-xs font-semibold text-base-content/75">
-				{isNewUser ? `Welcome, ${firstName}.` : `Welcome back, ${firstName}.`}
-			</p>
-			<h1 class="mt-0.5 flex items-center gap-2 font-semibold">
-				<PenLine class="shrink-0 text-primary" size="1em" />
-				What do you want to practice today?
-			</h1>
-		</div>
-		<a class="btn btn-outline btn-primary btn-sm sm:shrink-0" href={resolve("/(protected)/tasks")}>
-			<LibraryBig size="1em" />
-			Task Library
-		</a>
+	<div class="min-w-0">
+		<p class="text-xs font-semibold text-base-content/75">
+			{isNewUser ? `Welcome, ${firstName}.` : `Welcome back, ${firstName}.`}
+		</p>
+		<h1 class="mt-0.5 flex items-center gap-2 font-semibold">
+			<PenLine class="shrink-0 text-primary" size="1em" />
+			What do you want to practice today?
+		</h1>
 	</div>
 
 	<section class="my-4">

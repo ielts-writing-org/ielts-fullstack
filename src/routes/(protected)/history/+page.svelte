@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { goto, refreshAll } from "$app/navigation";
-	import { ArrowRight, PenLine, RotateCcwClock } from "@lucide/svelte";
+	import { ArrowRight, RotateCcwClock } from "@lucide/svelte";
 	import { openModal } from "#lib/components/Modal.svelte";
 	import { deletePracticeSession } from "#lib/remotes/practice-session.remote.ts";
 	import { getProfile } from "#lib/remotes/profile.remote.ts";
@@ -56,20 +56,14 @@
 </svelte:head>
 
 <main id="main-content" class="w-full flex-1 overflow-y-auto bg-base-100 p-3 sm:p-4 lg:px-9">
-	<div class="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
-		<div class="min-w-0">
-			<div class="flex items-center gap-2">
-				<RotateCcwClock class="size-5 shrink-0 text-primary" />
-				<h1 class="font-bold sm:text-lg">Practice History</h1>
-			</div>
-			<p class="mt-0.5 text-xs text-base-content/75">
-				Review everything you have written and track how your band score changes over time.
-			</p>
+	<div class="min-w-0">
+		<div class="flex items-center gap-2">
+			<RotateCcwClock class="size-5 shrink-0 text-primary" />
+			<h1 class="font-bold sm:text-lg">Practice History</h1>
 		</div>
-		<a class="btn btn-primary btn-sm sm:shrink-0" href={newPracticeHref}>
-			<PenLine size="1em" />
-			Start new practice
-		</a>
+		<p class="mt-0.5 text-xs text-base-content/75">
+			Review everything you have written and track how your band score changes over time.
+		</p>
 	</div>
 
 	<HistoryTrend trend={data.trend} bandTarget={profileQuery.current?.bandTarget ?? 0} />
